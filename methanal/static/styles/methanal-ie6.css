@@ -1,0 +1,31 @@
+@import url(methanal-ie.css);
+
+.methanal-multi-input {
+    margin-left: 3px;
+}
+
+.methanal-multi-input .methanal-caption {
+    width: 8em;
+}
+
+.methanal-caption {
+    width: 20em;
+}
+
+.methanal-error {
+    background: none;
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/error-icon.png', sizingMethod='image');
+}
+
+.methanal-error-text {
+    font-size: 75%;
+}
+
+.dependancy-child {
+    border-bottom: 1px solid #ccc;
+}
+
+.methanal-control-inputs {
+    float: none;
+}
+
