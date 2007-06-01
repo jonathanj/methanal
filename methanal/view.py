@@ -221,7 +221,8 @@ class DateInput(TextInput):
         if value is None:
             return u''
 
-        return value.asDatetime(self.timezone).strftime('%Y-%m-%d').decode('ascii')
+        dt = value.asDatetime(self.timezone)
+        return '%04d-%02d-%02d' % (dt.year, dt.month, dt.day)
 
     def invoke(self, data):
         value = data[self.param.name]
