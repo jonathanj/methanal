@@ -222,7 +222,7 @@ class DateInput(TextInput):
             return u''
 
         dt = value.asDatetime(self.timezone)
-        return '%04d-%02d-%02d' % (dt.year, dt.month, dt.day)
+        return u'%04d-%02d-%02d' % (dt.year, dt.month, dt.day)
 
     def invoke(self, data):
         value = data[self.param.name]
