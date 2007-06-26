@@ -268,9 +268,12 @@ Methanal.View.LiveForm.methods(
     function __init__(self, node, viewOnly, controlNames) {
         Methanal.View.LiveForm.upcall(self, '__init__', node);
         self.viewOnly = viewOnly;
-        self.form = self;
         self.controlNames = controlNames;
         self.formInit();
+    },
+
+    function getForm(self) {
+        return self;
     },
 
     function nodeInserted(self) {
@@ -362,9 +365,8 @@ Methanal.View.LiveForm.methods(
 
 Methanal.View.InputContainer = Nevow.Athena.Widget.subclass('Methanal.View.InputContainer');
 Methanal.View.InputContainer.methods(
-    function setWidgetParent(self, widgetParent) {
-        Methanal.View.InputContainer.upcall(self, 'setWidgetParent', widgetParent);
-        self.form = self.widgetParent.form;
+    function getForm(self) {
+        return self.widgetParent.getForm();
     },
 
     function setError(self, error) {
@@ -432,14 +434,19 @@ Methanal.View.GroupInput.methods(
         Methanal.View.GroupInput.upcall(self, '__init__', node);
         self.formInit();
         self.name = name;
-        self.form = self;
         self.setValid();
         self.controlNames = controlNames;
     },
 
+    function getForm(self) {
+        return self;
+    },
+
     function setWidgetParent(self, widgetParent) {
         Methanal.View.GroupInput.upcall(self, 'setWidgetParent', widgetParent);
-        self.widgetParent.form.subforms[self.name] = self;
+        if (self.widgetParent) {
+            self.widgetParent.getForm().subforms[self.name] = self;
+        }
     },
 
     function clearError(self) {
@@ -466,7 +473,7 @@ Methanal.View.GroupInput.methods(
 
     function validate(self, control) {
         Methanal.View.GroupInput.upcall(self, 'validate', control);
-        self.widgetParent.form.validate(control);
+        self.widgetParent.getForm().validate(control);
     },
 
     function setValid(self) {
@@ -496,14 +503,15 @@ Methanal.View.FormInput.methods(
         self.inputNode = self.getInputNode();
         self.errorNode = self.nodeById('error');
         self.setValue(self._initialValue);
-        self.form.loadedUp(self);
+
+        var form = self.getForm();
+        form.controls[self.name] = self;
+        form.addValidator([self.name], [(function _baseValidator(value) { return self.baseValidator(value); })]);
+        form.loadedUp(self);
     },
 
-    function setWidgetParent(self, widgetParent) {
-        Methanal.View.FormInput.upcall(self, 'setWidgetParent', widgetParent);
-        self.form = self.widgetParent.form;
-        self.form.controls[self.name] = self;
-        self.form.addValidator([self.name], [(function _baseValidator(value) { return self.baseValidator(value); })]);
+    function getForm(self) {
+        return self.widgetParent.getForm();
     },
 
     function getInputNode(self) {
@@ -534,7 +542,7 @@ Methanal.View.FormInput.methods(
         self.active = active;
         self.node.style.display = active ? 'block' : 'none';
         self.widgetParent.checkActive();
-        self.form.validate(self);
+        self.getForm().validate(self);
     },
 
     function setValue(self, value) {
@@ -546,7 +554,7 @@ Methanal.View.FormInput.methods(
     },
 
     function onChange(self, node) {
-        self.form.valueChanged(self);
+        self.getForm().valueChanged(self);
         return true;
     },
 
