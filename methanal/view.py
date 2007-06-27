@@ -1,3 +1,5 @@
+from warnings import warn
+
 from decimal import Decimal
 
 from epsilon.extime import Time
@@ -419,7 +421,12 @@ class ReferenceItemView(ItemView):
     all the while maintaining the reference link.
     """
     def __init__(self, parentItem, refAttr, **kw):
-        value = refAttr.__get__(parentItem, type(parentItem))
+        if not isinstance(refAttr, str):
+            warn('refAttr should be an attribute name, not an attribute',
+                 DeprecationWarning, 2)
+            refAttr = refAttr.attrname
+
+        value = getattr(parentItem, refAttr)
         super(ReferenceItemView, self).__init__(
             item=value,
             itemClass=refAttr.reftype,
@@ -432,4 +439,4 @@ class ReferenceItemView(ItemView):
 
     def createItem(self, item):
         super(ReferenceItemView, self).createItem(item)
-        self.refAttr.__set__(self.parentItem, item)
+        setattr(self.parentItem, self.refAttr, item)
