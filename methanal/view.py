@@ -429,7 +429,7 @@ class ReferenceItemView(ItemView):
         value = getattr(parentItem, refAttr)
         super(ReferenceItemView, self).__init__(
             item=value,
-            itemClass=refAttr.reftype,
+            itemClass=getattr(type(parentItem), refAttr).reftype,
             store=parentItem.store,
             switchInPlace=True,
             **kw)
