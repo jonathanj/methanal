@@ -108,6 +108,11 @@ textarea.methanal-input:focus {
     margin: 0.5ex 0;
 }
 
+.methanal-check-input-label {
+    float: left;
+    margin-right: 0.5em;
+}
+
 input.methanal-check-input {
     border: none;
     margin-left: 0;

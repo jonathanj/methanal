@@ -365,6 +365,16 @@ class CheckboxInput(FormInput):
     fragmentName = 'methanal-check-input'
     jsClass = u'Methanal.View.CheckboxInput'
 
+    def __init__(self, inlineLabel=False, **kw):
+        super(CheckboxInput, self).__init__(**kw)
+        self.inlineLabel = inlineLabel
+
+    @renderer
+    def checkLabel(self, req, tag):
+        if not self.inlineLabel:
+            return tag
+        return tag[self.param.doc]
+
     @renderer
     def value(self, req, tag):
         if self.param.value:
