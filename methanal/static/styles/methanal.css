@@ -10,7 +10,8 @@
     clear: left;
 }
 
-.methanal-control-inputs {
+.methanal-control-inputs,
+.methanal-control-inputs > * {
     float: left;
 }
 
