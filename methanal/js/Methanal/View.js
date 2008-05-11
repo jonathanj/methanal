@@ -750,6 +750,13 @@ Methanal.View.SelectInput.methods(
 
 Methanal.View.MultiSelectInput = Methanal.View.SelectInput.subclass('Methanal.View.MultiSelectInput');
 Methanal.View.MultiSelectInput.methods(
+    function clearSelection(self, node) {
+        var node = self.getInputNode();
+        node.selectedIndex = -1;
+        self.onChange(node);
+        return false;
+    },
+
     function foreachSelected(self, func) {
         var node = self.getInputNode();
         if (node.selectedIndex === -1)
