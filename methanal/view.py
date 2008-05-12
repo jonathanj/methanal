@@ -430,16 +430,19 @@ class ReferenceItemView(ItemView):
     item in-place, and also delete the item to switch back to creation mode,
     all the while maintaining the reference link.
     """
-    def __init__(self, parentItem, refAttr, **kw):
+    def __init__(self, parentItem, refAttr, itemClass=None, **kw):
         if not isinstance(refAttr, str):
             warn('refAttr should be an attribute name, not an attribute',
                  DeprecationWarning, 2)
             refAttr = refAttr.attrname
 
+        if itemClass is None:
+            itemClass = getattr(type(parentItem), refAttr).reftype
+
         value = getattr(parentItem, refAttr)
         super(ReferenceItemView, self).__init__(
             item=value,
-            itemClass=getattr(type(parentItem), refAttr).reftype,
+            itemClass=itemClass,
             store=parentItem.store,
             switchInPlace=True,
             **kw)
