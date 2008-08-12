@@ -325,6 +325,17 @@ class SelectInput(ChoiceInput):
     jsClass = u'Methanal.View.SelectInput'
 
 
+class IntegerSelectInput(SelectInput):
+    jsClass = u'Methanal.View.IntegerSelectInput'
+
+    def getValue(self):
+        value = self.param.value
+        if value is None:
+            return u''
+
+        return int(value)
+
+
 class MultiSelectInput(ChoiceInput):
     """
     Form widget with a list box that accepts multiple selections.

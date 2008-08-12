@@ -748,6 +748,17 @@ Methanal.View.SelectInput.methods(
     });
 
 
+Methanal.View.IntegerSelectInput = Methanal.View.SelectInput.subclass('Methanal.View.IntegerSelectInput');
+Methanal.View.IntegerSelectInput.methods(
+    function getValue(self) {
+        var value = Methanal.View.IntegerSelectInput.upcall(self, 'getValue');
+        if (value.length == 0)
+            return null;
+
+        return Methanal.Util.strToInt(value);
+    });
+
+
 Methanal.View.MultiSelectInput = Methanal.View.SelectInput.subclass('Methanal.View.MultiSelectInput');
 Methanal.View.MultiSelectInput.methods(
     function clearSelection(self, node) {
