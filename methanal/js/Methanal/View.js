@@ -752,7 +752,7 @@ Methanal.View.IntegerSelectInput = Methanal.View.SelectInput.subclass('Methanal.
 Methanal.View.IntegerSelectInput.methods(
     function getValue(self) {
         var value = Methanal.View.IntegerSelectInput.upcall(self, 'getValue');
-        if (value.length == 0)
+        if (value === null || value.length == 0)
             return null;
 
         return Methanal.Util.strToInt(value);
