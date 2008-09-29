@@ -181,3 +181,7 @@ optgroup option {
     margin: 2px;
     font-weight: bold;
 }
+
+.terminator {
+    clear: both;
+}
