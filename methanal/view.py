@@ -395,13 +395,9 @@ class CheckboxInput(FormInput):
             tag(checked="checked")
         return tag
 
-class ItemView(LiveForm):
-    """
-    A view for an Item that automatically synthesizes a model; in the case of a
-    specific Item instance, for editing it, and in the case of an Item
-    subclass, for creating a new instance.
-    """
-    def __init__(self, item=None, itemClass=None, store=None, switchInPlace=False, ignoredAttributes=set(), **kw):
+
+class ItemViewBase(LiveForm):
+    def __init__(self, item=None, itemClass=None, store=None, ignoredAttributes=set(), **kw):
         self.item = item
 
         if item is not None:
@@ -417,8 +413,17 @@ class ItemView(LiveForm):
 
         self.model = ItemModel(item=self.item, itemClass=self.itemClass, store=self.store, ignoredAttributes=ignoredAttributes)
 
-        super(ItemView, self).__init__(store=self.store, model=self.model, **kw)
+        super(ItemViewBase, self).__init__(store=self.store, model=self.model, **kw)
 
+
+class ItemView(ItemViewBase):
+    """
+    A view for an Item that automatically synthesizes a model; in the case of a
+    specific Item instance, for editing it, and in the case of an Item
+    subclass, for creating a new instance.
+    """
+    def __init__(self, switchInPlace=False, **kw):
+        super(ItemView, self).__init__(**kw)
         self.switchInPlace = switchInPlace
 
     @expose
