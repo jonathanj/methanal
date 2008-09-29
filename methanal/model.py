@@ -181,6 +181,28 @@ _paramTypes = {
     timestamp: ValueParameter,
 }
 
+def paramsFromSchema(store, itemClass, item=None, ignoredAttributes=set()):
+    for name, attr in itemClass.getSchema():
+        if name in ignoredAttributes:
+            continue
+
+        doc = attr.doc or None
+        if item is not None:
+            value = getattr(item, name)
+        else:
+            value = attr.default
+
+        if isinstance(attr, reference):
+            model = ItemModel(itemClass=attr.reftype, store=store)
+            yield ReferenceParameter(name=name, value=value, model=model, doc=doc)
+        elif isinstance(attr, AbstractFixedPointDecimal):
+            yield DecimalParameter(decimalPlaces=attr.decimalPlaces, name=name, value=value, doc=doc)
+        else:
+            factory = _paramTypes.get(type(attr))
+            if factory:
+                yield factory(name=name, value=value, doc=doc)
+
+
 class ItemModel(Model):
     """
     A model automatically synthesized from an Item class or instance.
@@ -205,7 +227,7 @@ class ItemModel(Model):
                 raise ValueError('Passed in item in store %r but store of %r' % (self.store, store))
 
         self.ignoredAttributes = ignoredAttributes
-        params = self.paramsFromSchema()
+        params = paramsFromSchema(self.store, self.itemClass, self.item, self.ignoredAttributes)
 
         super(ItemModel, self).__init__(params=params, callback=self.storeData, doc=u'Save', **kw)
 
@@ -222,28 +244,6 @@ class ItemModel(Model):
             return self.store.transact(_storeData)
         else:
             return _storeData()
-
-    def paramsFromSchema(self):
-        for name, attr in self.itemClass.getSchema():
-            if name in self.ignoredAttributes:
-                continue
-
-            doc = attr.doc or None
-            if self.item is not None:
-                value = getattr(self.item, name)
-            else:
-                value = attr.default
-
-            if isinstance(attr, reference):
-                model = ItemModel(itemClass=attr.reftype, store=self.store)
-                yield ReferenceParameter(name=name, value=value, model=model, doc=doc)
-            elif isinstance(attr, AbstractFixedPointDecimal):
-                yield DecimalParameter(decimalPlaces=attr.decimalPlaces, name=name, value=value, doc=doc)
-            else:
-                factory = _paramTypes.get(type(attr))
-                if factory:
-                    yield factory(name=name, value=value, doc=doc)
-
 
 def modelFromItem(item, ignoredAttributes=set()):
     """
