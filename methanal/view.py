@@ -177,7 +177,10 @@ class FormInput(ThemedElement):
 
     @renderer
     def value(self, req, tag):
-        return tag[self.getValue()]
+        value = self.getValue()
+        if value is None:
+            value = u''
+        return tag[value]
 
     def invoke(self, data):
         value = data[self.param.name]
