@@ -3,6 +3,8 @@ from warnings import warn
 
 from epsilon.extime import FixedOffset, Time
 
+from nevow.athena import expose
+
 from xmantissa.ixmantissa import IColumn, IWebTranslator
 from xmantissa.webtheme import ThemedElement
 
