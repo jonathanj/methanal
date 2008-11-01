@@ -842,6 +842,16 @@ Methanal.View.CheckboxInput.methods(
     });
 
 
+/**
+ * A form widget for textually entering dates.
+ *
+ * The following date formats are supported::
+ *
+ *     YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
+ *     DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
+ *
+ * As well as the special inputs "yesterday", "today" and "tomorrow".
+ */
 Methanal.View.DateInput = Methanal.View.TextInput.subclass('Methanal.View.DateInput');
 Methanal.View.DateInput.methods(
     function nodeInserted(self) {

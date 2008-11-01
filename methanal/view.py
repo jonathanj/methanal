@@ -22,6 +22,13 @@ class LiveForm(ThemedElement):
     jsClass = u'Methanal.View.LiveForm'
 
     def __init__(self, store, model, viewOnly=False, **kw):
+        """
+        Initialise the form.
+
+        @type viewOnly: C{bool}
+        @param viewOnly: Indicates whether model values are written back when
+            invoked, defaults to C{False}
+        """
         super(LiveForm, self).__init__(**kw)
         self.store = store
         self.model = model
@@ -149,7 +156,7 @@ class GroupInput(FormGroup):
 
 class FormInput(ThemedElement):
     """
-    Abstract form widget class.
+    Abstract input widget class.
     """
     def __init__(self, parent, name, label=None, **kw):
         super(FormInput, self).__init__(**kw)
@@ -223,7 +230,11 @@ class TextInput(FormInput):
 
 class DateInput(TextInput):
     """
-    Form widget for entering dates.
+    Form widget for textually entering dates.
+
+    A variety of date formats is supported, in order make entering an
+    absolute date value as natural as possible.  See the Javascript
+    docstrings for more detail.
     """
     fragmentName = 'methanal-date-input'
     jsClass = u'Methanal.View.DateInput'
@@ -345,6 +356,9 @@ class SelectInput(ChoiceInput):
 
 
 class IntegerSelectInput(SelectInput):
+    """
+    L{SelectInput} for integer values.
+    """
     jsClass = u'Methanal.View.IntegerSelectInput'
 
     def getValue(self):
@@ -365,10 +379,12 @@ class MultiSelectInput(ChoiceInput):
 
 class GroupedSelectInput(ChoiceInput):
     """
-    Form widget with a dropdown box, where the entries are grouped together as follows::
+    Form widget with a dropdown box of grouped entries.
 
-        (u'Group name',    [(u'value', u'Description),
-                            ...]),
+    Values should be structured as follows::
+
+        (u'Group name', [(u'value', u'Description'),
+                         ...]),
          ...)
     """
     fragmentName = 'methanal-select-input'
@@ -414,6 +430,9 @@ class CheckboxInput(FormInput):
 
 
 class ItemViewBase(LiveForm):
+    """
+    Base class for common item view behaviour.
+    """
     def __init__(self, item=None, itemClass=None, store=None, ignoredAttributes=set(), **kw):
         self.item = item
 
@@ -435,11 +454,19 @@ class ItemViewBase(LiveForm):
 
 class ItemView(ItemViewBase):
     """
-    A view for an Item that automatically synthesizes a model; in the case of a
-    specific Item instance, for editing it, and in the case of an Item
-    subclass, for creating a new instance.
+    A view for an Item that automatically synthesizes a model.
+
+    In the case of a specific Item instance, for editing it, and in the case
+    of an Item type subclass, for creating a new instance.
     """
     def __init__(self, switchInPlace=False, **kw):
+        """
+        Initialise view.
+
+        @type switchInPlace: C{bool}
+        @param switchInPlace: Switch to item editing mode upon creating
+            a new instance, L{createItem} will be called when this happens
+        """
         super(ItemView, self).__init__(**kw)
         self.switchInPlace = switchInPlace
 
@@ -455,17 +482,18 @@ class ItemView(ItemViewBase):
 
     def createItem(self, item):
         """
-        A callback that is invoked when an item is created and the form is
-        switched in place to editing mode.
+        A callback that is invoked when an item is created.
+
+        The form is also switched in place to editing mode.
         """
 
 
 class ReferenceItemView(ItemView):
     """
-    I am an ItemView associated with a reference attribute on another
-    attribute; I can switch from creating a new item to editing the created
-    item in-place, and also delete the item to switch back to creation mode,
-    all the while maintaining the reference link.
+    An L{ItemView} associated with an attribute reference on another item.
+
+    When the referenced item is created the view will be switched, in-place,
+    to editing mode.
     """
     def __init__(self, parentItem, refAttr, itemClass=None, **kw):
         if not isinstance(refAttr, str):

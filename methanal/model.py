@@ -21,8 +21,13 @@ class ValueParameter(object):
     """
     A simple value in a form model.
 
-    @ivar name: the name of this parameter
-    @ivar doc: a long description of this parameter
+    @type name: C{str}
+    @ivar name: The name of this parameter
+
+    @ivar value: Initial value of this parameter
+
+    @type doc: C{unicode}
+    @ivar doc: A long description of this parameter
     """
     def __init__(self, name, value=None, doc=None, **kw):
         super(ValueParameter, self).__init__(**kw)
@@ -34,9 +39,10 @@ class ValueParameter(object):
 
     def validate(self, value):
         """
-        Validate a value provided for this parameter against all constraints,
-        returning a descriptive message if any constraints were violated, and
-        C{None} if validation was successful.
+        Validate a value provided for this parameter against all constraints.
+
+        If any constraints were violated a descriptive message is returned,
+        otherwise C{None} is returned upon successful validation.
         """
         for constraintName in constraint.exposedMethodNames(self):
             result = constraint.get(self, constraintName)(value)
@@ -50,6 +56,12 @@ class ValueParameter(object):
         return self.validate(value) is None
 
     def getValue(self):
+        """
+        Retrieve the value for this parameter.
+
+        @raise errors.ConstraintError: If validation for this parameter's value
+            failed
+        """
         error = self.validate(self.value)
         if error:
             raise errors.ConstraintError(error)
@@ -62,6 +74,9 @@ class ListParameter(ValueParameter):
     """
     @constraint
     def isIterable(self, value):
+        """
+        Enforce the iterable constraint.
+        """
         try:
             iter(value)
         except TypeError:
@@ -95,7 +110,6 @@ class MultiEnumerationParameter(EnumerationParameter):
     """
     A multi-value enumeration parameter.
     """
-
     @constraint
     def valueInEnumeration(self, value):
         """
@@ -150,6 +164,18 @@ class Model(object):
     A Methanal form model.
     """
     def __init__(self, params, callback=lambda **d: d, doc=u''):
+        """
+        Initialise the model.
+
+        @type params: C{iterable} of parameter instances
+        @param params: Model parameters
+
+        @type callback: C{callable} taking parameters named the same as the
+            model parameters
+
+        @type doc: C{unicode}
+        @param doc: A description for the model's action
+        """
         self.params = {}
         for param in params:
             self.params[param.name] = param
@@ -178,6 +204,9 @@ _paramTypes = {
 }
 
 def paramsFromSchema(store, itemClass, item=None, ignoredAttributes=set()):
+    """
+    Construct L{Model} parameters from an Axiom item schema.
+    """
     for name, attr in itemClass.getSchema():
         if name in ignoredAttributes:
             continue
@@ -204,6 +233,28 @@ class ItemModel(Model):
     A model automatically synthesized from an Item class or instance.
     """
     def __init__(self, item=None, itemClass=None, store=None, ignoredAttributes=set(), **kw):
+        """
+        Initialise model.
+
+        Either C{item} or C{itemClass} must be specified, specifying only
+        an item class will result in an item of that type being created
+        when the model's callback is triggered.  This can be useful for
+        providing a model for an item type that you wish to create but
+        have no instance of yet.
+
+        @type item: C{axiom.item.Item} or C{None}
+        @param item: An Axiom item to synthesize a model for or C{None}
+
+        @type itemClass: C{type} for an C{axiom.item.Item} or C{None}
+        @param itemClass: An Axiom item type to synthesize a model and
+            create an instance for, or C{None}
+
+        @type store: C{axiom.store.Store}
+
+        @type ignoredAttibutes: C{container}
+        @param ignoredAttributes: Attribute names to ignore when synthesizing
+            the model
+        """
         if item is None:
             if itemClass is None:
                 raise ValueError('You must pass in either item or itemClass')
@@ -228,6 +279,15 @@ class ItemModel(Model):
         super(ItemModel, self).__init__(params=params, callback=self.storeData, doc=u'Save', **kw)
 
     def storeData(self, **data):
+        """
+        Model callback.
+
+        Write model parameter values back to our item, creating a new one if
+        no item instance was given.
+
+        @rtype: C{axiom.item.Item}
+        @return: The newly modified or created item
+        """
         def _storeData():
             if self.item is None:
                 self.item = self.itemClass(store=self.store, **data)

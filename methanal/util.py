@@ -20,8 +20,12 @@ def collectMethods(inst, methodName):
 
 def getArgsDict(inst):
     """
-    Collect arguments into a dict by traversing the MRO in reverse order,
-    looking for getArgs() methods.
+    Collect arguments for C{inst}.
+
+    Arguments are collected by traversing the MRO in reverse order, looking
+    for C{getArgs} methods.
+
+    @rtype: C{dict}
     """
     args = {}
     for getter in collectMethods(inst, 'getArgs'):

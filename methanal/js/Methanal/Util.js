@@ -1,3 +1,9 @@
+/**
+ * Add a class to an element's "className" attribute.
+ *
+ * This operation is intended to preserve any other values that were already
+ * present.
+ */
 Methanal.Util.addElementClass = function addElementClass(node, cls) {
     var current = node.className;
 
@@ -22,6 +28,12 @@ Methanal.Util.addElementClass = function addElementClass(node, cls) {
 };
 
 
+/**
+ * Remove a class from an element's "className" attribute.
+ *
+ * This operation is intended to preserve any other values that were already
+ * present.
+ */
 Methanal.Util.removeElementClass = function removeElementClass(node, cls) {
     var current = node.className;
 
@@ -48,12 +60,20 @@ Methanal.Util.removeElementClass = function removeElementClass(node, cls) {
 };
 
 
+/**
+ * Remove all the children of a node.
+ */
 Methanal.Util.removeNodeContent = function removeNodeContent(node) {
     while (node.childNodes.length)
         node.removeChild(node.firstChild);
 };
 
 
+/**
+ * Replace all of a node's children with new ones.
+ *
+ * @type children: C{Array}
+ */
 Methanal.Util.replaceNodeContent = function replaceNodeContent(node, children) {
     Methanal.Util.removeNodeContent(node);
     for (var i = 0; i < children.length; ++i)
@@ -61,11 +81,16 @@ Methanal.Util.replaceNodeContent = function replaceNodeContent(node, children) {
 };
 
 
+/**
+ * Replace a node's text node with new text.
+ */
 Methanal.Util.replaceNodeText = function replaceNodeText(node, text) {
     Methanal.Util.replaceNodeContent(node, [node.ownerDocument.createTextNode(text)]);
 };
 
 
+// XXX: what does this do that's special again?
+// XXX: i think maybe it exposes more information when called by IE
 Methanal.Util.formatFailure = function formatFailure(failure) {
     var text = failure.error.description;
     if (!text)
@@ -74,6 +99,11 @@ Methanal.Util.formatFailure = function formatFailure(failure) {
 };
 
 
+/**
+ * Convert a string to a base-10 integer.
+ *
+ * Not quite as simple to do properly as one might think.
+ */
 Methanal.Util.strToInt = function strToInt(s) {
     if (typeof s !== 'string')
         return undefined;
@@ -88,6 +118,11 @@ Methanal.Util.strToInt = function strToInt(s) {
 };
 
 
+/**
+ * Pretty print a decimal number.
+ *
+ * Useful for formatting large currency amounts in a human-readable way.
+ */
 Methanal.Util.formatDecimal = function formatDecimal(value) {
     var value = value.toString();
     var l = value.split('')
