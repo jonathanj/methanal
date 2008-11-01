@@ -1,3 +1,8 @@
+import time
+from warnings import warn
+
+from epsilon.extime import FixedOffset, Time
+
 from xmantissa.ixmantissa import IColumn, IWebTranslator
 from xmantissa.webtheme import ThemedElement
 
@@ -13,7 +18,7 @@ class QueryList(ThemedElement):
     jsClass = u'Methanal.Widgets.QueryList'
     fragmentName = 'methanal-query-list'
 
-    def __init__(self, rows, columns, webTranslator=None, **kw):
+    def __init__(self, rows, columns, webTranslator=None, timezone=None, **kw):
         super(QueryList, self).__init__(**kw)
 
         self.rows = list(rows)
@@ -22,10 +27,17 @@ class QueryList(ThemedElement):
                         for col in columns]
         self.webTranslator = webTranslator
 
+        if timezone is None:
+            hour, minute = divmod(time.timezone, -3600)
+            timezone = FixedOffset(hour, minute)
+            warn('not passing in timezone is deprecated', DeprecationWarning, 2)
+
+        self.timezone = timezone
+
     def dictifyItem(self, item, index):
         def _formatValue(value):
             if isinstance(value, Time):
-                return value.asDatetime(const.timezone).strftime('%a, %d %h %Y %H:%M:%S').decode('ascii')
+                return value.asDatetime(self.timezone).strftime('%a, %d %h %Y %H:%M:%S').decode('ascii')
             return value
 
         if isinstance(item, tuple):
