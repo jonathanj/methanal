@@ -135,3 +135,17 @@ Methanal.Util.formatDecimal = function formatDecimal(value) {
 
     return l.join('');
 };
+
+
+/**
+ * Create a callable that cycles through the initial inputs when called.
+ */
+Methanal.Util.cycle = function cycle(/*...*/) {
+    var i = -1;
+    var args = arguments;
+    var n = args.length;
+    return function () {
+        i = ++i % n;
+        return args[i];
+    };
+}

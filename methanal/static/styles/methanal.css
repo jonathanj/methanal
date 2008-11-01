@@ -185,3 +185,48 @@ optgroup option {
 .terminator {
     clear: both;
 }
+
+
+/*** Query list */
+
+.methanal-query-list table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    width: 100%;
+    background: white;
+}
+
+.methanal-query-list thead td {
+    font-weight: bold;
+    color: #555;
+    background: #ddd url(/Mantissa/images/scrolltable-header-bg.png) repeat-x;
+    padding: 4px 5px;
+}
+
+.methanal-query-list a {
+    color: black;
+    display: block;
+}
+
+.methanal-query-list tr:hover {
+    background-color: #eee !important;
+}
+
+.methanal-query-list td {
+    text-align: left;
+    border: 1px solid #ccc;
+}
+
+.methanal-query-list td {
+    padding: 5px;
+}
+
+.methanal-query-list .even {
+    background-color: #f5f5f5;
+}
+
+.methanal-query-list .methanal-query-list-empty-row td {
+   font-size: 90%;
+   font-weight: bold;
+   text-align: center;
+}
