@@ -2,6 +2,8 @@ from axiom.attributes import boolean, integer, text, textlist, timestamp, refere
 
 from nevow.util import Expose
 
+from methanal import errors
+
 
 def propertyMaker(func):
     return property(*func())
@@ -49,7 +51,7 @@ class ValueParameter(object):
     def getValue(self):
         error = self.validate(self.value)
         if error:
-            raise ConstraintError(error)
+            raise errors.ConstraintError(error)
         return self.value
 
 
@@ -132,13 +134,6 @@ class DecimalParameter(ValueParameter):
     def __init__(self, decimalPlaces, **kw):
         super(DecimalParameter, self).__init__(**kw)
         self.decimalPlaces = decimalPlaces
-
-
-class ConstraintError(ValueError):
-    """
-    Raised to indicate a failure to meet one or more constraints specified in
-    the data model.
-    """
 
 
 def mandatory(value):
