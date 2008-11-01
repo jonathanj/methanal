@@ -1,5 +1,7 @@
 from nevow import tags
+
 from xmantissa import webtheme
+
 
 class Theme(webtheme.XHTMLDirectoryTheme):
     def head(self, request, website):

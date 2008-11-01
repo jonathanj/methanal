@@ -13,6 +13,7 @@ from xmantissa.webtheme import ThemedElement
 from methanal.model import ItemModel
 from methanal.util import getArgsDict
 
+
 class LiveForm(ThemedElement):
     """
     A form view implemented as an Athena widget.
@@ -68,6 +69,7 @@ class LiveForm(ThemedElement):
             child.invoke(data)
         return self.model.process()
 
+
 class InputContainer(ThemedElement):
     jsClass = u'Methanal.View.InputContainer'
 
@@ -102,11 +104,13 @@ class InputContainer(ThemedElement):
         for child in self.formChildren:
             child.invoke(data)
 
+
 class FormGroup(InputContainer):
     """
     Container for grouping controls.
     """
     fragmentName = 'methanal-group'
+
 
 class FormRow(InputContainer):
     """
@@ -114,6 +118,7 @@ class FormRow(InputContainer):
     """
     fragmentName = 'methanal-form-row'
     jsClass = u'Methanal.View.FormRow'
+
 
 class GroupInput(FormGroup):
     """
@@ -140,6 +145,7 @@ class GroupInput(FormGroup):
         ourData = data[self.name]
         for child in self.formChildren:
             child.invoke(ourData)
+
 
 class FormInput(ThemedElement):
     """
@@ -170,7 +176,9 @@ class FormInput(ThemedElement):
         return [getArgsDict(self)]
 
     def getArgs(self):
-        return {u'name': self.name, u'value': self.getValue(), u'label': self.label}
+        return {u'name': self.name,
+                u'value': self.getValue(),
+                u'label': self.label}
 
     def coerce(self, value):
         return value
@@ -189,12 +197,14 @@ class FormInput(ThemedElement):
     def getValue(self):
         return self.param.value
 
+
 class TextAreaInput(FormInput):
     """
     Form widget for entering large amounts of text.
     """
     fragmentName = 'methanal-text-area-input'
     jsClass = u'Methanal.View.TextAreaInput'
+
 
 class TextInput(FormInput):
     """
@@ -209,6 +219,7 @@ class TextInput(FormInput):
 
     def getArgs(self):
         return {u'embeddedLabel': self.embeddedLabel}
+
 
 class DateInput(TextInput):
     """
@@ -234,6 +245,7 @@ class DateInput(TextInput):
         if value is not None:
             value = Time.fromPOSIXTimestamp(value / 1000)
         self.param.value = value
+
 
 class DecimalInput(TextInput):
     """
@@ -276,6 +288,7 @@ class DecimalInput(TextInput):
         else:
             self.param.value = Decimal(str(value))
 
+
 class IntegerInput(DecimalInput):
     """
     Form widget for entering integers.
@@ -296,6 +309,7 @@ class IntegerInput(DecimalInput):
         value = data[self.param.name]
         self.param.value = value
 
+
 class ChoiceInput(FormInput):
     """
     Abstract form widget with multiple options.
@@ -313,12 +327,14 @@ class ChoiceInput(FormInput):
             o.fillSlots('description', description)
             yield o
 
+
 class MultiCheckboxInput(ChoiceInput):
     """
     Form widget with multiple checkbox selections.
     """
     fragmentName = 'methanal-multicheck-input'
     jsClass = u'Methanal.View.MultiCheckboxInput'
+
 
 class SelectInput(ChoiceInput):
     """
@@ -371,6 +387,7 @@ class GroupedSelectInput(ChoiceInput):
                 o.fillSlots('description', description)
                 g[o]
             yield g
+
 
 class CheckboxInput(FormInput):
     """
@@ -441,6 +458,7 @@ class ItemView(ItemViewBase):
         A callback that is invoked when an item is created and the form is
         switched in place to editing mode.
         """
+
 
 class ReferenceItemView(ItemView):
     """

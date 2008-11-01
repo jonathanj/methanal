@@ -1,4 +1,5 @@
-from axiom.attributes import boolean, integer, text, textlist, timestamp, reference, AbstractFixedPointDecimal
+from axiom.attributes import (boolean, integer, text, textlist, timestamp,
+    reference, AbstractFixedPointDecimal)
 
 from nevow.util import Expose
 
@@ -239,6 +240,7 @@ class ItemModel(Model):
             return self.store.transact(_storeData)
         else:
             return _storeData()
+
 
 def modelFromItem(item, ignoredAttributes=set()):
     """

@@ -8,9 +8,11 @@ from axiom.attributes import integer
 from nevow.tags import h1
 from nevow.static import File
 
-import methanal
 from xmantissa.ixmantissa import IPublicPage, ICustomizable, IStaticShellContent
 from xmantissa.publicresource import PublicPage
+
+import methanal
+
 
 class MethanalPublicPage(Item):
     implements(IPublicPage)
@@ -23,6 +25,7 @@ class MethanalPublicPage(Item):
 
     def getResource(self):
         return PublicIndexPage(self, IStaticShellContent(self.store, None))
+
 
 class PublicIndexPage(PublicPage):
     implements(ICustomizable)
