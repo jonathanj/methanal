@@ -5,17 +5,21 @@ from zope.interface import implements
 
 from epsilon.extime import FixedOffset, Time
 
+from twisted.internet.defer import maybeDeferred
 from twisted.python.components import registerAdapter
 
 from axiom.item import SQLAttribute
 
 from nevow.athena import expose
+from nevow.page import renderer
 
 from xmantissa.ixmantissa import IWebTranslator, IColumn as mantissaIColumn
 from xmantissa.webtheme import ThemedElement
 
 from methanal.imethanal import IColumn
+from methanal.model import Model, paramFromAttribute
 from methanal.util import getArgsDict
+from methanal.view import LiveForm, inputTypeFromAttribute
 
 
 class AttributeColumn(object):
@@ -134,3 +138,115 @@ class QueryList(ThemedElement):
         method = getattr(self, 'action_' + name)
         item = self.rows[rowIndex]
         return method(item)
+
+
+class FilterList(ThemedElement):
+    """
+    A filtering search widget.
+
+    Essentially just a form that results in a server-side call, on submission,
+    and a result widget.
+    
+    One particularly common application is a search widget: A form containing
+    inputs representing fields to filter by, which, when submitted, results in
+    a server-side database query and a QueryList widget.
+    """
+    jsClass = u'Methanal.Widgets.FilterList'
+    fragmentName = 'methanal-filter-list'
+
+    def __init__(self, form, resultWidget, title, **kw):
+        """
+        Initialise the filter widget.
+
+        @type form: C{methanal.view.LiveForm}
+        @param form: Form to display for filter inputs, the form's
+            C{submitSuccess} client method will be passed the result
+            widget; considering deriving client objects from
+            C{Methanal.Widgets.FilterListForm}
+
+        @type resultWidget: C{callable}
+        @param resultWidget: A callable passed the result of C{form}'s
+            callback and expected to return a renderable representing the
+            filter results
+
+        @type title: C{unicode}
+        @param title: A title to display along with the filter widget
+        """
+        super(FilterList, self).__init__(**kw)
+        self.form = form
+        self.resultWidget = resultWidget
+        self.title = title
+
+        self.originalCallback = self.form.model.callback
+        self.form.model.callback = self.filterCallback
+
+    def filterCallback(self, **kw):
+        """
+        Handle form submission.
+
+        Call the original form callback and create the result widget.
+
+        @rtype: C{Deferred}
+        """
+        def makeResultWidget(data):
+            w = self.resultWidget(data)
+            w.setFragmentParent(self)
+            return w
+
+        return maybeDeferred(self.originalCallback, **kw
+            ).addCallback(makeResultWidget)
+
+    @renderer
+    def formTitle(self, req, tag):
+        return tag[self.title]
+
+    @renderer
+    def filterForm(self, req, tag):
+        return tag[self.form]
+
+
+class SimpleFilterList(FilterList):
+    """
+    A simple L{FilterList} implementation.
+
+    Intended to generate a C{LiveForm} from a sequence of attributes, call a
+    user-specified callback and display the results in a L{QueryList} with the
+    desired columns.
+    """
+    def __init__(self, store, filterAttrs, callback, resultColumns, **kw):
+        """
+        Initialise the filter widget.
+
+        @type store: C{axiom.store.Store}
+        @param store: Store that the specified attributes reside in
+
+        @type filterAttrs: C{sequence} of Axiom attributes
+        @param filterAttrs: The attributes to provide form inputs for the
+            attributes to filter on
+
+        @type callback: C{callable} returning an C{iterable} of
+            C{axiom.item.Item}s
+        @param callback: The callable that is triggered when the filter form
+            is submitted, passed parameters named according to the
+            attribute names specified by the attributes in L{filterAttrs},
+            returning result items
+
+        @type resultColumns: L{xmantissa.ixmantissa.IColumn}
+        @param resultColumns: Columns for display in the result widget
+        """
+        model = Model(callback=callback,
+                      params=[paramFromAttribute(store, attr, None)
+                              for attr in filterAttrs],
+                      doc=u'Filter')
+        form = LiveForm(store, model)
+        form.jsClass = u'Methanal.Widgets.FilterListForm'
+
+        for attr in filterAttrs:
+            inputTypeFromAttribute(attr)(parent=form, name=attr.attrname)
+
+        resultWidget = lambda rows: QueryList(rows=rows, columns=resultColumns)
+
+        super(SimpleFilterList, self).__init__(form=form,
+                                               resultWidget=resultWidget,
+                                               **kw)
+        form.setFragmentParent(self)

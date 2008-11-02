@@ -1,3 +1,5 @@
+// import Nevow.Athena
+
 /**
  * Add a class to an element's "className" attribute.
  *
@@ -149,3 +151,34 @@ Methanal.Util.cycle = function cycle(/*...*/) {
         return args[i];
     };
 }
+
+/**
+ * Find the index of C{v} in the array C{a}.
+ *
+ * @return: Index of C{v} in C{a} or C{-1} if not found.
+ */
+Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
+    for (var i = 0; i < a.length; ++i)
+        if (a[i] === v)
+            return i;
+    return -1;
+};
+
+
+Methanal.Util.detachWidget = function detachWidget(widget) {
+    var children = widget.widgetParent.childWidgets;
+    var index = Methanal.Util.arrayIndexOf(children, widget);
+    if (index !== -1)
+        children.splice(index, 1);
+
+    delete Nevow.Athena.Widget._athenaWidgets[widget._athenaID];
+};
+
+
+Methanal.Util.nodeInserted = function nodeInserted(widget) {
+    if (widget.nodeInserted !== undefined)
+        widget.nodeInserted();
+
+    for (var i = 0; i < widget.childWidgets.length; ++i)
+        Methanal.Util.nodeInserted(widget.childWidgets[i]);
+};

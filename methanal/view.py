@@ -4,6 +4,8 @@ from decimal import Decimal
 
 from epsilon.extime import Time
 
+from axiom.attributes import text, integer
+
 from nevow.page import renderer
 from nevow.athena import expose
 
@@ -516,3 +518,11 @@ class ReferenceItemView(ItemView):
     def createItem(self, item):
         super(ReferenceItemView, self).createItem(item)
         setattr(self.parentItem, self.refAttr, item)
+
+
+_inputTypes = {
+    text:    TextInput,
+    integer: IntegerInput}
+
+def inputTypeFromAttribute(attr):
+    return _inputTypes[type(attr)]

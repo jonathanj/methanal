@@ -200,8 +200,32 @@ _paramTypes = {
     text: ValueParameter,
     boolean: ValueParameter,
     textlist: ListParameter,
-    timestamp: ValueParameter,
-}
+    timestamp: ValueParameter}
+
+def paramFromAttribute(store, attr, value, name=None):
+    doc = attr.doc or None
+
+    if name is None:
+        name = attr.attrname
+
+    if isinstance(attr, reference):
+        model = ItemModel(itemClass=attr.reftype, store=store)
+        return ReferenceParameter(name=name,
+                                  value=value,
+                                  doc=doc,
+                                  model=model)
+    elif isinstance(attr, AbstractFixedPointDecimal):
+        return DecimalParameter(name=name,
+                                value=value,
+                                doc=doc,
+                                decimalPlaces=attr.decimalPlaces)
+    else:
+        factory = _paramTypes.get(type(attr))
+        if factory:
+            return factory(name=name,
+                           value=value,
+                           doc=doc)
+
 
 def paramsFromSchema(store, itemClass, item=None, ignoredAttributes=set()):
     """
@@ -211,21 +235,12 @@ def paramsFromSchema(store, itemClass, item=None, ignoredAttributes=set()):
         if name in ignoredAttributes:
             continue
 
-        doc = attr.doc or None
         if item is not None:
             value = getattr(item, name)
         else:
             value = attr.default
 
-        if isinstance(attr, reference):
-            model = ItemModel(itemClass=attr.reftype, store=store)
-            yield ReferenceParameter(name=name, value=value, model=model, doc=doc)
-        elif isinstance(attr, AbstractFixedPointDecimal):
-            yield DecimalParameter(decimalPlaces=attr.decimalPlaces, name=name, value=value, doc=doc)
-        else:
-            factory = _paramTypes.get(type(attr))
-            if factory:
-                yield factory(name=name, value=value, doc=doc)
+        yield paramFromAttribute(store, attr, value, name)
 
 
 class ItemModel(Model):

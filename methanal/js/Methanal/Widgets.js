@@ -1,5 +1,6 @@
 // import Nevow.Athena
 // import Methanal.Util
+// import Methanal.View
 
 
 Methanal.Widgets.QueryList = Nevow.Athena.Widget.subclass('Methanal.Widgets.QueryList');
@@ -150,4 +151,39 @@ Methanal.Widgets.QueryList.methods(
             td.id = headerData[i];
             Methanal.Util.replaceNodeText(td, self._getColumnAlias(td.id));
         }
+    });
+
+
+Methanal.Widgets.FilterList = Nevow.Athena.Widget.subclass('Methanal.Widgets.FilterList');
+Methanal.Widgets.FilterList.methods(
+    function __init__(self, node) {
+        Methanal.Widgets.FilterList.upcall(self, '__init__', node);
+
+        self.currentResultWidget = null;
+    },
+
+    function setResultWidget(self, widgetInfo) {
+        var resultsNode = self.nodeById('results');
+
+        var d = self.widgetParent.addChildWidgetFromWidgetInfo(widgetInfo);
+        d.addCallback(function (widget) {
+            if (self.currentResultWidget !== null) {
+                Methanal.Util.detachWidget(self.currentResultWidget);
+                resultsNode.removeChild(self.currentResultWidget.node);
+            } else {
+                resultsNode.style.display = 'block';
+            }
+
+            resultsNode.appendChild(widget.node);
+            Methanal.Util.nodeInserted(widget);
+            self.currentResultWidget = widget;
+        });
+        return d;
+    });
+
+
+Methanal.Widgets.FilterListForm = Methanal.View.LiveForm.subclass('Methanal.Widgets.FilterListForm');
+Methanal.Widgets.FilterListForm.methods(
+    function submitSuccess(self, widgetInfo) {
+        return self.widgetParent.setResultWidget(widgetInfo);
     });
