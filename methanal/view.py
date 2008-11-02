@@ -465,7 +465,7 @@ class ItemView(ItemViewBase):
 
         @type switchInPlace: C{bool}
         @param switchInPlace: Switch to item editing mode upon creating
-            a new instance, L{createItem} will be called when this happens
+            a new instance
         """
         super(ItemView, self).__init__(**kw)
         self.switchInPlace = switchInPlace
@@ -474,17 +474,15 @@ class ItemView(ItemViewBase):
     def invoke(self, *a, **kw):
         item = super(ItemView, self).invoke(*a, **kw)
         if self.item is None and item is not None:
+            self.createItem(item)
             if self.switchInPlace:
                 self.item = item
-                self.createItem(item)
             else:
                 return IWebTranslator(item.store).linkTo(item.storeID).decode('ascii')
 
     def createItem(self, item):
         """
         A callback that is invoked when an item is created.
-
-        The form is also switched in place to editing mode.
         """
 
 
