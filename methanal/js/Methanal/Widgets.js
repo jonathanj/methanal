@@ -11,7 +11,7 @@ Methanal.Widgets.QueryList.methods(
 
         self.columnIDs = args.columnIDs;
         if (self.columnAliases === undefined)
-            self.columnAliases = {};
+            self.columnAliases = args.columnAliases;
 
         if (args.rows.length > 0)
             self._rows = args.rows;

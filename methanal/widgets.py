@@ -123,9 +123,11 @@ class QueryList(ThemedElement):
         return [getArgsDict(self)]
 
     def getArgs(self):
-        return {u'columnIDs': [cid for (cid, col) in self.columns],
-                u'rows':      [self.dictifyItem(row, i)
-                               for i, row in enumerate(self.rows)]}
+        return {u'columnIDs':     [cid for cid, col in self.columns],
+                u'columnAliases': dict((cid, col.attribute.doc or None)
+                                       for cid, col in self.columns),
+                u'rows':          [self.dictifyItem(row, i)
+                                   for i, row in enumerate(self.rows)]}
 
     @expose
     def performAction(self, name, rowIndex):
