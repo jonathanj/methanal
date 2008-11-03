@@ -276,17 +276,11 @@ class ItemModel(Model):
 
             self.item = None
             self.itemClass = itemClass
-            self.store = store
         else:
             self.item = item
-            self.itemClass = type(item)
-            self.store = item.store
 
-            if itemClass is not None and itemClass is not self.itemClass:
-                raise ValueError('Passed in item of type %r but itemClass of %r' % (self.itemClass, itemClass))
-
-            if store is not None and store is not self.store:
-                raise ValueError('Passed in item in store %r but store of %r' % (self.store, store))
+        self.itemClass = itemClass or type(item)
+        self.store = store or item.store
 
         self.ignoredAttributes = ignoredAttributes
         params = paramsFromSchema(self.store, self.itemClass, self.item, self.ignoredAttributes)
