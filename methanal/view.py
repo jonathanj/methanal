@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from epsilon.extime import Time
 
-from axiom.attributes import text, integer
+from axiom.attributes import text, integer, timestamp
 
 from nevow.page import renderer
 from nevow.athena import expose
@@ -521,8 +521,9 @@ class ReferenceItemView(ItemView):
 
 
 _inputTypes = {
-    text:    TextInput,
-    integer: IntegerInput}
+    text:       lambda env: TextInput,
+    integer:    lambda env: IntegerInput,
+    timestamp:  lambda env: lambda **kw: DateInput(timezone=env['timezone'], **kw)}
 
-def inputTypeFromAttribute(attr):
-    return _inputTypes[type(attr)]
+def inputTypeFromAttribute(attr, **env):
+    return _inputTypes[type(attr)](env)

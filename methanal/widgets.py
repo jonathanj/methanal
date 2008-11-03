@@ -213,7 +213,7 @@ class SimpleFilterList(FilterList):
     user-specified callback and display the results in a L{QueryList} with the
     desired columns.
     """
-    def __init__(self, store, filterAttrs, callback, resultColumns, **kw):
+    def __init__(self, store, filterAttrs, callback, resultColumns, timezone=None, webTranslator=None, **kw):
         """
         Initialise the filter widget.
 
@@ -231,8 +231,14 @@ class SimpleFilterList(FilterList):
             attribute names specified by the attributes in L{filterAttrs},
             returning result items
 
-        @type resultColumns: L{xmantissa.ixmantissa.IColumn}
+        @type resultColumns: C{list} of L{methanal.imethanal.IColumn}
         @param resultColumns: Columns for display in the result widget
+
+        @type timezone: C{tzinfo}
+        @param timezone: Timezone used for displaying timestamps.
+
+        @type webTranslator: L{xmantissa.ixmantissa.IWebTranslator}
+        @param webTranslator: The translator used for linking items.
         """
         model = Model(callback=callback,
                       params=[paramFromAttribute(store, attr, None)
@@ -242,9 +248,9 @@ class SimpleFilterList(FilterList):
         form.jsClass = u'Methanal.Widgets.FilterListForm'
 
         for attr in filterAttrs:
-            inputTypeFromAttribute(attr)(parent=form, name=attr.attrname)
+            inputTypeFromAttribute(attr, timezone=timezone)(parent=form, name=attr.attrname)
 
-        resultWidget = lambda rows: QueryList(rows=rows, columns=resultColumns)
+        resultWidget = lambda rows: QueryList(rows=rows, columns=resultColumns, webTranslator=webTranslator, timezone=timezone)
 
         super(SimpleFilterList, self).__init__(form=form,
                                                resultWidget=resultWidget,
