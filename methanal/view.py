@@ -371,6 +371,37 @@ class IntegerSelectInput(SelectInput):
         return int(value)
 
 
+class ObjectSelectInput(SelectInput):
+    """
+    L{SelectInput} for arbitrary objects.
+    """
+    def __init__(self, values, **kw):
+        """
+        Initialise the select input.
+
+        @type values: C{iterable} of C{(obj, unicode)}
+        @param values: An iterable of C{(object, description)} pairs
+        """
+        self.objects = objects = []
+        selectValues = []
+        for i, (obj, desc) in enumerate(values):
+            objects.append(obj)
+            selectValues.append((str(i), desc))
+
+        super(ObjectSelectInput, self).__init__(values=selectValues, **kw)
+
+    def invoke(self, data):
+        value = data[self.param.name]
+        if value is not None:
+            try:
+                index = int(value)
+                value = self.objects[index]
+            except ValueError:
+                value = None
+
+        self.param.value = value
+
+
 class MultiSelectInput(ChoiceInput):
     """
     Form widget with a list box that accepts multiple selections.
