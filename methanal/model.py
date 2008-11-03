@@ -151,6 +151,16 @@ class DecimalParameter(ValueParameter):
         self.decimalPlaces = decimalPlaces
 
 
+class StoreIDParameter(ValueParameter):
+    """
+    Reference by storeID.
+    """
+    def __init__(self, itemType, store, **kw):
+        super(StoreIDParameter, self).__init__(**kw)
+        self.itemType = itemType
+        self.store = store
+
+
 def mandatory(value):
     """
     An external constraint that prohibits a value of C{None}.
