@@ -146,7 +146,7 @@ class FilterList(ThemedElement):
 
     Essentially just a form that results in a server-side call, on submission,
     and a result widget.
-    
+
     One particularly common application is a search widget: A form containing
     inputs representing fields to filter by, which, when submitted, results in
     a server-side database query and a QueryList widget.
