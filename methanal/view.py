@@ -390,6 +390,14 @@ class ObjectSelectInput(SelectInput):
 
         super(ObjectSelectInput, self).__init__(values=selectValues, **kw)
 
+    def getValue(self):
+        value = super(ObjectSelectInput, self).getValue()
+
+        try:
+            return self.objects.index(value)
+        except ValueError:
+            return None
+
     def invoke(self, data):
         value = data[self.param.name]
         if value is not None:
