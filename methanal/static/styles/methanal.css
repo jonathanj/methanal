@@ -230,3 +230,21 @@ optgroup option {
    font-weight: bold;
    text-align: center;
 }
+
+.methanal-filter-list {
+    margin: 5px;
+    border: 1px outset #777;
+    background-color: #f4f4f4;
+    padding: 5px;
+}
+
+.methanal-filter-list h2,
+.methanal-filter-list h3 {
+    padding: 0;
+    margin: 0.5em 0;
+}
+
+.methanal-filter-list hr {
+    border: none;
+    border-top: 1px solid #aaa;
+}
