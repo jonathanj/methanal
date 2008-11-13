@@ -12,7 +12,7 @@ from nevow.athena import expose
 from xmantissa.ixmantissa import IWebTranslator
 from xmantissa.webtheme import ThemedElement
 
-from methanal.model import ItemModel
+from methanal.model import ItemModel, Model, paramFromAttribute
 from methanal.util import getArgsDict
 
 
@@ -566,3 +566,19 @@ _inputTypes = {
 
 def inputTypeFromAttribute(attr, **env):
     return _inputTypes[type(attr)](env)
+
+
+def liveFormFromAttributes(store, attributes, callback, doc, **env):
+    """
+    Generate a L{LiveForm}, with inputs, from a sequence of attributes.
+    """
+    model = Model(callback=callback,
+                  params=[paramFromAttribute(store, attr, None)
+                          for attr in attributes],
+                  doc=doc)
+    form = LiveForm(store, model)
+
+    for attr in attributes:
+        inputTypeFromAttribute(attr, **env)(parent=form, name=attr.attrname)
+
+    return form

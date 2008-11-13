@@ -17,9 +17,9 @@ from xmantissa.ixmantissa import IWebTranslator, IColumn as mantissaIColumn
 from xmantissa.webtheme import ThemedElement
 
 from methanal.imethanal import IColumn
-from methanal.model import Model, paramFromAttribute
+from methanal.model import Model
 from methanal.util import getArgsDict
-from methanal.view import LiveForm, inputTypeFromAttribute
+from methanal.view import LiveForm, liveFormFromAttributes
 
 
 class AttributeColumn(object):
@@ -183,6 +183,7 @@ class FilterList(ThemedElement):
         """
         super(FilterList, self).__init__(**kw)
         self.form = form
+        self.form.setFragmentParent(self)
         self.resultWidget = resultWidget
         self.title = title
 
@@ -249,19 +250,15 @@ class SimpleFilterList(FilterList):
         @type webTranslator: L{xmantissa.ixmantissa.IWebTranslator}
         @param webTranslator: The translator used for linking items.
         """
-        model = Model(callback=callback,
-                      params=[paramFromAttribute(store, attr, None)
-                              for attr in filterAttrs],
-                      doc=u'Filter')
-        form = LiveForm(store, model)
+        form = liveFormFromAttributes(store=store,
+                                      attributes=fileAttrs,
+                                      callback=callback,
+                                      doc=u'Filter',
+                                      timezone=timezone)
         form.jsClass = u'Methanal.Widgets.FilterListForm'
-
-        for attr in filterAttrs:
-            inputTypeFromAttribute(attr, timezone=timezone)(parent=form, name=attr.attrname)
 
         resultWidget = lambda rows: QueryList(rows=rows, columns=resultColumns, webTranslator=webTranslator, timezone=timezone)
 
         super(SimpleFilterList, self).__init__(form=form,
                                                resultWidget=resultWidget,
                                                **kw)
-        form.setFragmentParent(self)
