@@ -127,9 +127,18 @@ class QueryList(ThemedElement):
         return [getArgsDict(self)]
 
     def getArgs(self):
-        return {u'columnIDs':     [cid for cid, col in self.columns],
-                u'columnAliases': dict((cid, col.attribute.doc or None)
-                                       for cid, col in self.columns),
+        IDs = []
+        aliases = {}
+        for cid, col in self.columns:
+            IDs.append(cid)
+            if isinstance(col, AttributeColumn):
+                alias = col.attribute.doc
+            else:
+                alias = col
+            aliases[cid] = unicode(alias)
+
+        return {u'columnIDs':     IDs,
+                u'columnAliases': aliases,
                 u'rows':          [self.dictifyItem(row, i)
                                    for i, row in enumerate(self.rows)]}
 
