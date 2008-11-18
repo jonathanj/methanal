@@ -251,7 +251,7 @@ class SimpleFilterList(FilterList):
         @param webTranslator: The translator used for linking items.
         """
         form = liveFormFromAttributes(store=store,
-                                      attributes=fileAttrs,
+                                      attributes=filterAttrs,
                                       callback=callback,
                                       doc=u'Filter',
                                       timezone=timezone)
