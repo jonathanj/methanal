@@ -106,7 +106,12 @@ Methanal.Widgets.QueryList.methods(
         var tr = self.getBody().insertRow(index);
         for (var i = 0; i < self.columnIDs.length; ++i) {
             var cid = self.columnIDs[i];
-            tr.appendChild(self.makeCellElement(cid, rowData));
+            var cell = self.makeCellElement(cid, rowData);
+            if (i == 0) {
+                // Thank you IE6 for failing at life.
+                Methanal.Util.addElementClass(cell, 'first-child');
+            }
+            tr.appendChild(cell);
         }
 
         if (self.hasActions)

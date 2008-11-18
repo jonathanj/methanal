@@ -208,6 +208,12 @@ optgroup option {
     display: block;
 }
 
+.methanal-query-list td:first-child a,
+.methanal-query-list td.first-child a {
+    background: url(/Methanal/static/images/link.gif) no-repeat left center;
+    padding-left: 14px;
+}
+
 .methanal-query-list tr:hover {
     background-color: #eee !important;
 }
