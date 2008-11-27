@@ -1,0 +1,20 @@
+<div class="roll-up-section" xmlns:nevow="http://nevow.com/ns/nevow/0.1" xmlns:athena="http://divmod.org/ns/athena/0.7">
+    <div class="roll-up-bar">
+        <button title="Expand item" id="roll-button" class="roll-down">
+            <athena:handler event="onclick" handler="toggleExpand" />
+            <!--[if lte IE 6]><div class="lozl"></div><![endif]-->
+        </button>
+        <img style="display: none;" id="error-icon" class="roll-up-error" src="/Methanal/static/images/error-icon.png" />
+        <span id="label" class="roll-up-label">
+            <nevow:slot name="label" />
+            <img style="visibility: hidden;" id="throbber" class="throbber" src="/Methanal/static/images/main-throbber.gif" />
+        </span>
+        <nevow:slot name="summary" />
+        <div class="terminator"></div>
+    </div>
+
+    <div class="roll-up-content" id="content" style="display: none;">
+        <!--[if lte IE 6]><div class="lozl"></div><![endif]-->
+        <nevow:slot name="content" />
+    </div>
+</div>

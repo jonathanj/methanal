@@ -192,3 +192,52 @@ Methanal.Widgets.FilterListForm.methods(
     function submitSuccess(self, widgetInfo) {
         return self.widgetParent.setResultWidget(widgetInfo);
     });
+
+
+Methanal.Widgets.Rollup = Nevow.Athena.Widget.subclass('Methanal.Widgets.Rollup');
+Methanal.Widgets.Rollup.methods(
+    function __init__(self, node, params) {
+        Methanal.Widgets.Rollup.upcall(self, '__init__', node);
+        self.expanded = false;
+        self.params = params;
+    },
+
+    function nodeInserted(self) {
+        self.detailsNode = self.nodeById('content');
+        self.buttonNode = self.nodeById('roll-button');
+        self.totalNode = self.nodeById('summary-total');
+        self.summaryDescNode = self.nodeById('summary-description');
+        self.throbberNode = self.nodeById('throbber');
+
+        self.update(self.params);
+    },
+
+    function enableThrobber(self) {
+        self.throbberNode.style.visibility = 'visible';
+    },
+
+    function disableThrobber(self) {
+        self.throbberNode.style.visibility = 'hidden';
+    },
+
+    function toggleExpand(self) {
+        self.expanded = !self.expanded;
+
+        self.detailsNode.style.display = self.expanded ? 'block' : 'none';
+
+        var buttonNode = self.buttonNode;
+        if (self.expanded) {
+            Methanal.Util.addElementClass(buttonNode, 'roll-up');
+            Methanal.Util.removeElementClass(buttonNode, 'roll-down');
+        } else {
+            Methanal.Util.removeElementClass(buttonNode, 'roll-up');
+            Methanal.Util.addElementClass(buttonNode, 'roll-down');
+        }
+        return false;
+    },
+
+    function update(self, params) {
+        var summary = params['summary'];
+        summary = summary === undefined ? '' : summary;
+        Methanal.Util.replaceNodeText(self.summaryDescNode, summary);
+    });

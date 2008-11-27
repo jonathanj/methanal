@@ -10,16 +10,16 @@ from twisted.python.components import registerAdapter
 
 from axiom.item import SQLAttribute
 
-from nevow.athena import expose
+from nevow.tags import invisible
+from nevow.athena import expose, LiveElement
 from nevow.page import renderer
 
 from xmantissa.ixmantissa import IWebTranslator, IColumn as mantissaIColumn
 from xmantissa.webtheme import ThemedElement
 
 from methanal.imethanal import IColumn
-from methanal.model import Model
 from methanal.util import getArgsDict
-from methanal.view import LiveForm, liveFormFromAttributes
+from methanal.view import liveFormFromAttributes
 
 
 class AttributeColumn(object):
@@ -262,3 +262,52 @@ class SimpleFilterList(FilterList):
         super(SimpleFilterList, self).__init__(form=form,
                                                resultWidget=resultWidget,
                                                **kw)
+
+
+class Rollup(ThemedElement):
+    jsClass = u'Methanal.Widgets.Rollup'
+
+    def __init__(self, fragmentParent=None, label=None):
+        super(Rollup, self).__init__(fragmentParent=fragmentParent)
+        self.label = label or u''
+        self._rollupFactory = None
+
+    def _getRollupFactory(self):
+        if self._rollupFactory is None:
+            self._rollupFactory = self.getDocFactory('methanal-rollup')
+        return self._rollupFactory
+
+    def makeRollup(self, summary, content):
+        rollupContent = invisible[self._getRollupFactory().load(preprocessors=LiveElement.preprocessors)]
+        rollupContent.fillSlots('label', self.label)
+        rollupContent.fillSlots('summary', summary)
+        rollupContent.fillSlots('content', content)
+        return rollupContent
+
+    @renderer
+    def rollup(self, req, tag):
+        summary = tag.onePattern('summary')
+        content = tag.onePattern('content')
+        tag[self.makeRollup(summary, content)]
+        return self.liveElement(req, tag)
+
+
+class SimpleRollup(Rollup):
+    fragmentName = 'methanal-simple-rollup'
+
+    def __init__(self, content=None, **kw):
+        super(SimpleRollup, self).__init__(**kw)
+        self.content = content
+
+    def getInitialArguments(self):
+        params = self.getParams()
+        return [params]
+
+    def getParams(self):
+        return {}
+
+    @renderer
+    def rollup(self, req, tag):
+        summary = tag.onePattern('summary')
+        tag[self.makeRollup(summary, self.content)]
+        return self.liveElement(req, tag)

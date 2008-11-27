@@ -6,3 +6,19 @@
     border-color: white;
 }
 
+.unadded .roll-up-label {
+    padding-top: 0.3ex;
+    padding-bottom: 0.3ex;
+}
+
+.roll-up-label {
+    font-size: 130%;
+}
+
+.roll-up-section {
+    border-color: white;
+}
+
+.roll-up-bar img {
+    position: absolute;
+}

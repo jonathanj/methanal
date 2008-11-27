@@ -32,3 +32,63 @@
 .methanal-form-group {
     background-image: none;
 }
+
+.roll-up-bar,
+.roll-up-bar button,
+.roll-up-section {
+    zoom: 1;
+    background-image: none;
+}
+
+.roll-up-bar {
+    margin-bottom: -8px;
+}
+
+.roll-up-section {
+    /* I hate IE6. */
+    background-image: url(/Methanal/static/images/roll-up-bg.jpg);
+}
+
+button .lozl {
+    zoom: 1;
+    width: 32px;
+    height: 32px;
+}
+
+button.roll-down .lozl {
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/roll-down-icon.png', sizingMethod='crop');
+}
+
+button.roll-up .lozl {
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/roll-up-icon.png', sizingMethod='crop');
+}
+
+button.roll-delete .lozl {
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/roll-add-icon.png', sizingMethod='crop');
+}
+
+.roll-up-bar button {
+    filter: none;
+}
+
+.roll-up-content {
+    zoom: 1;
+    background-image: none;
+}
+
+.roll-up-content .lozl {
+    zoom: 1;
+    margin: -10px;
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/shadow-top.png', sizingMethod='scale');
+}
+
+.roll-up-label {
+    width: 10em;
+}
+
+.roll-up-controls button {
+    background-image: none;
+    width: 32px;
+    height: 32px;
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/delete-icon.png', sizingMethod='crop');
+}

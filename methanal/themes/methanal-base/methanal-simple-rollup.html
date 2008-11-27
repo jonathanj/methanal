@@ -1,0 +1,14 @@
+<div xmlns:nevow="http://nevow.com/ns/nevow/0.1" xmlns:athena="http://divmod.org/ns/athena/0.7" nevow:render="rollup">
+    <nevow:invisible nevow:pattern="summary">
+        <div class="roll-up-summary">
+            <span class="summary-description" id="summary-description" />
+        </div>
+        <div class="roll-up-controls">
+            <button style="visibility: hidden;">&#160;</button>
+        </div>
+        <div class="roll-up-total">
+            <span class="summary-total" id="summary-total" />
+        </div>
+    </nevow:invisible>
+    <div nevow:pattern="content" nevow:render="form" />
+</div>
