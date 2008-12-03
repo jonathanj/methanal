@@ -129,6 +129,30 @@ class FormRow(InputContainer):
     jsClass = u'Methanal.View.FormRow'
 
 
+class SimpleForm(ThemedElement):
+    fragmentName = 'methanal-simple-form'
+    jsClass = u'Methanal.View.SimpleForm'
+
+    def __init__(self, store, model, **kw):
+        super(SimpleForm, self).__init__(**kw)
+        self.store = store
+        self.model = model
+        self.formChildren = []
+
+    def getInitialArguments(self):
+        return [dict.fromkeys((unicode(n, 'ascii') for n in self.model.params), 1)]
+
+    def addFormChild(self, child):
+        self.formChildren.append(child)
+
+    def getParameter(self, name):
+        return self.model.params[name]
+
+    @renderer
+    def children(self, req, tag):
+        return self.formChildren
+
+
 class GroupInput(FormGroup):
     """
     Container for grouping controls belonging to a ReferenceParameter submodel.
@@ -137,7 +161,7 @@ class GroupInput(FormGroup):
     """
     jsClass = u'Methanal.View.GroupInput'
 
-    def __init__(self, parent, name, **kw):
+    def __init__(self, parent, name):
         self.param = parent.getParameter(name)
         super(GroupInput, self).__init__(parent=parent, doc=self.param.doc)
         self.model = self.param.model
@@ -568,17 +592,23 @@ def inputTypeFromAttribute(attr, **env):
     return _inputTypes[type(attr)](env)
 
 
-def liveFormFromAttributes(store, attributes, callback, doc, **env):
+def containerFromAttributes(containerFactory, store, attributes, callback, doc, **env):
     """
-    Generate a L{LiveForm}, with inputs, from a sequence of attributes.
+    Generate a container, with inputs, from a sequence of attributes.
     """
     model = Model(callback=callback,
                   params=[paramFromAttribute(store, attr, None)
                           for attr in attributes],
                   doc=doc)
-    form = LiveForm(store, model)
+
+    container = containerFactory(model)
 
     for attr in attributes:
-        inputTypeFromAttribute(attr, **env)(parent=form, name=attr.attrname)
+        inputTypeFromAttribute(attr, **env)(parent=container, name=attr.attrname)
 
-    return form
+    return container
+
+
+def liveFormFromAttributes(store, attributes, callback, doc, **env):
+    fact = lambda model: LiveForm(store, model)
+    return containerFromAttributes(fact, store, attributes, callback, doc, **env)
