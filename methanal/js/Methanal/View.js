@@ -428,6 +428,24 @@ Methanal.View.FormRow.methods(
     });
 
 
+Methanal.View.SimpleForm = Methanal.View.LiveForm.subclass('Methanal.View.SimpleForm');
+Methanal.View.SimpleForm.methods(
+    function __init__(self, node, controlNames) {
+        Methanal.View.SimpleForm.upcall(self, '__init__', node, true, controlNames);
+    },
+
+    function nodeInserted(self) {
+    },
+
+    function setValid(self) {
+        self.widgetParent.clearError();
+    },
+
+    function setInvalid(self) {
+        self.widgetParent.setError('');
+    });
+
+
 Methanal.View.GroupInput = Methanal.View.FormBehaviour.subclass('Methanal.View.GroupInput');
 Methanal.View.GroupInput.methods(
     function __init__(self, node, name, controlNames) {

@@ -19,7 +19,8 @@ from xmantissa.webtheme import ThemedElement
 
 from methanal.imethanal import IColumn
 from methanal.util import getArgsDict
-from methanal.view import liveFormFromAttributes
+from methanal.view import liveFormFromAttributes, containerFromAttributes, ObjectSelectInput, SimpleForm, FormInput
+from methanal.model import ValueParameter
 
 
 class AttributeColumn(object):
@@ -311,3 +312,49 @@ class SimpleRollup(Rollup):
         summary = tag.onePattern('summary')
         tag[self.makeRollup(summary, self.content)]
         return self.liveElement(req, tag)
+
+
+class Lookup(FormInput):
+    fragmentName = 'methanal-lookup'
+    jsClass = u'Methanal.Widgets.Lookup'
+
+    def __init__(self, form, populator, describer, objects=None, **kw):
+        if objects is None:
+            objects = []
+
+        super(Lookup, self).__init__(**kw)
+
+        self.form = form
+        self.form.setFragmentParent(self)
+        self.populator = populator
+        self.describer = describer
+        self.objects = objects
+
+    @expose
+    def populate(self, *a):
+        self.objects = list(self.populator(*a))
+        return list(enumerate(self.describer(o) for o in self.objects))
+
+    @renderer
+    def filterForm(self, req, tag):
+        return tag[self.form]
+
+
+class SimpleLookup(Lookup):
+    def __init__(self, store, filterAttrs, timezone=None, **kw):
+        fact = lambda model: SimpleForm(store=store, model=model)
+        form = containerFromAttributes(containerFactory=fact,
+                                       store=store,
+                                       attributes=filterAttrs,
+                                       callback=None,
+                                       doc=None,
+                                       timezone=timezone)
+        form.jsClass = u'Methanal.Widgets.SimpleLookupForm'
+
+        super(SimpleLookup, self).__init__(form=form, **kw)
+
+        form.model.params['__results'] = ValueParameter(name='__results',
+                                                        doc=u'Result')
+
+        values = [(o, self.describer(o)) for o in self.objects]
+        ObjectSelectInput(parent=form, name='__results', values=values)

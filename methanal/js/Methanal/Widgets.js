@@ -1,6 +1,7 @@
 // import Nevow.Athena
 // import Methanal.Util
 // import Methanal.View
+// import Methanal.Validators
 
 
 Methanal.Widgets.QueryList = Nevow.Athena.Widget.subclass('Methanal.Widgets.QueryList');
@@ -240,4 +241,55 @@ Methanal.Widgets.Rollup.methods(
         var summary = params['summary'];
         summary = summary === undefined ? '' : summary;
         Methanal.Util.replaceNodeText(self.summaryDescNode, summary);
+    });
+
+
+Methanal.Widgets.Lookup = Methanal.View.FormInput.subclass('Methanal.Widgets.Lookup');
+
+
+Methanal.Widgets.SimpleLookupForm = Methanal.View.SimpleForm.subclass('Methanal.Widgets.SimpleLookupForm');
+Methanal.Widgets.SimpleLookupForm.methods(
+    function __init__(self, node, controlNames) {
+        Methanal.Widgets.SimpleLookupForm.upcall(self, '__init__', node, controlNames);
+
+        var V = Methanal.Validators;
+        self.addValidators([
+            [['__results'], [V.notNull]]]);
+    },
+
+    function setOptions(self, values) {
+        var resultsWidget = self.getControl('__results');
+        var resultsNode = resultWidgets.inputNode;
+        while (resultsNode.options.length)
+            resultsNode.remove(0);
+
+        var doc = self.node.ownerDocument;
+        for (var i = 0; i < values.length; ++i) {
+            var optionNode = doc.createElement('option');
+            optionNode.value = values[i][0];
+            optionNode.appendChild(doc.createTextNode(values[i][1]));
+            resultsNode.appendChild(optionNode);
+        }
+
+        var value = resultsNode.options.length > 0 ? resultsNode.options[0] : null;
+        resultWidgets.setValue(value);
+        resultWidgets.onChange();
+    },
+
+    function valueChanged(self, control) {
+        Methanal.Widgets.SimpleLookupForm.upcall(self, 'valueChanged', control);
+
+        if (control.name === '__results')
+            return;
+
+        var values = {};
+        for (var controlName in self.controls) {
+            var control = self.getControl(controlName);
+            values[controlName] = control.getValue();
+        }
+
+        var d = self.widgetParent.callRemote('populate', values);
+        d.addCallback(function (values) {
+            self.setOptions(values);
+        });
     });
