@@ -437,12 +437,16 @@ Methanal.View.SimpleForm.methods(
     function nodeInserted(self) {
     },
 
+    function getContainer(self) {
+        return self.widgetParent;
+    },
+
     function setValid(self) {
-        self.widgetParent.clearError();
+        self.getContainer().clearError();
     },
 
     function setInvalid(self) {
-        self.widgetParent.setError('');
+        self.getContainer().setError('');
     });
 
 
@@ -722,15 +726,29 @@ Methanal.View.SelectInput.methods(
         node.insertBefore(labelNode, node.options[0]);
     },
 
-    function addDummyOption(self) {
+    function add(self, value, label, before) {
         var node = self.inputNode;
         var doc = node.ownerDocument;
         var optionNode = doc.createElement('option');
-        optionNode.value = '';
-        optionNode.appendChild(doc.createTextNode(self.label));
+        optionNode.value = value;
+        optionNode.appendChild(doc.createTextNode(label));
+
+        // If "before" is null then we don't add the node, if it's undefined
+        // then we'll append the node otherwise it'll be inserted before
+        // "before".
+        if (before !== null) {
+            before = before === undefined ? null : before;
+            node.add(optionNode, before);
+        }
+        return optionNode;
+    },
+
+    function addDummyOption(self) {
+        var node = self.inputNode;
+        var optionNode = self.add('', self.label, null);
         Methanal.Util.addElementClass(optionNode, 'embedded-label');
         Methanal.Util.addElementClass(node, 'embedded-label');
-        self.insertEmbeddedLabel(node, optionNode);
+        self.insertEmbeddedLabel(node, optionNode)
     },
 
     function setValue(self, value) {

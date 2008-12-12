@@ -399,6 +399,7 @@ class ObjectSelectInput(SelectInput):
     """
     L{SelectInput} for arbitrary objects.
     """
+
     def __init__(self, values, **kw):
         """
         Initialise the select input.
@@ -413,6 +414,19 @@ class ObjectSelectInput(SelectInput):
             selectValues.append((str(i), desc))
 
         super(ObjectSelectInput, self).__init__(values=selectValues, **kw)
+
+    def addObject(self, obj):
+        i = unicode(len(self.objects))
+        self.objects.append(obj)
+        return i
+
+    def removeObject(self, index):
+        # XXX: HACK: ergh, we should probably a.) keep our own counter (instead
+        # of using len(objects)) and b.) use a dict instead of a list, so that
+        # removing items isn't a huge mission
+        o = self.objects[index]
+        self.objects[index] = None
+        return o
 
     def getValue(self):
         value = super(ObjectSelectInput, self).getValue()
