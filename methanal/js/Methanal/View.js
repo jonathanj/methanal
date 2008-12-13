@@ -1074,6 +1074,44 @@ Methanal.View.DecimalInput.methods(
     });
 
 
+Methanal.View.PercentInput = Methanal.View.DecimalInput.subclass('Methanal.View.PercentInput');
+Methanal.View.PercentInput.methods(
+    function __init__(self, node, args) {
+        // The value is represented as fractional percentage, but is displayed (and inputted) as
+        // though it were an integer percentage. We don't want two places of non-existant precision.
+        args.decimalPlaces = args.decimalPlaces - 2;
+        Fusion.Widgets.PercentInput.upcall(self, '__init__', node, args);
+        self._regex = '^\\d*(\\.\\d{0,' + self.decimalPlaces.toString() + '})?%?$';
+    },
+
+    function getRepr(self, value) {
+        return (value * 100).toFixed(self.decimalPlaces) + '%';
+    },
+
+    function getValue(self) {
+        var value = Fusion.Widgets.PercentInput.upcall(self, 'getValue');
+        if (value === undefined || value === null)
+            return value;
+
+        return value / 100;
+    },
+
+    function setValue(self, value) {
+        if (value !== undefined && value !== null)
+            value *= 100;
+        Fusion.Widgets.PercentInput.upcall(self, 'setValue', value);
+    },
+
+    function validateBounds(self, value) {
+        if (self.minValue === null && self.maxValue === null)
+            return undefined;
+        if (self.minValue !== null && value < self.minValue)
+            return 'Value must be greater than or equal to ' + (self.minValue * 100) + '%';
+        else if (self.maxValue !== null && value > self.maxValue)
+            return 'Value must be less than or equal to ' + (self.maxValue * 100) + '%'
+    });
+
+
 Methanal.View.IntegerInput = Methanal.View.DecimalInput.subclass('Methanal.View.IntegerInput');
 Methanal.View.IntegerInput.methods(
     function __init__(self, node, args) {

@@ -326,6 +326,13 @@ class DecimalInput(TextInput):
             self.param.value = Decimal(str(value))
 
 
+class PercentInput(DecimalInput):
+    jsClass = u'Fusion.Widgets.PercentInput'
+
+    def __init__(self, minValue=Decimal('0.0000'), maxValue=Decimal('1.0000'), showRepr=True, **kw):
+        super(PercentInput, self).__init__(showRepr=showRepr, minValue=minValue, maxValue=maxValue, **kw)
+
+
 class IntegerInput(DecimalInput):
     """
     Form widget for entering integers.
