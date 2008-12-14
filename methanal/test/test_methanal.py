@@ -9,8 +9,10 @@ from nevow.testutil import FragmentWrapper, renderLivePage
 
 from xmantissa.website import WebSite
 
-from methanal.model import (Model, ItemModel, constraint, ConstraintError,
-    ValueParameter, EnumerationParameter, ListParameter)
+from methanal import errors
+from methanal.model import (
+    Model, ItemModel, constraint, ValueParameter, EnumerationParameter,
+    ListParameter)
 from methanal.view import LiveForm, FormGroup, ItemView, GroupInput, IntegerInput
 
 _marker = object()
@@ -28,7 +30,7 @@ class MethanalTests(TestCase):
 
         model = Model([param])
         param.value = 3
-        self.assertRaises(ConstraintError, model.process)
+        self.assertRaises(errors.ConstraintError, model.process)
 
     def testEnumeration(self):
         param = EnumerationParameter(name='param', values=range(5))
