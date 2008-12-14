@@ -1080,7 +1080,7 @@ Methanal.View.PercentInput.methods(
         // The value is represented as fractional percentage, but is displayed (and inputted) as
         // though it were an integer percentage. We don't want two places of non-existant precision.
         args.decimalPlaces = args.decimalPlaces - 2;
-        Fusion.Widgets.PercentInput.upcall(self, '__init__', node, args);
+        Methanal.View.PercentInput.upcall(self, '__init__', node, args);
         self._regex = '^\\d*(\\.\\d{0,' + self.decimalPlaces.toString() + '})?%?$';
     },
 
@@ -1089,7 +1089,7 @@ Methanal.View.PercentInput.methods(
     },
 
     function getValue(self) {
-        var value = Fusion.Widgets.PercentInput.upcall(self, 'getValue');
+        var value = Methanal.View.PercentInput.upcall(self, 'getValue');
         if (value === undefined || value === null)
             return value;
 
@@ -1099,7 +1099,7 @@ Methanal.View.PercentInput.methods(
     function setValue(self, value) {
         if (value !== undefined && value !== null)
             value *= 100;
-        Fusion.Widgets.PercentInput.upcall(self, 'setValue', value);
+        Methanal.View.PercentInput.upcall(self, 'setValue', value);
     },
 
     function validateBounds(self, value) {
