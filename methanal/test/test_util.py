@@ -1,6 +1,6 @@
 from twisted.trial.unittest import TestCase
 
-from methanal.util import collectMethods, getArgsDict
+from methanal.util import collectMethods, getArgsDict, Porthole
 
 
 class MethodCollectorTests(TestCase):
@@ -94,3 +94,82 @@ class MethodCollectorTests(TestCase):
                 return {'foo': 1}
 
         self.assertRaises(TypeError, getArgsDict, A())
+
+
+class PortholeTests(TestCase):
+    """
+    Tests for L{Porthole}.
+    """
+    def setUp(self):
+        """
+        Set up a basic test porthole.
+        """
+        self.emitter = Porthole()
+
+    def test_noObservers(self):
+        """
+        Emitting an event when there are no observers does nothing.
+        """
+        self.emitter.emitEvent(u'anEvent')
+        self.assertEqual(self.emitter.observers, [])
+
+    def test_addObserver(self):
+        """
+        Invoking C{addObserver} adds an observer to the list, and returns a
+        callable that can be used to remove the observer again.
+        """
+        r = self.emitter.addObserver(None)
+        self.assertEqual(self.emitter.observers, [None])
+        r()
+        self.assertEqual(self.emitter.observers, [])
+
+    def test_twoObservers(self):
+        """
+        Emitting an event when there are two observers causes two callbacks to
+        occur.
+        """
+        self.observed = 0
+        def _obs(event):
+            self.observed += 1
+
+        self.emitter.addObserver(_obs)
+        self.emitter.addObserver(_obs)
+        self.emitter.emitEvent(u'anEvent')
+        self.assertEqual(self.observed, 2)
+        self.assertEqual(len(self.emitter.observers), 2)
+
+    def test_reentrancy(self):
+        """
+        Adding or removing observers from within an observer callback have no
+        effect on the event currently being emitted.
+        """
+        def _obs(event):
+            self.observed += 1
+
+        def _obsWithRemove(event):
+            self.observed += 1
+            r()
+            r2()
+
+        def _obsWithAdd(event):
+            self.observed += 1
+            self.emitter.addObserver(_obsWithAdd)
+
+        r = self.emitter.addObserver(_obsWithRemove)
+        r2 = self.emitter.addObserver(_obs)
+
+        self.observed = 0
+        self.emitter.emitEvent(u'anEvent')
+        self.assertEqual(self.observed, 2)
+        self.assertEqual(len(self.emitter.observers), 0)
+
+        self.emitter.addObserver(_obsWithAdd)
+        self.observed = 0
+        self.emitter.emitEvent(u'anEvent')
+        self.assertEqual(self.observed, 1)
+        self.assertEqual(len(self.emitter.observers), 2)
+
+        self.observed = 0
+        self.emitter.emitEvent(u'anEvent')
+        self.assertEqual(self.observed, 2)
+        self.assertEqual(len(self.emitter.observers), 4)
