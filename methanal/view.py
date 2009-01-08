@@ -65,7 +65,7 @@ class LiveForm(ThemedElement):
 
     @renderer
     def button(self, req, tag):
-        if self.viewOnly:
+        if self.viewOnly or self.model.doc is None:
             return []
         return tag[self.model.doc]
 
