@@ -34,6 +34,8 @@ class LiveForm(ThemedElement):
         super(LiveForm, self).__init__(**kw)
         self.store = store
         self.model = model
+        if self.model.doc is None:
+            viewOnly = True
         self.viewOnly = viewOnly
         self.formChildren = []
 
@@ -65,7 +67,7 @@ class LiveForm(ThemedElement):
 
     @renderer
     def button(self, req, tag):
-        if self.viewOnly or self.model.doc is None:
+        if self.viewOnly:
             return []
         return tag[self.model.doc]
 
