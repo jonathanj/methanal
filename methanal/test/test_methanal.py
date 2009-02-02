@@ -77,7 +77,8 @@ class AutoSchemaTests(TestCase):
         """
         Test that parameters are correctly synthesized from an Item schema.
         """
-        model = ItemModel(itemClass=_DummyItem)
+        store = Store()
+        model = ItemModel(itemClass=_DummyItem, store=store)
         params = model.params
 
         self.assertEquals(params.keys(), self.expectedParams.keys())
@@ -93,7 +94,8 @@ class AutoSchemaTests(TestCase):
         """
         Test that ignoredAttributes is respected.
         """
-        model = ItemModel(itemClass=_DummyItem, ignoredAttributes=set(['tl']))
+        store = Store()
+        model = ItemModel(itemClass=_DummyItem, store=store, ignoredAttributes=set(['tl']))
         params = model.params
         self.assertNotIn('tl', params)
 

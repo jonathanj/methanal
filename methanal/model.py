@@ -17,7 +17,7 @@ constraint = Expose(
     """)
 
 
-class ValueParameter(object):
+class Value(object):
     """
     A simple value in a form model.
 
@@ -30,12 +30,22 @@ class ValueParameter(object):
     @ivar doc: A long description of this parameter
     """
     def __init__(self, name, value=None, doc=None, **kw):
-        super(ValueParameter, self).__init__(**kw)
+        super(Value, self).__init__(**kw)
         self.name = name
         self.value = value
         if doc is None:
             doc = name.decode('ascii')
         self.doc = doc
+
+    @classmethod
+    def fromAttr(cls, attr, **kw):
+        """
+        Construct a parameter from an Axiom attribute.
+        """
+        kw.setdefault('name', attr.name)
+        kw.setdefault('value', attr.default)
+        kw.setdefault('doc', attr.doc or None)
+        return cls(**kw)
 
     def validate(self, value):
         """
@@ -66,6 +76,9 @@ class ValueParameter(object):
         if error:
             raise errors.ConstraintError(error)
         return self.value
+
+# XXX: backwards compat, deprecate this
+ValueParameter = Value
 
 
 class ListParameter(ValueParameter):
@@ -142,13 +155,20 @@ class ReferenceParameter(ValueParameter):
         return self.model.process()
 
 
-class DecimalParameter(ValueParameter):
+class Decimal(ValueParameter):
     """
     A decimal number parameter.
     """
     def __init__(self, decimalPlaces, **kw):
-        super(DecimalParameter, self).__init__(**kw)
+        super(Decimal, self).__init__(**kw)
         self.decimalPlaces = decimalPlaces
+
+    @classmethod
+    def fromAttr(cls, attr, **kw):
+        kw.setdefault('decimalPlaces', attr.decimalPlaces)
+        return super(Decimal, cls).fromAttr(attr, **kw)
+
+DecimalParameter = Decimal
 
 
 class StoreIDParameter(ValueParameter):
