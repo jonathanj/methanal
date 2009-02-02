@@ -215,11 +215,14 @@ class Model(object):
         @param doc: A description for the model's action
         """
         self.params = {}
-        for param in params:
-            self.params[param.name] = param
+        self.attachParams(params)
 
         self.callback = callback
         self.doc = doc
+
+    def attachParams(self, params):
+        for param in params:
+            self.params[param.name] = param
 
     def process(self):
         data = self.getData()
@@ -281,11 +284,11 @@ def paramsFromSchema(store, itemClass, item=None, ignoredAttributes=set()):
         yield paramFromAttribute(store, attr, value, name)
 
 
-class ItemModel(Model):
+class ItemModelBase(Model):
     """
-    A model automatically synthesized from an Item class or instance.
+    A model backed by an item or item class.
     """
-    def __init__(self, item=None, itemClass=None, store=None, ignoredAttributes=set(), **kw):
+    def __init__(self, item=None, itemClass=None, store=None, doc=u'Save', **kw):
         """
         Initialise model.
 
@@ -303,11 +306,9 @@ class ItemModel(Model):
             create an instance for, or C{None}
 
         @type store: C{axiom.store.Store}
-
-        @type ignoredAttibutes: C{container}
-        @param ignoredAttributes: Attribute names to ignore when synthesizing
-            the model
         """
+        super(ItemModelBase, self).__init__(callback=self.storeData, doc=doc, **kw)
+
         if item is None:
             if itemClass is None:
                 raise ValueError('You must pass in either item or itemClass')
@@ -319,11 +320,6 @@ class ItemModel(Model):
 
         self.itemClass = itemClass or type(item)
         self.store = store or item.store
-
-        self.ignoredAttributes = ignoredAttributes
-        params = paramsFromSchema(self.store, self.itemClass, self.item, self.ignoredAttributes)
-
-        super(ItemModel, self).__init__(params=params, callback=self.storeData, doc=u'Save', **kw)
 
     def storeData(self, **data):
         """
@@ -347,6 +343,26 @@ class ItemModel(Model):
             return self.store.transact(_storeData)
         else:
             return _storeData()
+
+
+class ItemModel(ItemModelBase):
+    """
+    A model automatically synthesized from an Item class or instance.
+    """
+    def __init__(self, item=None, itemClass=None, store=None, ignoredAttributes=None, **kw):
+        """
+        @type ignoredAttibutes: C{container}
+        @param ignoredAttributes: Attribute names to ignore when synthesizing
+            the model
+        """
+        super(ItemModel, self).__init__(item=item, itemClass=itemClass, store=store, params=[], **kw)
+
+        if ignoredAttributes is None:
+            ignoredAttributes = set()
+        self.ignoredAttributes = ignoredAttributes
+
+        params = paramsFromSchema(self.store, self.itemClass, self.item, self.ignoredAttributes)
+        self.attachParams(params)
 
 
 def modelFromItem(item, ignoredAttributes=set()):
