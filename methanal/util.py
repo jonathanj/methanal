@@ -1,3 +1,4 @@
+from twisted.python import log
 from twisted.python.failure import Failure
 
 
