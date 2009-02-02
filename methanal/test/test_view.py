@@ -4,7 +4,7 @@ from twisted.trial.unittest import TestCase
 
 from epsilon.extime import FixedOffset, Time
 
-from methanal.model import ValueParameter, Model
+from methanal.model import Value
 from methanal.view import DateInput
 
 class MockParent(object):
@@ -24,7 +24,7 @@ class MockParent(object):
 
 class TestDateInput(TestCase):
     def setUp(self):
-        self.param = ValueParameter('test')
+        self.param = Value('test')
         self.control = DateInput(parent=MockParent(self.param), name='test', timezone=FixedOffset(0, 0))
 
     def test_getValue(self):

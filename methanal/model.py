@@ -42,7 +42,7 @@ class Value(object):
         """
         Construct a parameter from an Axiom attribute.
         """
-        kw.setdefault('name', attr.name)
+        kw.setdefault('name', attr.attrname)
         kw.setdefault('value', attr.default)
         kw.setdefault('doc', attr.doc or None)
         return cls(**kw)
@@ -81,7 +81,7 @@ class Value(object):
 ValueParameter = Value
 
 
-class ListParameter(ValueParameter):
+class List(Value):
     """
     A parameter consisting of multiple values.
     """
@@ -96,8 +96,10 @@ class ListParameter(ValueParameter):
             if value is not None:
                 return u'Value is not an iterable'
 
+ListParameter = List
 
-class EnumerationParameter(ValueParameter):
+
+class Enum(Value):
     """
     An enumeration value in a form model.
 
@@ -107,7 +109,7 @@ class EnumerationParameter(ValueParameter):
     @ivar values: a sequence of values present in the enumeration
     """
     def __init__(self, values, **kw):
-        super(EnumerationParameter, self).__init__(**kw)
+        super(Enum, self).__init__(**kw)
         self.values = values
 
     @constraint
@@ -118,8 +120,10 @@ class EnumerationParameter(ValueParameter):
         if value not in self.values:
             return u'Value not present in enumeration'
 
+EnumerationParameter = Enum
 
-class MultiEnumerationParameter(EnumerationParameter):
+
+class MultiEnumerationParameter(Enum):
     """
     A multi-value enumeration parameter.
     """
@@ -133,7 +137,7 @@ class MultiEnumerationParameter(EnumerationParameter):
                 return u'Value not present in enumeration'
 
 
-class ReferenceParameter(ValueParameter):
+class ReferenceParameter(Value):
     """
     XXX: hax :<
 
@@ -142,6 +146,10 @@ class ReferenceParameter(ValueParameter):
     def __init__(self, model, **kw):
         self.model = model
         super(ReferenceParameter, self).__init__(**kw)
+
+    @classmethod
+    def fromAttr(cls, attr, model, **kw):
+        return super(ReferenceParameter, cls).fromAttr(attr, model=model)
 
     @propertyMaker
     def value():
@@ -155,7 +163,7 @@ class ReferenceParameter(ValueParameter):
         return self.model.process()
 
 
-class Decimal(ValueParameter):
+class Decimal(Value):
     """
     A decimal number parameter.
     """
@@ -171,7 +179,7 @@ class Decimal(ValueParameter):
 DecimalParameter = Decimal
 
 
-class StoreIDParameter(ValueParameter):
+class StoreIDParameter(Value):
     """
     Reference by storeID.
     """
@@ -226,11 +234,11 @@ class Model(object):
 
 
 _paramTypes = {
-    integer: ValueParameter,
-    text: ValueParameter,
-    boolean: ValueParameter,
+    integer: Value,
+    text: Value,
+    boolean: Value,
     textlist: ListParameter,
-    timestamp: ValueParameter}
+    timestamp: Value}
 
 def paramFromAttribute(store, attr, value, name=None):
     doc = attr.doc or None
@@ -353,3 +361,8 @@ def modelFromItemClass(itemClass, store=None, ignoredAttributes=set()):
     Automatically synthesize a model from an Item class.
     """
     return ItemModel(itemClass=itemClass, store=store, ignoredAttributes=ignoredAttributes)
+
+
+def loadFromItem(model, item):
+    for name, param in model.params.iteritems():
+        param.value = getattr(item, name)

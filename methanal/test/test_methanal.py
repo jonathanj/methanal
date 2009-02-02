@@ -10,9 +10,8 @@ from nevow.testutil import FragmentWrapper, renderLivePage
 from xmantissa.website import WebSite
 
 from methanal import errors
-from methanal.model import (
-    Model, ItemModel, constraint, ValueParameter, EnumerationParameter,
-    ListParameter)
+from methanal.model import (Model, ItemModel, constraint, Value, Enum, List,
+    loadFromItem)
 from methanal.view import LiveForm, FormGroup, ItemView, GroupInput, IntegerInput
 
 _marker = object()
@@ -23,7 +22,7 @@ class MethanalTests(TestCase):
             if value != 5:
                 return u'Value must be 5'
 
-        param = ValueParameter(name='param')
+        param = Value(name='param')
         param._constraint = constraint(_constraint)
         self.assertFalse(param.isValid(4))
         self.assertTrue(param.isValid(5))
@@ -33,21 +32,21 @@ class MethanalTests(TestCase):
         self.assertRaises(errors.ConstraintError, model.process)
 
     def testEnumeration(self):
-        param = EnumerationParameter(name='param', values=range(5))
+        param = Enum(name='param', values=range(5))
         self.assertTrue(param.isValid(3))
         self.assertFalse(param.isValid(10))
 
     def testProcessing(self):
         model = Model(
             params=[
-                ValueParameter(name='foo', value=4),
-                ValueParameter(name='bar', value=u'quux')])
+                Value(name='foo', value=4),
+                Value(name='bar', value=u'quux')])
         result = model.process()
         self.assertEquals(result, dict(foo=4, bar=u'quux'))
 
 class ParameterTests(TestCase):
     def testEnumerationValidation(self):
-        param = ListParameter(name='foo')
+        param = List(name='foo')
         self.assertTrue(param.isValid([]))
         self.assertTrue(param.isValid(None))
         self.assertFalse(param.isValid(5))
@@ -63,11 +62,45 @@ class _DummyChildItem(Item):
 class _DummyParentItem(Item):
     r = reference(reftype=_DummyChildItem, doc=u'dummy reference')
 
+
+class AttributeTests(TestCase):
+    def test_valueParamNoDoc(self):
+        param = Value.fromAttr(_DummyItem.i)
+        self.assertIdentical(type(param), Value)
+        self.assertEqual(param.name, 'i')
+        self.assertEqual(param.value, 5)
+        self.assertEqual(param.doc, 'i')
+
+    def test_valueParam(self):
+        param = Value.fromAttr(_DummyItem.t)
+        self.assertIdentical(type(param), Value)
+        self.assertEqual(param.name, 't')
+        self.assertEqual(param.value, None)
+        self.assertEqual(param.doc, 'param t')
+
+    def test_listParam(self):
+        param = List.fromAttr(_DummyItem.tl)
+        self.assertIdentical(type(param), List)
+        self.assertEqual(param.name, 'tl')
+        self.assertEqual(param.value, None)
+        self.assertEqual(param.doc, 'param tl')
+
+
+class ItemUtilityTests(TestCase):
+    def test_loadFromItem(self):
+        item = _DummyItem(i=55, t=u'lulz')
+        model = Model(params=[Value.fromAttr(_DummyItem.i),
+                              Value.fromAttr(_DummyItem.t)])
+        loadFromItem(model, item)
+        self.assertEqual(model.params['i'].value, item.i)
+        self.assertEqual(model.params['t'].value, item.t)
+
+
 class AutoSchemaTests(TestCase):
     expectedParams = {
-        'i': (ValueParameter(name='i', doc=u'i'), 5, 5),
-        't': (ValueParameter(name='t', doc=u'param t'), None, u'text'),
-        'tl': (ListParameter(name='tl', doc=u'param tl'), None, [u'text1', u'text2']),
+        'i': (Value(name='i', doc=u'i'), 5, 5),
+        't': (Value(name='t', doc=u'param t'), None, u'text'),
+        'tl': (List(name='tl', doc=u'param tl'), None, [u'text1', u'text2']),
         }
 
     def setUp(self):
@@ -165,8 +198,8 @@ class LiveFormTests(TestCase):
 
         self.model = Model(
             params=[
-                ValueParameter(name='foo', value=4),
-                ValueParameter(name='bar', value=u'quux')])
+                Value(name='foo', value=4),
+                Value(name='bar', value=u'quux')])
 
     def testProcess(self):
         view = LiveForm(self.store, self.model)
