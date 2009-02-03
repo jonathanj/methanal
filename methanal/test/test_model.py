@@ -261,12 +261,3 @@ class GroupInputTests(TestCase):
         view.invoke({u'r': {u'i': 6}})
 
         self.assertEquals(dummyParent.r.i, 6)
-
-    def testLegend(self):
-        dummyParent = _DummyParentItem(store=self.store, r=None)
-        view = _GroupTestView(item=dummyParent, switchInPlace=True)
-
-        def _cb(output):
-            self.assertIn(u'dummy reference', output)
-
-        return renderLivePage(FragmentWrapper(view)).addCallback(_cb)
