@@ -201,7 +201,7 @@ class Model(object):
     """
     A Methanal form model.
     """
-    def __init__(self, params, callback=lambda **d: d, doc=u''):
+    def __init__(self, params=[], callback=lambda **d: d, doc=u''):
         """
         Initialise the model.
 
@@ -220,9 +220,23 @@ class Model(object):
         self.callback = callback
         self.doc = doc
 
+    def attach(self, param):
+        """
+        Attach a parameter to this model.
+
+        @param param: The parameter to attach.
+        """
+        self.params[param.name] = param
+
     def attachParams(self, params):
+        """
+        Attach multiple parameters to this model.
+
+        @param params: The parameters to attach.
+        @type param: C{list} of params
+        """
         for param in params:
-            self.params[param.name] = param
+            self.attach(param)
 
     def process(self):
         data = self.getData()

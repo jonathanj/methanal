@@ -261,3 +261,20 @@ class GroupInputTests(TestCase):
         view.invoke({u'r': {u'i': 6}})
 
         self.assertEquals(dummyParent.r.i, 6)
+
+
+class ModelTests(TestCase):
+    def test_attach(self):
+        model = Model()
+        p = Value(name='foo')
+        model.attach(p)
+        self.assertIdentical(model.params['foo'], p)
+
+    def test_attachParams(self):
+        model = Model()
+        p1 = Value(name='foo')
+        p2 = Value(name='bar')
+
+        model.attachParams([p1, p2])
+        self.assertIdentical(model.params['foo'], p1)
+        self.assertIdentical(model.params['bar'], p2)
