@@ -163,30 +163,36 @@ class ReferenceParameter(Value):
         return self.model.process()
 
 
-class Decimal(Value):
+class DecimalValue(Value):
     """
     A decimal number parameter.
     """
     def __init__(self, decimalPlaces, **kw):
-        super(Decimal, self).__init__(**kw)
+        super(DecimalValue, self).__init__(**kw)
         self.decimalPlaces = decimalPlaces
 
     @classmethod
     def fromAttr(cls, attr, **kw):
         kw.setdefault('decimalPlaces', attr.decimalPlaces)
-        return super(Decimal, cls).fromAttr(attr, **kw)
+        return super(DecimalValue, cls).fromAttr(attr, **kw)
 
-DecimalParameter = Decimal
+DecimalParameter = DecimalValue
 
 
-class StoreIDParameter(Value):
+class ForeignRef(Value):
     """
-    Reference by storeID.
+    XXX: Describe me.
     """
     def __init__(self, itemType, store, **kw):
-        super(StoreIDParameter, self).__init__(**kw)
+        super(ForeignRef, self).__init__(**kw)
         self.itemType = itemType
         self.store = store
+
+    @classmethod
+    def fromAttr(cls, attr, store, **kw):
+        return super(ForeignRef, cls).fromAttr(attr, itemType=attr.reftype, store=store, **kw)
+
+StoreIDParameter = ForeignRef
 
 
 def mandatory(value):
@@ -215,28 +221,19 @@ class Model(object):
         @param doc: A description for the model's action
         """
         self.params = {}
-        self.attachParams(params)
+        self.attach(*params)
 
         self.callback = callback
         self.doc = doc
 
-    def attach(self, param):
+    def attach(self, *params):
         """
-        Attach a parameter to this model.
+        Attach parameters to this model.
 
-        @param param: The parameter to attach.
-        """
-        self.params[param.name] = param
-
-    def attachParams(self, params):
-        """
-        Attach multiple parameters to this model.
-
-        @param params: The parameters to attach.
-        @type param: C{list} of params
+        @param *params: The parameters to attach.
         """
         for param in params:
-            self.attach(param)
+            self.params[param.name] = param
 
     def process(self):
         data = self.getData()
@@ -348,15 +345,30 @@ class ItemModelBase(Model):
         def _storeData():
             if self.item is None:
                 self.item = self.itemClass(store=self.store, **data)
+                self.createItem(self.item)
             else:
                 for name, value in data.iteritems():
                     setattr(self.item, name, value)
-            return self.item
+            return self.stored(self.item)
 
         if self.store is not None:
             return self.store.transact(_storeData)
         else:
             return _storeData()
+
+    def createItem(self, item):
+        """
+        Callback for item creation.
+
+        @param item: The newly-created item.
+        """
+
+    def stored(self, item):
+        """
+        Callback for saved item.
+
+        @param item: The modified or newly-created item.
+        """
 
 
 class ItemModel(ItemModelBase):
@@ -376,7 +388,10 @@ class ItemModel(ItemModelBase):
         self.ignoredAttributes = ignoredAttributes
 
         params = paramsFromSchema(self.store, self.itemClass, self.item, self.ignoredAttributes)
-        self.attachParams(params)
+        self.attach(*params)
+
+    def stored(self, item):
+        return item
 
 
 def modelFromItem(item, ignoredAttributes=set()):

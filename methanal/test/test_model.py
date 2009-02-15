@@ -270,11 +270,11 @@ class ModelTests(TestCase):
         model.attach(p)
         self.assertIdentical(model.params['foo'], p)
 
-    def test_attachParams(self):
+    def test_attachMany(self):
         model = Model()
         p1 = Value(name='foo')
         p2 = Value(name='bar')
 
-        model.attachParams([p1, p2])
+        model.attach(p1, p2)
         self.assertIdentical(model.params['foo'], p1)
         self.assertIdentical(model.params['bar'], p2)
