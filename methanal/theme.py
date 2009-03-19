@@ -1,4 +1,5 @@
 from nevow import tags
+from nevow.url import URL
 
 from xmantissa import webtheme
 
@@ -8,8 +9,8 @@ class Theme(webtheme.XHTMLDirectoryTheme):
         def styleSheetLink(href):
             return tags.link(rel='stylesheet', type='text/css', href=href)
 
-        root = website.cleartextRoot(request.getHeader('host'))
-        styles = root.child('Methanal').child('static').child('styles')
+        root = URL(scheme='', netloc='', pathsegs=[''])
+        styles = root.child('static').child('Methanal').child('styles')
 
         yield styleSheetLink(styles.child('methanal.css'))
         yield tags.xml(u'<!--[if IE 6]>'), styleSheetLink(styles.child('methanal-ie6.css')), tags.xml(u'<![endif]-->')
