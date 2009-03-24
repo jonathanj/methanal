@@ -14,7 +14,7 @@
 
 .methanal-error {
     background: none;
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/error-icon.png', sizingMethod='image');
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/static/Methanal/images/error-icon.png', sizingMethod='image');
 }
 
 .methanal-error-text {
@@ -46,7 +46,7 @@
 
 .roll-up-section {
     /* I hate IE6. */
-    background-image: url(/Methanal/static/images/roll-up-bg.jpg);
+    background-image: url(/static/Methanal/images/roll-up-bg.jpg);
 }
 
 button .lozl {
@@ -56,15 +56,15 @@ button .lozl {
 }
 
 button.roll-down .lozl {
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/roll-down-icon.png', sizingMethod='crop');
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/static/Methanal/images/roll-down-icon.png', sizingMethod='crop');
 }
 
 button.roll-up .lozl {
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/roll-up-icon.png', sizingMethod='crop');
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/static/Methanal/images/roll-up-icon.png', sizingMethod='crop');
 }
 
 button.roll-delete .lozl {
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/roll-add-icon.png', sizingMethod='crop');
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/static/Methanal/images/roll-add-icon.png', sizingMethod='crop');
 }
 
 .roll-up-bar button {
@@ -79,7 +79,7 @@ button.roll-delete .lozl {
 .roll-up-content .lozl {
     zoom: 1;
     margin: -10px;
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/shadow-top.png', sizingMethod='scale');
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/static/Methanal/images/shadow-top.png', sizingMethod='scale');
 }
 
 .roll-up-label {
@@ -90,5 +90,5 @@ button.roll-delete .lozl {
     background-image: none;
     width: 32px;
     height: 32px;
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/Methanal/static/images/delete-icon.png', sizingMethod='crop');
+    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/static/Methanal/images/delete-icon.png', sizingMethod='crop');
 }

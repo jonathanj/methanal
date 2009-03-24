@@ -1,7 +1,7 @@
 .methanal-form-group {
     margin: 10px 0;
     border: 1px outset #25a;
-    background: #e5e5ef url(/Methanal/static/images/group-bg.png) repeat-x top left;
+    background: #e5e5ef url(/static/Methanal/images/group-bg.png) repeat-x top left;
     padding: 10px;
 }
 
@@ -36,7 +36,7 @@
 .methanal-error {
     width: 20px;
     margin-right: 3px;
-    background: url(/Methanal/static/images/error-icon.png) no-repeat top;
+    background: url(/static/Methanal/images/error-icon.png) no-repeat top;
 }
 
 .methanal-caption {
@@ -210,7 +210,7 @@ optgroup option {
 
 .methanal-query-list td:first-child a,
 .methanal-query-list td.first-child a {
-    background: url(/Methanal/static/images/link.gif) no-repeat left center;
+    background: url(/static/Methanal/images/link.gif) no-repeat left center;
     padding-left: 14px;
 }
 
@@ -275,16 +275,16 @@ img.roll-up-error {
 }
 
 button.roll-down {
-    background: url(/Methanal/static/images/roll-down-icon.png) no-repeat;
+    background: url(/static/Methanal/images/roll-down-icon.png) no-repeat;
 }
 
 button.roll-up {
-    background: url(/Methanal/static/images/roll-up-icon.png) no-repeat;
+    background: url(/static/Methanal/images/roll-up-icon.png) no-repeat;
 }
 
 .roll-up-section {
     clear: both;
-    background: url(/Methanal/static/images/roll-up-bg.png) no-repeat;
+    background: url(/static/Methanal/images/roll-up-bg.png) no-repeat;
     margin-right: -10px;
 }
 
@@ -299,11 +299,11 @@ button.roll-up {
 }
 
 .unadded button {
-    background: url(/Methanal/static/images/roll-add-icon.png) no-repeat;
+    background: url(/static/Methanal/images/roll-add-icon.png) no-repeat;
 }
 
 .roll-up-content {
-    background: url(/Methanal/static/images/shadow-top.png) repeat-x;
+    background: url(/static/Methanal/images/shadow-top.png) repeat-x;
     border: 1px solid #ccc;
     border-left-color: #ddd;
     border-right: none;
@@ -344,7 +344,7 @@ button.roll-up {
 }
 
 .roll-up-controls button {
-    background: url(/Methanal/static/images/delete-icon.png) no-repeat;
+    background: url(/static/Methanal/images/delete-icon.png) no-repeat;
     border: none;
     width: 24px;
     height: 24px;
