@@ -150,9 +150,7 @@ Methanal.View.FormBehaviour.methods(
             return;
         }
 
-        for (var name in self.controls) {
-            self.checkDeps(self.getControl(name));
-        }
+        self.checkAllDeps();
         self.validatorCache.refresh(self.controls);
         self.refreshValidity();
     },
@@ -227,6 +225,10 @@ Methanal.View.FormBehaviour.methods(
             values.push(control.getValue());
         }
         return [controlsUnavailable, values];
+    },
+
+    function checkAllDeps(self) {
+        self.checkDeps(null);
     },
 
     function checkDeps(self, control) {
