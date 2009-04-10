@@ -66,8 +66,8 @@ Methanal.Util.removeElementClass = function removeElementClass(node, cls) {
  * Remove all the children of a node.
  */
 Methanal.Util.removeNodeContent = function removeNodeContent(node) {
-    while (node.childNodes.length)
-        node.removeChild(node.firstChild);
+    while (node.lastChild)
+        node.removeChild(node.lastChild);
 };
 
 
