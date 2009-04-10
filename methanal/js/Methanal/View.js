@@ -135,7 +135,22 @@ Methanal.View.FormBehaviour.methods(
                 }
                 control.clearError();
             });
-        self.depCheckers = [];
+
+        self.depCache = Methanal.View._HandlerCache(
+            function _getData(name) {
+                return self.getControl(name).getValue();
+            },
+            function _update(name, values) {
+                var control = self.getControl(name);
+                for (var i = 0; i < values.length; ++i) {
+                    var value = values[i];
+                    control.setActive(value);
+                    return;
+                }
+
+                control.setActive(true);
+            });
+
         self.fullyLoaded = false;
     },
 
@@ -150,7 +165,7 @@ Methanal.View.FormBehaviour.methods(
             return;
         }
 
-        self.checkAllDeps();
+        self.depCache.refresh(self.controls);
         self.validatorCache.refresh(self.controls);
         self.refreshValidity();
     },
@@ -178,7 +193,6 @@ Methanal.View.FormBehaviour.methods(
     },
 
     function valueChanged(self, control) {
-        // XXX: Do some handler cache stuff here
         self.checkDeps(control);
         self.validate(control);
     },
@@ -209,59 +223,16 @@ Methanal.View.FormBehaviour.methods(
 
     function addDepCheckers(self, checkers) {
         for (var i = 0; i < checkers.length; ++i) {
-            self.depCheckers.push(checkers[i]);
-        }
-    },
-
-    function _collectControlValues(self, controlNames) {
-        var values = [];
-        var controlsUnavailable = false;
-        for (var j = 0; j < controlNames.length; ++j) {
-            var control = self.getControl(controlNames[j]);
-            if (control == undefined || !control.inserted) {
-                controlsUnavailable = true;
-                break;
-            }
-            values.push(control.getValue());
-        }
-        return [controlsUnavailable, values];
-    },
-
-    function checkAllDeps(self) {
-        self.checkDeps(null);
-    },
-
-    function checkDeps(self, control) {
-        for (var i = 0; i < self.depCheckers.length; ++i) {
-            var checkerInfo = self.depCheckers[i];
+            var checkerInfo = checkers[i];
             var inputControls = checkerInfo[0];
             var outputControls = checkerInfo[1];
             var checker = checkerInfo[2];
-
-            var values = self._collectControlValues(inputControls);
-            var controlsUnavailable = values[0];
-            values = values[1];
-
-            if (controlsUnavailable) {
-                continue;
-            }
-
-            for (var j = 0; j < inputControls.length; ++j) {
-                var node = self.getControl(inputControls[j]).widgetParent.node;
-                Methanal.Util.removeElementClass(node, 'dependancy-parent');
-                Methanal.Util.addElementClass(node, 'dependancy-parent');
-                node.title = 'Other fields depend on this field';
-            }
-
-            var result = checker.apply(null, values);
-
-            for (var k = 0; k < outputControls.length; ++k) {
-                var control = self.getControl(outputControls[k]);
-                if (control !== undefined) {
-                    self.getControl(outputControls[k]).setActive(result);
-                }
-            }
+            self.depCache.addHandler(checker, inputControls, outputControls);
         }
+    },
+
+    function checkDeps(self, control) {
+        self.depCache.changed(control.name);
     });
 
 
