@@ -150,13 +150,18 @@ Methanal.Widgets.QueryList.methods(
         self.table.deleteTHead();
 
         var headerData = self._createHeaderData();
-        var thead = self.table.createTHead();
-        var tr = thead.insertRow(-1);
+
+        var doc = self.node.ownerDocument;
+        var thead = doc.createElement('thead');
+        var tr = doc.createElement('tr');
         for (var i = 0; i < headerData.length; ++i) {
-            var td = tr.insertCell(-1);
+            var td = doc.createElement('td');
             td.id = headerData[i];
             Methanal.Util.replaceNodeText(td, self._getColumnAlias(td.id));
+            tr.appendChild(td);
         }
+        thead.appendChild(tr);
+        self.table.appendChild(thead)
     });
 
 
