@@ -508,7 +508,11 @@ class CheckboxInput(FormInput):
     def checkLabel(self, req, tag):
         if not self.inlineLabel:
             return tag
-        return tag[self.param.doc]
+
+        doc = self.inlineLabel
+        if doc is True:
+            doc = self.param.doc
+        return tag[doc]
 
     @renderer
     def value(self, req, tag):
