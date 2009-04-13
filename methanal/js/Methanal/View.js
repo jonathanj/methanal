@@ -167,7 +167,7 @@ Methanal.View.FormBehaviour.methods(
 
         self.fullyLoaded = true;
 
-        for (var name in self.validatorCache.inputToHandlers) {
+        for (var name in self.depCache.inputToHandlers) {
             var node = self.getControl(name).widgetParent.node;
             Methanal.Util.addElementClass(node, 'dependancy-parent');
             node.title = 'Other fields depend on this field';
