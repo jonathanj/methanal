@@ -165,6 +165,14 @@ Methanal.View.FormBehaviour.methods(
             return;
         }
 
+        self.fullyLoaded = true;
+
+        for (var name in self.validatorCache.inputToHandlers) {
+            var node = self.getControl(name).widgetParent.node;
+            Methanal.Util.addElementClass(node, 'dependancy-parent');
+            node.title = 'Other fields depend on this field';
+        }
+
         self.depCache.refresh(self.controls);
         self.validatorCache.refresh(self.controls);
         self.refreshValidity();
