@@ -525,6 +525,8 @@ class ItemViewBase(LiveForm):
     """
     Base class for common item view behaviour.
     """
+    modelFactory = ItemModel
+
     def __init__(self, item=None, itemClass=None, store=None, ignoredAttributes=set(), **kw):
         self.item = item
 
@@ -539,7 +541,7 @@ class ItemViewBase(LiveForm):
         else:
             raise ValueError('You must pass either item or itemClass')
 
-        self.model = ItemModel(item=self.item, itemClass=self.itemClass, store=self.store, ignoredAttributes=ignoredAttributes)
+        self.model = self.modelFactory(item=self.item, itemClass=self.itemClass, store=self.store, ignoredAttributes=ignoredAttributes)
 
         super(ItemViewBase, self).__init__(store=self.store, model=self.model, **kw)
 
