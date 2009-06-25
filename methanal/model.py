@@ -332,6 +332,18 @@ class ItemModelBase(Model):
         self.itemClass = itemClass or type(item)
         self.store = store or item.store
 
+    def _storeData(self, data):
+        """
+        Store model data.
+        """
+        if self.item is None:
+            self.item = self.itemClass(store=self.store, **data)
+            self.createItem(self.item)
+        else:
+            for name, value in data.iteritems():
+                setattr(self.item, name, value)
+        return self.stored(self.item)
+
     def storeData(self, **data):
         """
         Model callback.
@@ -342,19 +354,11 @@ class ItemModelBase(Model):
         @rtype: C{axiom.item.Item}
         @return: The newly modified or created item
         """
-        def _storeData():
-            if self.item is None:
-                self.item = self.itemClass(store=self.store, **data)
-                self.createItem(self.item)
-            else:
-                for name, value in data.iteritems():
-                    setattr(self.item, name, value)
-            return self.stored(self.item)
 
         if self.store is not None:
-            return self.store.transact(_storeData)
+            return self.store.transact(self._storeData, data)
         else:
-            return _storeData()
+            return self._storeData(data)
 
     def createItem(self, item):
         """
