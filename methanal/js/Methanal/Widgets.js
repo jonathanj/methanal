@@ -21,6 +21,7 @@ Methanal.Widgets.QueryList.methods(
             self._rows = null;
 
         self.cycler = Methanal.Util.cycle('odd', 'even');
+        self.defaultActionNavigates = false;
     },
 
     function nodeInserted(self) {
@@ -76,6 +77,12 @@ Methanal.Widgets.QueryList.methods(
 
     function _cellClickDispatch(url, evt) {
         var _self = Nevow.Athena.Widget.get(this);
+        if (_self.defaultAction) {
+            var rv = this._onclick(evt);
+            if (!_self.defaultActionNavigates)
+                return rv;
+        }
+
         return _self.onCellClick(url);
     },
 
@@ -89,10 +96,9 @@ Methanal.Widgets.QueryList.methods(
             a = doc.createElement('a');
             if (self.defaultAction) {
                 var actionNode = self.defaultAction.toNode(self, rowData);
-                a.onclick = actionNode.onclick;
-            } else {
-                a.onclick = self._cellClickDispatch;
+                a._onclick = actionNode.onclick;
             }
+            a.onclick = self._cellClickDispatch;
             a.href = link;
         } else {
             a = doc.createElement('span');
