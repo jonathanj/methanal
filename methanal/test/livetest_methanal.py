@@ -40,7 +40,7 @@ class TextInputTests(FormTest, testcase.TestCase):
         model = Model([param], self.submit, u'Test')
 
         view = TestLiveForm(self.getStore(), model)
-        control = TextInput(parent=view, name='param')
+        TextInput(parent=view, name='param')
         return view
 
 class IntegerInputTests(FormTest, testcase.TestCase):
@@ -54,7 +54,7 @@ class IntegerInputTests(FormTest, testcase.TestCase):
         model = Model([param], self.submit, u'Test')
 
         view = TestLiveForm(self.getStore(), model)
-        control = IntegerInput(parent=view, name='param')
+        IntegerInput(parent=view, name='param')
         return view
 
 class MultiCheckboxInputTests(FormTest, testcase.TestCase):
@@ -75,7 +75,7 @@ class MultiCheckboxInputTests(FormTest, testcase.TestCase):
         model = Model([param], callback=self.submit, doc=u'Test')
 
         view = TestLiveForm(self.getStore(), model)
-        control = MultiCheckboxInput(parent=view, name='param', values=values)
+        MultiCheckboxInput(parent=view, name='param', values=values)
         return view
 
 class CheckboxInputTests(FormTest, testcase.TestCase):
@@ -89,7 +89,7 @@ class CheckboxInputTests(FormTest, testcase.TestCase):
         model = Model([param], callback=_cb, doc=u'Test')
 
         view = TestLiveForm(self.getStore(), model)
-        control = CheckboxInput(parent=view, name='param')
+        CheckboxInput(parent=view, name='param')
         return view
 
 class SelectInputTests(FormTest, testcase.TestCase):
@@ -110,7 +110,7 @@ class SelectInputTests(FormTest, testcase.TestCase):
         model = Model([param], self.submit, u'Test')
 
         view = TestLiveForm(self.getStore(), model)
-        control = SelectInput(parent=view, name='param', values=values)
+        SelectInput(parent=view, name='param', values=values)
         return view
 
 class SubmitSuccess(FormTest, testcase.TestCase):
@@ -162,7 +162,7 @@ class ChangingValues(FormTest, testcase.TestCase):
         model = Model([param], self.submit, u'Test')
 
         view = TestLiveForm(self.getStore(), model)
-        control = TextInput(parent=view, name='param')
+        TextInput(parent=view, name='param')
         return view
 
 class FormWithGroups(FormTest, testcase.TestCase):
@@ -209,5 +209,5 @@ class Validators(FormTest, testcase.TestCase):
         model = Model(params=[param], callback=lambda *a, **kw: None, doc=u'Test')
 
         view = ValidatorsForm(self.getStore(), model)
-        control = TextInput(parent=view, name='param')
+        TextInput(parent=view, name='param')
         return view

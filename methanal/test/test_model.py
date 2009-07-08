@@ -5,8 +5,6 @@ from axiom.item import Item
 from axiom.attributes import integer, text, textlist, reference
 from axiom.dependency import installOn
 
-from nevow.testutil import FragmentWrapper, renderLivePage
-
 from xmantissa.website import WebSite
 
 from methanal import errors
