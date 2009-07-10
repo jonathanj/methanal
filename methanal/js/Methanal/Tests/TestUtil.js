@@ -20,4 +20,22 @@ Methanal.Tests.TestUtil.TestUtil.methods(
             var actual = Methanal.Util.strToInt(input);
             self.assert(expected === actual, 'input = ' + input + ' :: expected = ' + expected + ' :: actual = ' + actual);
         }
+    },
+
+    function test_reduce(self) {
+        var reduce = Methanal.Util.reduce;
+
+        function add(x, y) {
+            return x + y;
+        }
+
+        function multiply(x, y) {
+            return x * y;
+        }
+
+        self.assertIdentical(reduce(add, [1, 2, 3]), 6);
+        self.assertIdentical(reduce(multiply, [1, 2, 3], 10), 60);
+        self.assertThrows(Error, function () { return reduce(add, []); });
+        self.assertIdentical(reduce(add, [], 10), 10);
+        self.assertIdentical(reduce(add, [10]), 10);
     });

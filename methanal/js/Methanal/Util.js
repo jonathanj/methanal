@@ -182,3 +182,43 @@ Methanal.Util.nodeInserted = function nodeInserted(widget) {
     for (var i = 0; i < widget.childWidgets.length; ++i)
         Methanal.Util.nodeInserted(widget.childWidgets[i]);
 };
+
+
+/**
+ * Left fold on a list.
+ *
+ * Applies a function of two arguments cumulatively to the elements of a list
+ * from left to right, so as to reduce the list to a single value.
+ *
+ * @param f: The reducing function.
+ *
+ * @param xs: The list to reduce.
+ *
+ * @param z: If not undefined, used as the initial value.
+ **/
+Methanal.Util.reduce = function reduce(f, xs, z) {
+    if (xs.length === 0) {
+        if (z === undefined) {
+            throw new Error('Empty list and no initial value');
+        } else {
+            return z;
+        }
+    }
+
+    if (xs.length === 1 && z === undefined) {
+        return xs[0];
+    }
+
+    var acc;
+    if (z === undefined) {
+        acc = xs[0];
+    } else {
+        acc = f(z, xs[0]);
+    }
+
+    for (var i = 1; i < xs.length; ++i) {
+        acc = f(acc, xs[i]);
+    }
+
+    return acc;
+}

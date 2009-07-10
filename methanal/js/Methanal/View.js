@@ -141,14 +141,13 @@ Methanal.View.FormBehaviour.methods(
                 return self.getControl(name).getValue();
             },
             function _update(name, values) {
-                var control = self.getControl(name);
-                for (var i = 0; i < values.length; ++i) {
-                    var value = values[i];
-                    control.setActive(value);
-                    return;
-                }
+                function _and(x, y) {
+                    return x && y;
+                };
 
-                control.setActive(true);
+                var control = self.getControl(name);
+                result = Methanal.Util.reduce(_and, values, true);
+                control.setActive(result);
             });
 
         self.fullyLoaded = false;
