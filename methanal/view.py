@@ -17,37 +17,42 @@ from methanal.util import getArgsDict
 
 
 
-class LiveForm(ThemedElement):
+class SimpleForm(ThemedElement):
     """
-    A form view implemented as an Athena widget.
+    A simple form.
+
+    Simple forms do not contain any submission mechanism.
     """
-    fragmentName = 'methanal-liveform'
-    jsClass = u'Methanal.View.LiveForm'
+    fragmentName = 'methanal-simple-form'
+    jsClass = u'Methanal.View.SimpleForm'
 
-    def __init__(self, store, model, viewOnly=False, **kw):
-        """
-        Initialise the form.
 
-        @type store: L{axiom.store.Store}
-
-        @type model: L{Model}
-
-        @type viewOnly: C{bool}
-        @param viewOnly: Indicates whether model values are written back when
-            invoked, defaults to C{False}
-        """
-        super(LiveForm, self).__init__(**kw)
+    def __init__(self, store, model, **kw):
+        super(SimpleForm, self).__init__(**kw)
         self.store = store
         self.model = model
-        if self.model.doc is None:
-            viewOnly = True
-        self.viewOnly = viewOnly
         self.formChildren = []
 
 
     def getInitialArguments(self):
-        return [self.viewOnly,
-                dict.fromkeys((c.name for c in self.getAllControls()), 1)]
+        keys = (c.name for c in self.getAllControls())
+        return [dict.fromkeys(keys, 1)]
+
+
+    def getAllControls(self):
+        """
+        Get all of the form's child inputs recursively.
+        """
+        def _getChildren(container, form):
+            for child in container.formChildren:
+                if hasattr(child, 'formChildren'):
+                    if child.model is form.model:
+                        for child in _getChildren(child, form):
+                            yield child
+                else:
+                    yield child
+
+        return _getChildren(self, self)
 
 
     def addFormChild(self, child):
@@ -70,28 +75,43 @@ class LiveForm(ThemedElement):
         return self.model.params[name]
 
 
-    def getAllControls(self):
-        """
-        Get all of the form's child inputs recursively.
-        """
-        def _getChildren(container, form):
-            for child in container.formChildren:
-                if hasattr(child, 'formChildren'):
-                    if child.model is form.model:
-                        for child in _getChildren(child, form):
-                            yield child
-                else:
-                    yield child
-
-        return _getChildren(self, self)
-
-
     @renderer
-    def controls(self, req, tag):
+    def children(self, req, tag):
         """
-        Render the form's children.
+        Render the child inputs.
         """
         return self.formChildren
+
+
+
+class LiveForm(SimpleForm):
+    """
+    A form view implemented as an Athena widget.
+    """
+    fragmentName = 'methanal-liveform'
+    jsClass = u'Methanal.View.LiveForm'
+
+    def __init__(self, store, model, viewOnly=False, **kw):
+        """
+        Initialise the form.
+
+        @type store: L{axiom.store.Store}
+
+        @type model: L{Model}
+
+        @type viewOnly: C{bool}
+        @param viewOnly: Indicates whether model values are written back when
+            invoked, defaults to C{False}
+        """
+        super(LiveForm, self).__init__(store=store, model=model, **kw)
+        if self.model.doc is None:
+            viewOnly = True
+        self.viewOnly = viewOnly
+
+
+    def getInitialArguments(self):
+        args = super(LiveForm, self).getInitialArguments()
+        return [self.viewOnly] + args
 
 
     @renderer
@@ -216,57 +236,6 @@ class FormRow(InputContainer):
     """
     fragmentName = 'methanal-form-row'
     jsClass = u'Methanal.View.FormRow'
-
-
-
-class SimpleForm(ThemedElement):
-    """
-    A simple form.
-
-    Simple forms do not contain any submission mechanism.
-    """
-    fragmentName = 'methanal-simple-form'
-    jsClass = u'Methanal.View.SimpleForm'
-
-
-    def __init__(self, store, model, **kw):
-        super(SimpleForm, self).__init__(**kw)
-        self.store = store
-        self.model = model
-        self.formChildren = []
-
-
-    def getInitialArguments(self):
-        keys = (unicode(n, 'ascii') for n in self.model.params)
-        return [dict.fromkeys(keys, 1)]
-
-
-    def addFormChild(self, child):
-        """
-        Add a new child to the form.
-        """
-        self.formChildren.append(child)
-
-
-    def getParameter(self, name):
-        """
-        Get a model parameter by name.
-
-        @type name: C{str}
-        @param name: Model parameter name
-
-        @rtype: C{methanal.model.Value}
-        @return: Named model parameter
-        """
-        return self.model.params[name]
-
-
-    @renderer
-    def children(self, req, tag):
-        """
-        Render the input's child inputs.
-        """
-        return self.formChildren
 
 
 
