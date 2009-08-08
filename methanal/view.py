@@ -16,6 +16,7 @@ from methanal.model import ItemModel, Model, paramFromAttribute
 from methanal.util import getArgsDict
 
 
+
 class LiveForm(ThemedElement):
     """
     A form view implemented as an Athena widget.
@@ -26,6 +27,10 @@ class LiveForm(ThemedElement):
     def __init__(self, store, model, viewOnly=False, **kw):
         """
         Initialise the form.
+
+        @type store: L{axiom.store.Store}
+
+        @type model: L{Model}
 
         @type viewOnly: C{bool}
         @param viewOnly: Indicates whether model values are written back when
@@ -39,17 +44,36 @@ class LiveForm(ThemedElement):
         self.viewOnly = viewOnly
         self.formChildren = []
 
+
     def getInitialArguments(self):
         return [self.viewOnly,
                 dict.fromkeys((c.name for c in self.getAllControls()), 1)]
 
+
     def addFormChild(self, child):
+        """
+        Add a new child to the form.
+        """
         self.formChildren.append(child)
 
+
     def getParameter(self, name):
+        """
+        Get a model parameter by name.
+
+        @type name: C{str}
+        @param name: Model parameter name
+
+        @rtype: C{methanal.model.Value}
+        @return: Named model parameter
+        """
         return self.model.params[name]
 
+
     def getAllControls(self):
+        """
+        Get all of the form's child inputs recursively.
+        """
         def _getChildren(container, form):
             for child in container.formChildren:
                 if hasattr(child, 'formChildren'):
@@ -61,18 +85,40 @@ class LiveForm(ThemedElement):
 
         return _getChildren(self, self)
 
+
     @renderer
     def controls(self, req, tag):
+        """
+        Render the form's children.
+        """
         return self.formChildren
+
 
     @renderer
     def button(self, req, tag):
+        """
+        Render the form's submission button.
+        """
         if self.viewOnly:
             return []
         return tag[self.model.doc]
 
+
     @expose
     def invoke(self, data):
+        """
+        Process form data for each child input.
+
+        The callback for L{self.model} is invoked once all the child inputs
+        have been invoked.
+
+        @type data: C{dict}
+        @param data: Form data
+
+        @raise RuntimeError: If L{self.viewOnly} is C{True}
+
+        @return: The result of the model's callback function.
+        """
         if self.viewOnly:
             raise RuntimeError('Attempted to submit view-only form')
 
@@ -81,59 +127,107 @@ class LiveForm(ThemedElement):
         return self.model.process()
 
 
+
 class InputContainer(ThemedElement):
+    """
+    Generic container for form inputs.
+    """
     jsClass = u'Methanal.View.InputContainer'
 
+
     def __init__(self, parent, doc=u'', **kw):
+        """
+        Initialise the container.
+
+        @param parent: Parent input
+
+        @type doc: C{unicode}
+        @param doc: Input caption
+        """
         super(InputContainer, self).__init__(**kw)
         parent.addFormChild(self)
         self.setFragmentParent(parent)
         self.parent = parent
         self.doc = doc
         self.model = self.parent.model
+        self.store = self.parent.store
         self.formChildren = []
 
-    @property
-    def store(self):
-        return self.parent.store
 
     def addFormChild(self, child):
+        """
+        Add a new child to the form.
+        """
         self.formChildren.append(child)
 
+
     def getParameter(self, name):
+        """
+        Get a model parameter, from the container parent, by name.
+
+        @type name: C{str}
+        @param name: Model parameter name
+
+        @rtype: C{methanal.model.Value}
+        @return: Named model parameter
+        """
         return self.parent.getParameter(name)
+
 
     @renderer
     def caption(self, req, tag):
+        """
+        Render the input's caption.
+        """
         return tag[self.doc]
+
 
     @renderer
     def children(self, req, tag):
+        """
+        Render the input's child inputs.
+        """
         return self.formChildren
 
+
     def invoke(self, data):
+        """
+        Process form data for each child input.
+
+        @type data: C{dict}
+        @param data: Form data
+        """
         for child in self.formChildren:
             child.invoke(data)
 
 
+
 class FormGroup(InputContainer):
     """
-    Container for grouping controls.
+    Container for visually grouping inputs.
     """
     fragmentName = 'methanal-group'
 
 
+
 class FormRow(InputContainer):
     """
-    Container for organising form inputs in rows.
+    Container for visually organising inputs into rows.
     """
     fragmentName = 'methanal-form-row'
     jsClass = u'Methanal.View.FormRow'
 
 
+
 class SimpleForm(ThemedElement):
+    """
+    A simple form.
+
+    Simple forms do not contain any submission mechanism.
+    """
     fragmentName = 'methanal-simple-form'
     jsClass = u'Methanal.View.SimpleForm'
+
 
     def __init__(self, store, model, **kw):
         super(SimpleForm, self).__init__(**kw)
@@ -141,20 +235,42 @@ class SimpleForm(ThemedElement):
         self.model = model
         self.formChildren = []
 
+
     def getInitialArguments(self):
-        return [dict.fromkeys((unicode(n, 'ascii') for n in self.model.params), 1)]
+        keys = (unicode(n, 'ascii') for n in self.model.params)
+        return [dict.fromkeys(keys, 1)]
+
 
     def addFormChild(self, child):
+        """
+        Add a new child to the form.
+        """
         self.formChildren.append(child)
 
+
     def getParameter(self, name):
+        """
+        Get a model parameter by name.
+
+        @type name: C{str}
+        @param name: Model parameter name
+
+        @rtype: C{methanal.model.Value}
+        @return: Named model parameter
+        """
         return self.model.params[name]
+
 
     @renderer
     def children(self, req, tag):
+        """
+        Render the input's child inputs.
+        """
         return self.formChildren
 
 
+
+# XXX: Do we still need this revolting hack?
 class GroupInput(FormGroup):
     """
     Container for grouping controls belonging to a ReferenceParameter submodel.
@@ -163,18 +279,32 @@ class GroupInput(FormGroup):
     """
     jsClass = u'Methanal.View.GroupInput'
 
+
     def __init__(self, parent, name):
         self.param = parent.getParameter(name)
         super(GroupInput, self).__init__(parent=parent, doc=self.param.doc)
         self.model = self.param.model
         self.name = name
 
+
     def getInitialArguments(self):
+        keys = (unicode(n, 'ascii') for n in self.model.params)
         return [self.param.name.decode('ascii'),
-                dict.fromkeys((unicode(n, 'ascii') for n in self.model.params), 1)]
+                dict.fromkeys(keys, 1)]
+
 
     def getParameter(self, name):
+        """
+        Get a model parameter by name.
+
+        @type name: C{str}
+        @param name: Model parameter name
+
+        @rtype: C{methanal.model.Value}
+        @return: Named model parameter
+        """
         return self.model.params[name]
+
 
     def invoke(self, data):
         ourData = data[self.name]
@@ -182,15 +312,31 @@ class GroupInput(FormGroup):
             child.invoke(ourData)
 
 
+
 class FormInput(ThemedElement):
     """
     Abstract input widget class.
     """
     def __init__(self, parent, name, label=None, **kw):
+        """
+        Initialise the input.
+
+        @param parent: Parent input
+
+        @type name: C{str}
+        @param name: Name of the model parameter this input represents
+
+        @type label: C{unicode}
+        @param label: Input's label or caption, or C{None} to use the
+            model parameter's C{doc} attribute
+        """
         super(FormInput, self).__init__(**kw)
         self.parent = parent
         self.name = unicode(name, 'ascii')
         self.param = parent.getParameter(name)
+
+        self.store = parent.store
+
         if label is None:
             label = self.param.doc
         self.label = label
@@ -203,73 +349,96 @@ class FormInput(ThemedElement):
             parent.addFormChild(self)
             self.setFragmentParent(parent)
 
-    @property
-    def store(self):
-        return self.parent.store
 
     def getInitialArguments(self):
         return [getArgsDict(self)]
 
+
     def getArgs(self):
-        return {u'name': self.name,
+        """
+        Get input-specific arguments.
+        """
+        return {u'name':  self.name,
                 u'value': self.getValue(),
                 u'label': self.label}
 
-    def coerce(self, value):
-        return value
 
     @renderer
     def value(self, req, tag):
+        """
+        Render the input's value.
+        """
         value = self.getValue()
         if value is None:
             value = u''
         return tag[value]
 
+
     def invoke(self, data):
-        value = data[self.param.name]
-        self.param.value = value
+        """
+        Set the model parameter's value from form data.
+        """
+        self.param.value = data[self.param.name]
+
 
     def getValue(self):
+        """
+        Get the model parameter's value.
+        """
         return self.param.value
+
 
 
 class TextAreaInput(FormInput):
     """
-    Form widget for entering large amounts of text.
+    Multi-line text input.
     """
     fragmentName = 'methanal-text-area-input'
     jsClass = u'Methanal.View.TextAreaInput'
 
 
+
 class TextInput(FormInput):
     """
-    Form widget for entering text.
+    Text input.
     """
     fragmentName = 'methanal-text-input'
     jsClass = u'Methanal.View.TextInput'
+
 
     def __init__(self, embeddedLabel=False, **kw):
         super(TextInput, self).__init__(**kw)
         self.embeddedLabel = embeddedLabel
 
+
     def getArgs(self):
         return {u'embeddedLabel': self.embeddedLabel}
 
 
+
 class DateInput(TextInput):
     """
-    Form widget for textually entering dates.
+    Textual date input.
 
     A variety of date formats is supported, in order make entering an
-    absolute date value as natural as possible.  See the Javascript
+    absolute date value as natural as possible. See the Javascript
     docstrings for more detail.
     """
     fragmentName = 'methanal-date-input'
     jsClass = u'Methanal.View.DateInput'
 
+
     def __init__(self, timezone, **kw):
+        """
+        Initialise the input.
+
+        @type timezone: C{datetime.tzinfo}
+        @param timezone: A C{tzinfo} implementation, representing the timezone
+            this date input is relative to
+        """
         super(DateInput, self).__init__(**kw)
         self.timezone = timezone
+
 
     def getValue(self):
         value = self.param.value
@@ -279,6 +448,7 @@ class DateInput(TextInput):
         dt = value.asDatetime(self.timezone)
         return u'%04d-%02d-%02d' % (dt.year, dt.month, dt.day)
 
+
     def invoke(self, data):
         value = data[self.param.name]
         if value is not None:
@@ -286,14 +456,34 @@ class DateInput(TextInput):
         self.param.value = value
 
 
+
 class DecimalInput(TextInput):
     """
-    Form widget for entering decimals.
+    Decimal input.
     """
     fragmentName = 'methanal-decimal-input'
     jsClass = u'Methanal.View.DecimalInput'
 
-    def __init__(self, decimalPlaces=None, showRepr=True, minValue=None, maxValue=None, **kw):
+
+    def __init__(self, decimalPlaces=None, showRepr=True, minValue=None,
+                 maxValue=None, **kw):
+        """
+        Initialise the input.
+
+        @type decimalPlaces: C{int}
+        @param decimalPlaces: The number of digits of precision to allow, or
+            C{None} to use the model parameter's value
+
+        @type showRepr: C{bool}
+        @param showRepr: Flag indicating whether to show a human-readable
+            representation of the input's value
+
+        @type minValue: C{number}
+        @param minValue: Minimum allowed value
+
+        @type maxValue: C{number}
+        @param maxValue: Maximum allowed value
+        """
         super(DecimalInput, self).__init__(**kw)
         if decimalPlaces is None:
             decimalPlaces = self.param.decimalPlaces
@@ -301,6 +491,7 @@ class DecimalInput(TextInput):
         self.showRepr = showRepr
         self.minValue = minValue
         self.maxValue = maxValue
+
 
     def getArgs(self):
         def _floatOrNone(value):
@@ -313,12 +504,14 @@ class DecimalInput(TextInput):
                 u'minValue': _floatOrNone(self.minValue),
                 u'maxValue': _floatOrNone(self.maxValue)}
 
+
     def getValue(self):
         value = self.param.value
         if value is None:
             return u''
 
         return float(value)
+
 
     def invoke(self, data):
         value = data[self.param.name]
@@ -328,21 +521,32 @@ class DecimalInput(TextInput):
             self.param.value = Decimal(str(value))
 
 
+
 class PercentInput(DecimalInput):
+    """
+    Decimal input, with values interpreted as percentages.
+    """
     jsClass = u'Methanal.View.PercentInput'
 
-    def __init__(self, minValue=Decimal('0.0000'), maxValue=Decimal('1.0000'), showRepr=True, **kw):
-        super(PercentInput, self).__init__(showRepr=showRepr, minValue=minValue, maxValue=maxValue, **kw)
+
+    def __init__(self, minValue=Decimal('0.0000'), maxValue=Decimal('1.0000'),
+                 showRepr=True, **kw):
+        super(PercentInput, self).__init__(
+            showRepr=showRepr, minValue=minValue, maxValue=maxValue, **kw)
+
 
 
 class IntegerInput(DecimalInput):
     """
-    Form widget for entering integers.
+    Integer input.
     """
     jsClass = u'Methanal.View.IntegerInput'
 
+
     def __init__(self, **kw):
-        super(IntegerInput, self).__init__(decimalPlaces=0, showRepr=False, **kw)
+        super(IntegerInput, self).__init__(
+            decimalPlaces=0, showRepr=False, **kw)
+
 
     def getValue(self):
         value = self.param.value
@@ -351,21 +555,34 @@ class IntegerInput(DecimalInput):
 
         return int(value)
 
+
     def invoke(self, data):
         value = data[self.param.name]
         self.param.value = value
 
 
+
 class ChoiceInput(FormInput):
     """
-    Abstract form widget with multiple options.
+    Abstract input with multiple options.
     """
     def __init__(self, values, **kw):
+        """
+        Initialise the input.
+
+        @type values: C{iterable} of C{(unicode, unicode)}
+        @param values: An iterable of C{(value, description)} pairs used for
+            rendering various C{<option>}-based inputs
+        """
         super(ChoiceInput, self).__init__(**kw)
-        self.values = values
+        self.values = tuple(values)
+
 
     @renderer
     def options(self, req, tag):
+        """
+        Render all available options.
+        """
         option = tag.patternGenerator('option')
         for value, description in self.values:
             o = option()
@@ -374,100 +591,37 @@ class ChoiceInput(FormInput):
             yield o
 
 
+
 class MultiCheckboxInput(ChoiceInput):
     """
-    Form widget with multiple checkbox selections.
+    Multiple-checkboxes input.
     """
     fragmentName = 'methanal-multicheck-input'
     jsClass = u'Methanal.View.MultiCheckboxInput'
 
 
+
 class SelectInput(ChoiceInput):
     """
-    Form widget with a dropdown box.
+    Dropdown input.
     """
     fragmentName = 'methanal-select-input'
     jsClass = u'Methanal.View.SelectInput'
 
 
-class IntegerSelectInput(SelectInput):
-    """
-    L{SelectInput} for integer values.
-    """
-    jsClass = u'Methanal.View.IntegerSelectInput'
-
-    def getValue(self):
-        value = self.param.value
-        if value is None:
-            return u''
-
-        return int(value)
-
-
-class ObjectSelectInput(SelectInput):
-    """
-    L{SelectInput} for arbitrary objects.
-    """
-
-    def __init__(self, values, **kw):
-        """
-        Initialise the select input.
-
-        @type values: C{iterable} of C{(obj, unicode)}
-        @param values: An iterable of C{(object, description)} pairs
-        """
-        self.objects = objects = []
-        selectValues = []
-        for i, (obj, desc) in enumerate(values):
-            objects.append(obj)
-            selectValues.append((str(i), desc))
-
-        super(ObjectSelectInput, self).__init__(values=selectValues, **kw)
-
-    def addObject(self, obj):
-        i = unicode(len(self.objects))
-        self.objects.append(obj)
-        return i
-
-    def removeObject(self, index):
-        # XXX: HACK: ergh, we should probably a.) keep our own counter (instead
-        # of using len(objects)) and b.) use a dict instead of a list, so that
-        # removing items isn't a huge mission
-        o = self.objects[index]
-        self.objects[index] = None
-        return o
-
-    def getValue(self):
-        value = super(ObjectSelectInput, self).getValue()
-
-        try:
-            return self.objects.index(value)
-        except ValueError:
-            return None
-
-    def invoke(self, data):
-        value = data[self.param.name]
-        if value is not None:
-            try:
-                index = int(value)
-                value = self.objects[index]
-            except ValueError:
-                value = None
-
-        self.param.value = value
-
 
 class MultiSelectInput(ChoiceInput):
     """
-    Form widget with a list box that accepts multiple selections.
+    Multiple-selection list box input.
     """
     fragmentName = 'methanal-multiselect-input'
     jsClass = u'Methanal.View.MultiSelectInput'
 
 
+
 class GroupedSelectInput(ChoiceInput):
     """
-    Form widget with a dropdown box of grouped entries.
+    Dropdown input with grouped values.
 
     Values should be structured as follows::
 
@@ -477,6 +631,7 @@ class GroupedSelectInput(ChoiceInput):
     """
     fragmentName = 'methanal-select-input'
     jsClass = u'Methanal.View.GroupedSelectInput'
+
 
     @renderer
     def options(self, req, tag):
@@ -493,19 +648,105 @@ class GroupedSelectInput(ChoiceInput):
             yield g
 
 
+
+class IntegerSelectInput(SelectInput):
+    """
+    Dropdown input backed by integer values.
+    """
+    jsClass = u'Methanal.View.IntegerSelectInput'
+
+
+    def getValue(self):
+        value = self.param.value
+        if value is None:
+            return u''
+        return int(value)
+
+
+
+# XXX: Does this really belong here? It seems like an atrocious hack.
+class ObjectSelectInput(SelectInput):
+    """
+    Choice input for arbitrary Python objects.
+    """
+    def __init__(self, values, **kw):
+        """
+        Initialise the select input.
+
+        @type values: C{iterable} of C{(obj, unicode)}
+        @param values: An iterable of C{(object, description)} pairs
+        """
+        self.objects = objects = []
+        selectValues = []
+        for i, (obj, desc) in enumerate(values):
+            objects.append(obj)
+            selectValues.append((str(i), desc))
+
+        super(ObjectSelectInput, self).__init__(values=selectValues, **kw)
+
+
+    def addObject(self, obj):
+        i = unicode(len(self.objects))
+        self.objects.append(obj)
+        return i
+
+
+    def removeObject(self, index):
+        # XXX: HACK: ergh, we should probably a.) keep our own counter (instead
+        # of using len(objects)) and b.) use a dict instead of a list, so that
+        # removing items isn't a huge mission
+        o = self.objects[index]
+        self.objects[index] = None
+        return o
+
+
+    def getValue(self):
+        value = super(ObjectSelectInput, self).getValue()
+
+        try:
+            return self.objects.index(value)
+        except ValueError:
+            return None
+
+
+    def invoke(self, data):
+        value = data[self.param.name]
+        if value is not None:
+            try:
+                index = int(value)
+                value = self.objects[index]
+            except ValueError:
+                value = None
+
+        self.param.value = value
+
+
+
 class CheckboxInput(FormInput):
     """
-    Form widget with a single checkbox.
+    Checkbox input.
     """
     fragmentName = 'methanal-check-input'
     jsClass = u'Methanal.View.CheckboxInput'
 
-    def __init__(self, inlineLabel=False, **kw):
+
+    def __init__(self, inlineLabel=None, **kw):
+        """
+        Initialise the input.
+
+        @type inlineLabel: C{unicode}
+        @param inlineLabel: Inline caption to use, or C{True} to use the model
+            parameter's C{doc} attribute, or C{None} for no inline label
+        """
         super(CheckboxInput, self).__init__(**kw)
         self.inlineLabel = inlineLabel
 
+
     @renderer
     def checkLabel(self, req, tag):
+        """
+        Render the inline caption.
+        """
         if not self.inlineLabel:
             return tag
 
@@ -514,6 +755,7 @@ class CheckboxInput(FormInput):
             doc = self.param.doc
         return tag[doc]
 
+
     @renderer
     def value(self, req, tag):
         if self.param.value:
@@ -521,13 +763,45 @@ class CheckboxInput(FormInput):
         return tag
 
 
+
 class ItemViewBase(LiveForm):
     """
     Base class for common item view behaviour.
+
+    @type modelFactory: C{callable} with the signature
+        C{item, itemClass, store, ignoredAttributes}
+    @cvar modelFactory: Callable to invoke when synthensizing a L{Model}
     """
     modelFactory = ItemModel
 
-    def __init__(self, item=None, itemClass=None, store=None, ignoredAttributes=set(), **kw):
+
+    def __init__(self, item=None, itemClass=None, store=None,
+                 ignoredAttributes=None, **kw):
+        """
+        Initialise the item view.
+
+        Either L{item} or L{itemClass} must be given.
+
+        @type item: L{Item}
+        @param item: An item to synthesize a model for, and commit changes
+            back to, or C{None} if there is no specific item
+
+        @type itemClass: L{Item} type
+        @param itemClass: An item type to synthesize a model for, and create
+            for the first time when the view is invoked, or C{None} if a new
+            item is not to be synthesized
+
+        @type store: L{axiom.store.Store}
+        @param store: The store the synthesized L{Model} is backed by; if
+            C{None}, the store of L{item} is used, if given
+
+        @type ignoredAttributes: C{set} of C{str}
+        @param ignoredAttributes: A set of parameter names to ignore when
+            synthesizing a model, or C{None}; useful for omitting parameters
+            that are not intended for editing, such as timestamps
+
+        @raise ValueError: If neither L{item} nor L{itemClass} is given
+        """
         self.item = item
 
         if item is not None:
@@ -541,21 +815,27 @@ class ItemViewBase(LiveForm):
         else:
             raise ValueError('You must pass either item or itemClass')
 
-        self.model = self.modelFactory(item=self.item, itemClass=self.itemClass, store=self.store, ignoredAttributes=ignoredAttributes)
+        self.model = self.modelFactory(item=self.item,
+                                       itemClass=self.itemClass,
+                                       store=self.store,
+                                       ignoredAttributes=ignoredAttributes)
 
-        super(ItemViewBase, self).__init__(store=self.store, model=self.model, **kw)
+        super(ItemViewBase, self).__init__(store=self.store,
+                                           model=self.model,
+                                           **kw)
+
 
 
 class ItemView(ItemViewBase):
     """
-    A view for an Item that automatically synthesizes a model.
+    A view for an L{Item} that automatically synthesizes a model.
 
-    In the case of a specific Item instance, for editing it, and in the case
-    of an Item type subclass, for creating a new instance.
+    In the case of a specific L{Item} instance, for editing it, and in the case
+    of an L{Item} subclass, for creating a new instance.
     """
     def __init__(self, switchInPlace=False, **kw):
         """
-        Initialise view.
+        Initialise the item view.
 
         @type switchInPlace: C{bool}
         @param switchInPlace: Switch to item editing mode upon creating
@@ -563,6 +843,7 @@ class ItemView(ItemViewBase):
         """
         super(ItemView, self).__init__(**kw)
         self.switchInPlace = switchInPlace
+
 
     @expose
     def invoke(self, *a, **kw):
@@ -572,12 +853,15 @@ class ItemView(ItemViewBase):
             if self.switchInPlace:
                 self.item = item
             else:
-                return IWebTranslator(item.store).linkTo(item.storeID).decode('ascii')
+                link = IWebTranslator(item.store).linkTo(item.storeID)
+                return link.decode('ascii')
+
 
     def createItem(self, item):
         """
         A callback that is invoked when an item is created.
         """
+
 
 
 class ReferenceItemView(ItemView):
@@ -607,9 +891,34 @@ class ReferenceItemView(ItemView):
         self.parentItem = parentItem
         self.refAttr = refAttr
 
+
     def createItem(self, item):
         super(ReferenceItemView, self).createItem(item)
         setattr(self.parentItem, self.refAttr, item)
+
+
+
+class AutoItemView(ItemView):
+    """
+    An L{ItemView} that automatically synthesizes a form.
+    """
+    def __init__(self, env=None, **kw):
+        """
+        Initialise the view.
+
+        Any additional keyword arguments are passed on to L{ItemView}.
+
+        @type env: C{dict}
+        @param env: Additional parameters to pass when creating inputs
+        """
+        super(AutoItemView, **kw)
+
+        if env is None:
+            env = {}
+
+        for name, attr in self.itemClass.getSchema():
+            inputTypeFromAttribute(attr, **env)(parent=self, name=name)
+
 
 
 _inputTypes = {
@@ -618,13 +927,41 @@ _inputTypes = {
     timestamp:  lambda env: lambda **kw: DateInput(timezone=env['timezone'], **kw)}
 
 def inputTypeFromAttribute(attr, **env):
+    """
+    Create a form input from an Axiom attribute.
+    """
     return _inputTypes[type(attr)](env)
 
 
-def containerFromAttributes(containerFactory, store, attributes, callback, doc, **env):
+
+def containerFromAttributes(containerFactory, store, attributes, callback, doc,
+                            **env):
     """
-    Generate a container, with inputs, from a sequence of attributes.
+    Generate a model and view, with inputs, from Axiom attributes.
+
+    Any additional keyword arguments are passed to L{inputTypeFromAttribute},
+    when creating the inputs.
+
+    @type containerFactory: C{callable} taking a L{Model} parameter
+    @param containerFactory: Callable to create an input container
+
+    @type store: L{axiom.store.Store}
+    @param store: Store backing the synthesized L{Model}
+
+    @type attributes: C{iterable} of Axiom attributes
+    @param attributes: Attributes to synthesize a model and view for
+
+    @type callback: C{callable} taking keyword arguments with names matching
+        those of L{attributes}
+    @param callback: Model callback
+
+    @type doc: C{unicode}
+    @param doc: Model caption
+
+    @return: View container with child inputs for L{attributes}
     """
+    attributes = tuple(attributes)
+
     model = Model(callback=callback,
                   params=[paramFromAttribute(store, attr, None)
                           for attr in attributes],
@@ -633,11 +970,35 @@ def containerFromAttributes(containerFactory, store, attributes, callback, doc, 
     container = containerFactory(model)
 
     for attr in attributes:
-        inputTypeFromAttribute(attr, **env)(parent=container, name=attr.attrname)
+        inputType = inputTypeFromAttribute(attr, **env)
+        inputType(parent=container, name=attr.attrname)
 
     return container
 
 
+
 def liveFormFromAttributes(store, attributes, callback, doc, **env):
+    """
+    Generate a L{LiveForm} from attributes.
+
+    Any additional keyword arguments are passed to L{inputTypeFromAttribute},
+    when creating the inputs.
+
+    @type store: L{axiom.store.Store}
+    @param store: Store backing the synthesized L{Model}
+
+    @type attributes: C{iterable} of Axiom attributes
+    @param attributes: Attributes to synthesize a model and view for
+
+    @type callback: C{callable} taking keyword arguments with names matching
+        those of L{attributes}
+    @param callback: Model callback
+
+    @type doc: C{unicode}
+    @param doc: Model caption
+
+    @return: L{LiveForm} with child inputs for L{attributes}
+    """
     fact = lambda model: LiveForm(store, model)
-    return containerFromAttributes(fact, store, attributes, callback, doc, **env)
+    return containerFromAttributes(
+        fact, store, attributes, callback, doc, **env)

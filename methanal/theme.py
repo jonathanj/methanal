@@ -1,7 +1,7 @@
 from nevow import tags
-from nevow.url import URL
 
 from xmantissa import webtheme
+
 
 
 class Theme(webtheme.XHTMLDirectoryTheme):
@@ -9,9 +9,13 @@ class Theme(webtheme.XHTMLDirectoryTheme):
         def styleSheetLink(href):
             return tags.link(rel='stylesheet', type='text/css', href=href)
 
-        root = URL(scheme='', netloc='', pathsegs=[''])
+        root = website.rootURL(request)
         styles = root.child('static').child('Methanal').child('styles')
 
         yield styleSheetLink(styles.child('methanal.css'))
-        yield tags.xml(u'<!--[if IE 6]>'), styleSheetLink(styles.child('methanal-ie6.css')), tags.xml(u'<![endif]-->')
-        yield tags.xml(u'<!--[if IE 7]>'), styleSheetLink(styles.child('methanal-ie7.css')), tags.xml(u'<![endif]-->')
+        yield (tags.xml(u'<!--[if IE 6]>'),
+               styleSheetLink(styles.child('methanal-ie6.css')),
+               tags.xml(u'<![endif]-->'))
+        yield (tags.xml(u'<!--[if IE 7]>'),
+               styleSheetLink(styles.child('methanal-ie7.css')),
+               tags.xml(u'<![endif]-->'))

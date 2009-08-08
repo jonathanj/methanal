@@ -9,6 +9,7 @@ from methanal.view import DateInput
 
 class MockParent(object):
     def __init__(self, param):
+        self.store = None
         self.param = param
 
         self.page = self
@@ -21,6 +22,8 @@ class MockParent(object):
 
     def addFormChild(self, child):
         pass
+
+
 
 class TestDateInput(TestCase):
     def setUp(self):

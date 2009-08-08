@@ -19,8 +19,10 @@ from xmantissa.webtheme import ThemedElement
 
 from methanal.imethanal import IColumn
 from methanal.util import getArgsDict
-from methanal.view import liveFormFromAttributes, containerFromAttributes, ObjectSelectInput, SimpleForm, FormInput
+from methanal.view import (liveFormFromAttributes, containerFromAttributes,
+    ObjectSelectInput, SimpleForm, FormInput)
 from methanal.model import ValueParameter
+
 
 
 class AttributeColumn(object):
@@ -30,16 +32,17 @@ class AttributeColumn(object):
     """
     implements(IColumn)
 
+
     def __init__(self, attribute, attributeID=None):
         """
         Create an L{AttributeColumn} from an Axiom attribute.
 
-        @param attribute: an axiom L{SQLAttribute} subclass.
+        @param attribute: An axiom L{SQLAttribute} subclass.
 
-        @param attributeID: an optional client-side identifier for this
-        attribute.  Normally this will be this attribute's name; it isn't
-        visible to the user on the client, it's simply the client-side internal
-        identifier.
+        @param attributeID: An optional client-side identifier for this
+            attribute.  Normally this will be this attribute's name; it isn't
+            visible to the user on the client, it's simply the client-side
+            internal identifier
         """
         self.attribute = attribute
         if attributeID is None:
@@ -56,13 +59,13 @@ class AttributeColumn(object):
         C{getattr}, instead of C{__get__}, thus allowing it to work on items
         wrapped in a C{SharedProxy}.
 
-        @param model: The query list object requesting the value.
+        @param model: The query list object requesting the value
 
         @param item: An instance of the class that this L{AttributeColumn}'s
-        L{attribute} was taken from, to retrieve the value from.
+            L{attribute} was taken from, to retrieve the value from
 
-        @return: a value of an attribute of C{item}, of a type dependent upon
-        this L{AttributeColumn}'s L{attribute}.
+        @return: A value of an attribute of C{item}, of a type dependent upon
+            this L{AttributeColumn}'s L{attribute}
         """
         return getattr(item, self.attribute.attrname)
 
@@ -79,6 +82,7 @@ class QueryList(ThemedElement):
     jsClass = u'Methanal.Widgets.QueryList'
     fragmentName = 'methanal-query-list'
 
+
     def __init__(self, rows, columns, webTranslator=None, timezone=None, **kw):
         super(QueryList, self).__init__(**kw)
 
@@ -89,7 +93,8 @@ class QueryList(ThemedElement):
             except TypeError:
                 col = mantissaIColumn(col)
 
-            warn('use methanal.imethanal.IColumn instead of xmantissa.ixmantissa.IColumn', DeprecationWarning, 2)
+            warn('use methanal.imethanal.IColumn instead of '
+                 'xmantissa.ixmantissa.IColumn', DeprecationWarning, 2)
             return col
 
         columns = (_adapt(col) for col in columns)
@@ -104,10 +109,12 @@ class QueryList(ThemedElement):
 
         self.timezone = timezone
 
+
     def dictifyItem(self, item, index):
         def _formatValue(value):
             if isinstance(value, Time):
-                return value.asDatetime(self.timezone).strftime('%a, %d %h %Y %H:%M:%S').decode('ascii')
+                return value.asDatetime(self.timezone).strftime(
+                    '%a, %d %h %Y %H:%M:%S').decode('ascii')
             return value
 
         if isinstance(item, tuple):
@@ -124,8 +131,10 @@ class QueryList(ThemedElement):
 
         return d
 
+
     def getInitialArguments(self):
         return [getArgsDict(self)]
+
 
     def getArgs(self):
         IDs = []
@@ -143,11 +152,13 @@ class QueryList(ThemedElement):
                 u'rows':          [self.dictifyItem(row, i)
                                    for i, row in enumerate(self.rows)]}
 
+
     @expose
     def performAction(self, name, rowIndex):
         method = getattr(self, 'action_' + name)
         item = self.rows[rowIndex]
         return method(item)
+
 
 
 class FilterList(ThemedElement):
@@ -163,6 +174,7 @@ class FilterList(ThemedElement):
     """
     jsClass = u'Methanal.Widgets.FilterList'
     fragmentName = 'methanal-filter-list'
+
 
     def __init__(self, form, resultWidget, title, **kw):
         """
@@ -191,6 +203,7 @@ class FilterList(ThemedElement):
         self.originalCallback = self.form.model.callback
         self.form.model.callback = self.filterCallback
 
+
     def filterCallback(self, **kw):
         """
         Handle form submission.
@@ -207,13 +220,16 @@ class FilterList(ThemedElement):
         return maybeDeferred(self.originalCallback, **kw
             ).addCallback(makeResultWidget)
 
+
     @renderer
     def formTitle(self, req, tag):
         return tag[self.title]
 
+
     @renderer
     def filterForm(self, req, tag):
         return tag[self.form]
+
 
 
 class SimpleFilterList(FilterList):
@@ -224,7 +240,8 @@ class SimpleFilterList(FilterList):
     user-specified callback and display the results in a L{QueryList} with the
     desired columns.
     """
-    def __init__(self, store, filterAttrs, callback, resultColumns, timezone=None, webTranslator=None, **kw):
+    def __init__(self, store, filterAttrs, callback, resultColumns,
+                 timezone=None, webTranslator=None, **kw):
         """
         Initialise the filter widget.
 
@@ -258,32 +275,42 @@ class SimpleFilterList(FilterList):
                                       timezone=timezone)
         form.jsClass = u'Methanal.Widgets.FilterListForm'
 
-        resultWidget = lambda rows: QueryList(rows=rows, columns=resultColumns, webTranslator=webTranslator, timezone=timezone)
+        resultWidget = lambda rows: QueryList(rows=rows,
+                                              columns=resultColumns,
+                                              webTranslator=webTranslator,
+                                              timezone=timezone)
 
         super(SimpleFilterList, self).__init__(form=form,
                                                resultWidget=resultWidget,
                                                **kw)
 
 
+
 class Rollup(ThemedElement):
     jsClass = u'Methanal.Widgets.Rollup'
+
 
     def __init__(self, fragmentParent=None, label=None):
         super(Rollup, self).__init__(fragmentParent=fragmentParent)
         self.label = label or u''
         self._rollupFactory = None
 
+
     def _getRollupFactory(self):
         if self._rollupFactory is None:
             self._rollupFactory = self.getDocFactory('methanal-rollup')
         return self._rollupFactory
 
+
     def makeRollup(self, summary, content):
-        rollupContent = invisible[self._getRollupFactory().load(preprocessors=LiveElement.preprocessors)]
+        rollupFactory = self._getRollupFactory()
+        rollupContent = invisible[
+            rollupFactory.load(preprocessors=LiveElement.preprocessors)]
         rollupContent.fillSlots('label', self.label)
         rollupContent.fillSlots('summary', summary)
         rollupContent.fillSlots('content', content)
         return rollupContent
+
 
     @renderer
     def rollup(self, req, tag):
@@ -293,19 +320,24 @@ class Rollup(ThemedElement):
         return self.liveElement(req, tag)
 
 
+
 class SimpleRollup(Rollup):
     fragmentName = 'methanal-simple-rollup'
+
 
     def __init__(self, content=None, **kw):
         super(SimpleRollup, self).__init__(**kw)
         self.content = content
 
+
     def getInitialArguments(self):
         params = self.getParams()
         return [params]
 
+
     def getParams(self):
         return {}
+
 
     @renderer
     def rollup(self, req, tag):
@@ -314,9 +346,11 @@ class SimpleRollup(Rollup):
         return self.liveElement(req, tag)
 
 
+
 class Lookup(FormInput):
     fragmentName = 'methanal-lookup'
     jsClass = u'Methanal.Widgets.Lookup'
+
 
     def __init__(self, form, populator, describer, objects=None, **kw):
         if objects is None:
@@ -330,14 +364,17 @@ class Lookup(FormInput):
         self.describer = describer
         self.objects = objects
 
+
     @expose
     def populate(self, *a):
         self.objects = list(self.populator(*a))
         return list(enumerate(self.describer(o) for o in self.objects))
 
+
     @renderer
     def filterForm(self, req, tag):
         return tag[self.form]
+
 
 
 class SimpleLookup(Lookup):

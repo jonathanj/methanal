@@ -1,13 +1,10 @@
-from axiom.attributes import (boolean, integer, text, textlist, timestamp,
-    reference, AbstractFixedPointDecimal)
+from axiom import attributes
 
 from nevow.util import Expose
 
 from methanal import errors
+from methanal.util import propertyMaker
 
-
-def propertyMaker(func):
-    return property(*func())
 
 
 constraint = Expose(
@@ -17,12 +14,13 @@ constraint = Expose(
     """)
 
 
+
 class Value(object):
     """
-    A simple value in a form model.
+    A simple value in a model.
 
     @type name: C{str}
-    @ivar name: The name of this parameter
+    @ivar name: Name of this parameter
 
     @ivar value: Initial value of this parameter
 
@@ -30,12 +28,25 @@ class Value(object):
     @ivar doc: A long description of this parameter
     """
     def __init__(self, name, value=None, doc=None, **kw):
+        """
+        Initialise the parameter.
+
+        @type name: C{str}
+        @ivar name: Name of this parameter
+
+        @ivar value: Initial value of this parameter
+
+        @type doc: C{unicode}
+        @ivar doc: A long description of this parameter, or C{None} to use the
+            parameter's name
+        """
         super(Value, self).__init__(**kw)
         self.name = name
         self.value = value
         if doc is None:
             doc = name.decode('ascii')
         self.doc = doc
+
 
     @classmethod
     def fromAttr(cls, attr, **kw):
@@ -46,6 +57,7 @@ class Value(object):
         kw.setdefault('value', attr.default)
         kw.setdefault('doc', attr.doc or None)
         return cls(**kw)
+
 
     def validate(self, value):
         """
@@ -59,11 +71,13 @@ class Value(object):
             if result is not None:
                 return result
 
+
     def isValid(self, value):
         """
         Determine whether C{value} is valid data for this parameter.
         """
         return self.validate(value) is None
+
 
     def getValue(self):
         """
@@ -78,12 +92,14 @@ class Value(object):
         return self.value
 
 # XXX: backwards compat, deprecate this
+# XXX: see http://twistedmatrix.com/trac/ticket/3937 for doing this
 ValueParameter = Value
+
 
 
 class List(Value):
     """
-    A parameter consisting of multiple values.
+    A model parameter consisting of multiple values.
     """
     @constraint
     def isIterable(self, value):
@@ -99,18 +115,20 @@ class List(Value):
 ListParameter = List
 
 
+
 class Enum(Value):
     """
-    An enumeration value in a form model.
+    An enumeration value in a model.
 
     The value for this parameter must be chosen from a sequence of predefined
     possibilities.
 
-    @ivar values: a sequence of values present in the enumeration
+    @ivar values: A sequence of values present in the enumeration
     """
     def __init__(self, values, **kw):
         super(Enum, self).__init__(**kw)
         self.values = values
+
 
     @constraint
     def valueInEnumeration(self, value):
@@ -123,9 +141,10 @@ class Enum(Value):
 EnumerationParameter = Enum
 
 
+
 class MultiEnumerationParameter(Enum):
     """
-    A multi-value enumeration parameter.
+    A multi-value enumeration model parameter.
     """
     @constraint
     def valueInEnumeration(self, value):
@@ -135,6 +154,7 @@ class MultiEnumerationParameter(Enum):
         for v in value:
             if v not in self.values:
                 return u'Value not present in enumeration'
+
 
 
 class ReferenceParameter(Value):
@@ -147,9 +167,11 @@ class ReferenceParameter(Value):
         self.model = model
         super(ReferenceParameter, self).__init__(**kw)
 
+
     @classmethod
     def fromAttr(cls, attr, model, **kw):
         return super(ReferenceParameter, cls).fromAttr(attr, model=model)
+
 
     @propertyMaker
     def value():
@@ -159,17 +181,20 @@ class ReferenceParameter(Value):
             self.model.item = data
         return get, set
 
+
     def getValue(self):
         return self.model.process()
 
 
+
 class DecimalValue(Value):
     """
-    A decimal number parameter.
+    A decimal number model parameter.
     """
     def __init__(self, decimalPlaces, **kw):
         super(DecimalValue, self).__init__(**kw)
         self.decimalPlaces = decimalPlaces
+
 
     @classmethod
     def fromAttr(cls, attr, **kw):
@@ -177,6 +202,7 @@ class DecimalValue(Value):
         return super(DecimalValue, cls).fromAttr(attr, **kw)
 
 DecimalParameter = DecimalValue
+
 
 
 class ForeignRef(Value):
@@ -190,9 +216,11 @@ class ForeignRef(Value):
 
     @classmethod
     def fromAttr(cls, attr, store, **kw):
-        return super(ForeignRef, cls).fromAttr(attr, itemType=attr.reftype, store=store, **kw)
+        return super(ForeignRef, cls).fromAttr(
+            attr, itemType=attr.reftype, store=store, **kw)
 
 StoreIDParameter = ForeignRef
+
 
 
 def mandatory(value):
@@ -201,6 +229,7 @@ def mandatory(value):
     """
     if value is None:
         return u'Value is mandatory'
+
 
 
 class Model(object):
@@ -226,6 +255,7 @@ class Model(object):
         self.callback = callback
         self.doc = doc
 
+
     def attach(self, *params):
         """
         Attach parameters to this model.
@@ -235,24 +265,34 @@ class Model(object):
         for param in params:
             self.params[param.name] = param
 
+
     def process(self):
+        """
+        Invoke L{self.callback} with all the model parameter data.
+        """
         data = self.getData()
-        value = self.callback(**data)
-        return value
+        return self.callback(**data)
+
 
     def getData(self):
+        """
+        Get all of the model parameters' values.
+
+        @rtype: C{dict} mapping C{str} to values
+        """
         data = {}
         for param in self.params.itervalues():
             data[param.name] = param.getValue()
         return data
 
 
+
 _paramTypes = {
-    integer: Value,
-    text: Value,
-    boolean: Value,
-    textlist: ListParameter,
-    timestamp: Value}
+    attributes.integer:   Value,
+    attributes.text:      Value,
+    attributes.boolean:   Value,
+    attributes.textlist:  ListParameter,
+    attributes.timestamp: Value}
 
 def paramFromAttribute(store, attr, value, name=None):
     doc = attr.doc or None
@@ -260,13 +300,13 @@ def paramFromAttribute(store, attr, value, name=None):
     if name is None:
         name = attr.attrname
 
-    if isinstance(attr, reference):
+    if isinstance(attr, attributes.reference):
         model = ItemModel(itemClass=attr.reftype, store=store)
         return ReferenceParameter(name=name,
                                   value=value,
                                   doc=doc,
                                   model=model)
-    elif isinstance(attr, AbstractFixedPointDecimal):
+    elif isinstance(attr, attributes.AbstractFixedPointDecimal):
         return DecimalParameter(name=name,
                                 value=value,
                                 doc=doc,
@@ -279,9 +319,26 @@ def paramFromAttribute(store, attr, value, name=None):
                            doc=doc)
 
 
+
 def paramsFromSchema(store, itemClass, item=None, ignoredAttributes=set()):
     """
-    Construct L{Model} parameters from an Axiom item schema.
+    Construct model parameters from an Axiom item schema.
+
+    @type store: L{axiom.store.Store}
+    @param store: Store used for reference attributes in the item schema
+
+    @type itemClass: C{type}
+    @param itemClass: Item type whose schema model parameters are based on
+
+    @type item: L{axiom.item.Item}
+    @param item: Item instance used for retrieving attribute values, or
+        C{None} to use the attribute's default
+
+    @type ignoredAttributes: C{set} of C{str}
+    @param ignoredAttributes: Names of attributes to skip creating parameters
+        for
+    
+    @rtype: C{iterable} of model parameters
     """
     for name, attr in itemClass.getSchema():
         if name in ignoredAttributes:
@@ -295,11 +352,13 @@ def paramsFromSchema(store, itemClass, item=None, ignoredAttributes=set()):
         yield paramFromAttribute(store, attr, value, name)
 
 
+
 class ItemModelBase(Model):
     """
     A model backed by an item or item class.
     """
-    def __init__(self, item=None, itemClass=None, store=None, doc=u'Save', **kw):
+    def __init__(self, item=None, itemClass=None, store=None, doc=u'Save',
+                 **kw):
         """
         Initialise model.
 
@@ -309,16 +368,18 @@ class ItemModelBase(Model):
         providing a model for an item type that you wish to create but
         have no instance of yet.
 
-        @type item: C{axiom.item.Item} or C{None}
-        @param item: An Axiom item to synthesize a model for or C{None}
+        @type item: C{axiom.item.Item}
+        @param item: An Axiom item to synthesize a model for, or C{None}
+            to create an item of L{itemClass} when the callback is triggered
 
-        @type itemClass: C{type} for an C{axiom.item.Item} or C{None}
-        @param itemClass: An Axiom item type to synthesize a model and
-            create an instance for, or C{None}
+        @type itemClass: C{type}
+        @param itemClass: Item type to synthesize a model and create an
+            instance for, or C{None} to use the type of L{item}
 
         @type store: C{axiom.store.Store}
         """
-        super(ItemModelBase, self).__init__(callback=self.storeData, doc=doc, **kw)
+        super(ItemModelBase, self).__init__(
+            callback=self.storeData, doc=doc, **kw)
 
         if item is None:
             if itemClass is None:
@@ -332,6 +393,7 @@ class ItemModelBase(Model):
         self.itemClass = itemClass or type(item)
         self.store = store or item.store
 
+
     def _storeData(self, data):
         """
         Store model data.
@@ -343,6 +405,7 @@ class ItemModelBase(Model):
             for name, value in data.iteritems():
                 setattr(self.item, name, value)
         return self.stored(self.item)
+
 
     def storeData(self, **data):
         """
@@ -360,12 +423,14 @@ class ItemModelBase(Model):
         else:
             return self._storeData(data)
 
+
     def createItem(self, item):
         """
         Callback for item creation.
 
         @param item: The newly-created item.
         """
+
 
     def stored(self, item):
         """
@@ -375,43 +440,60 @@ class ItemModelBase(Model):
         """
 
 
+
 class ItemModel(ItemModelBase):
     """
     A model automatically synthesized from an Item class or instance.
     """
-    def __init__(self, item=None, itemClass=None, store=None, ignoredAttributes=None, **kw):
+    def __init__(self, item=None, itemClass=None, store=None,
+                 ignoredAttributes=None, **kw):
         """
         @type ignoredAttibutes: C{container}
         @param ignoredAttributes: Attribute names to ignore when synthesizing
             the model
         """
-        super(ItemModel, self).__init__(item=item, itemClass=itemClass, store=store, params=[], **kw)
+        super(ItemModel, self).__init__(
+            item=item, itemClass=itemClass, store=store, params=[], **kw)
 
         if ignoredAttributes is None:
             ignoredAttributes = set()
         self.ignoredAttributes = ignoredAttributes
 
-        params = paramsFromSchema(self.store, self.itemClass, self.item, self.ignoredAttributes)
+        params = paramsFromSchema(
+            self.store, self.itemClass, self.item, self.ignoredAttributes)
         self.attach(*params)
+
 
     def stored(self, item):
         return item
 
 
-def modelFromItem(item, ignoredAttributes=set()):
+
+def modelFromItem(item, ignoredAttributes=None):
     """
     Automatically synthesize a model from an Item instance.
     """
     return ItemModel(item=item, ignoredAttributes=ignoredAttributes)
 
 
-def modelFromItemClass(itemClass, store=None, ignoredAttributes=set()):
+
+def modelFromItemClass(itemClass, store=None, ignoredAttributes=None):
     """
     Automatically synthesize a model from an Item class.
     """
-    return ItemModel(itemClass=itemClass, store=store, ignoredAttributes=ignoredAttributes)
+    return ItemModel(itemClass=itemClass,
+                     store=store,
+                     ignoredAttributes=ignoredAttributes)
+
 
 
 def loadFromItem(model, item):
+    """
+    Initialise model parameters from an Axiom item instance.
+
+    @type model: L{Model}
+
+    @type item: L{axiom.item.Item}
+    """
     for name, param in model.params.iteritems():
         param.value = getattr(item, name)
