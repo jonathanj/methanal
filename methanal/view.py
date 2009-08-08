@@ -22,6 +22,12 @@ class SimpleForm(ThemedElement):
     A simple form.
 
     Simple forms do not contain any submission mechanism.
+
+    @type store: L{axiom.store.Store}
+    @ivar store: Backing Axiom store
+
+    @type model: L{Model}
+    @ivar model: Model supporting the form inputs
     """
     fragmentName = 'methanal-simple-form'
     jsClass = u'Methanal.View.SimpleForm'
@@ -30,10 +36,6 @@ class SimpleForm(ThemedElement):
     def __init__(self, store, model, **kw):
         """
         Initialise the form.
-
-        @type store: L{axiom.store.Store}
-
-        @type model: L{Model}
         """
         super(SimpleForm, self).__init__(**kw)
         self.store = store
@@ -65,6 +67,8 @@ class SimpleForm(ThemedElement):
     def addFormChild(self, child):
         """
         Add a new child to the form.
+
+        @param child: Input to add as a child of the form
         """
         self.formChildren.append(child)
 
@@ -94,21 +98,18 @@ class SimpleForm(ThemedElement):
 class LiveForm(SimpleForm):
     """
     A form view implemented as an Athena widget.
+
+    @type viewOnly: C{bool}
+    @ivar viewOnly: Flag indicating whether model values are written back when
+        invoked
     """
     fragmentName = 'methanal-liveform'
     jsClass = u'Methanal.View.LiveForm'
 
+
     def __init__(self, store, model, viewOnly=False, **kw):
         """
         Initialise the form.
-
-        @type store: L{axiom.store.Store}
-
-        @type model: L{Model}
-
-        @type viewOnly: C{bool}
-        @param viewOnly: Indicates whether model values are written back when
-            invoked, defaults to C{False}
         """
         super(LiveForm, self).__init__(store=store, model=model, **kw)
         if self.model.doc is None:
