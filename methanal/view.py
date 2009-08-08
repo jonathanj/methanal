@@ -28,6 +28,13 @@ class SimpleForm(ThemedElement):
 
 
     def __init__(self, store, model, **kw):
+        """
+        Initialise the form.
+
+        @type store: L{axiom.store.Store}
+
+        @type model: L{Model}
+        """
         super(SimpleForm, self).__init__(**kw)
         self.store = store
         self.model = model
