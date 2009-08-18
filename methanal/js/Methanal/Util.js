@@ -152,10 +152,17 @@ Methanal.Util.cycle = function cycle(/*...*/) {
     };
 }
 
+
+
 /**
- * Find the index of C{v} in the array C{a}.
+ * Find the index of a value in an array.
  *
- * @return: Index of C{v} in C{a} or C{-1} if not found.
+ * @type  a: C{Array}
+ *
+ * @param v: Value to determine the index of in L{a}
+ *
+ * @rtype:  C{number}
+ * @return: Index of the value in the array, or C{-1} if not found
  */
 Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
     for (var i = 0; i < a.length; ++i)
@@ -163,6 +170,7 @@ Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
             return i;
     return -1;
 };
+
 
 
 Methanal.Util.detachWidget = function detachWidget(widget) {
@@ -221,4 +229,25 @@ Methanal.Util.reduce = function reduce(f, xs, z) {
     }
 
     return acc;
-}
+};
+
+
+
+/**
+ * Represent an object in a human-readable form.
+ *
+ * @rtype:  C{String}
+ */
+Methanal.Util.repr = function repr(o) {
+    if (o === null)
+        return 'null';
+    if (typeof(o) == 'string') {
+        return Divmod.Base.reprString(o);
+    } else if (typeof(o) == 'undefined') {
+        return 'undefined';
+    } else if (typeof(o) == 'function') {
+        if (o.name)
+            return '<function ' + o.name + '>';
+    }
+    return o.toString();
+};
