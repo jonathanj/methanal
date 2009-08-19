@@ -375,6 +375,43 @@ class TextAreaInput(FormInput):
 
 
 
+class VerifiedPasswordInput(FormInput):
+    """
+    Password input with confirmation.
+    """
+    fragmentName = 'methanal-verified-password-input'
+    jsClass = u'Methanal.View.VerifiedPasswordInput'
+
+
+
+class SlugInput(FormInput):
+    """
+    Enforced URL friendly text input.
+    """
+    fragmentName = u'methanal-slug-input'
+    jsClass = u'Methanal.View.SlugInput'
+
+
+
+class SlugifyingInput(FormInput):
+    """
+    Text input that auto-populates a given field with a
+    slugified copy of its own value.
+    """
+    fragmentName = 'methanal-slugifying-input'
+    jsClass = u'Methanal.View.SlugifyingInput'
+
+
+    def __init__(self, slugInputName, **kw):
+        super(SlugifyingInput, self).__init__(**kw)
+        self.slugInputName = slugInputName
+
+
+    def getArgs(self):
+        return {u'slugInputName': self.slugInputName}
+
+
+
 class TextInput(FormInput):
     """
     Text input.

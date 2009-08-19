@@ -222,3 +222,15 @@ Methanal.Util.reduce = function reduce(f, xs, z) {
 
     return acc;
 }
+
+/**
+ * Return a URL friendly version of the specified string.
+ *
+ * @param value: The value to slugify.
+ **/
+Methanal.Util.slugify = function (value) {
+    value = value.toLowerCase();
+    value = value.replace(/[^a-z0-9-\s]/g, '');
+    value = value.replace(/[-\s]+/g, '-');
+    return value;
+}

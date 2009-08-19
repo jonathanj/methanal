@@ -575,6 +575,60 @@ Methanal.View.TextAreaInput.methods(
     });
 
 
+Methanal.View.VerifiedPasswordInput = Methanal.View.FormInput.subclass('Methanal.View.VerifiedPasswordInput');
+Methanal.View.VerifiedPasswordInput.methods(
+    function nodeInserted(self) {
+        Methanal.View.VerifiedPasswordInput.upcall(self, 'nodeInserted');
+        self.confirmPasswordNode = self.nodeById('confirmPassword');
+    },
+
+    function passwordIsStrong(self, password) {
+        return password.length > 4;
+    },
+
+
+    function baseValidator(self, value) {
+        if (value !== self.confirmPasswordNode.value || value === null || self.confirmPasswordNode.value === null)
+            return 'Passwords do not match.';
+
+        if (!self.passwordIsStrong(value))
+            return 'Password is too weak.';
+    });
+
+
+Methanal.View.SlugInput = Methanal.View.FormInput.subclass('Methanal.View.SlugInput');
+Methanal.View.SlugInput.methods(
+        function baseValidator(self, value) {
+            var regex = /^[a-z0-9\-]*$/;
+            if (!regex.test(value))
+                return 'Must consist of lowercase letters, digits, and hyphens';
+        },
+
+        function onKeyUp(self, node) {
+            node.value = Methanal.Util.slugify(node.value);
+        });
+
+
+Methanal.View.SlugifyingInput = Methanal.View.FormInput.subclass('Methanal.View.SlugifyingInput');
+Methanal.View.SlugifyingInput.methods(
+        function __init__(self, node, args) {
+            Methanal.View.SlugifyingInput.upcall(self, '__init__', node, args);
+            self.slugInputName = args.slugInputName;
+        },
+
+        function _updateSlugInput(self, value) {
+            self.getForm().getControl(self.slugInputName).inputNode.value = Methanal.Util.slugify(value);
+        },
+        
+        function onKeyUp(self, node) {
+            self._updateSlugInput(node.value);
+        },
+        
+        function onChange(self, node) {
+            self._updateSlugInput(node.value);
+        });
+
+
 Methanal.View.TextInput = Methanal.View.FormInput.subclass('Methanal.View.TextInput');
 Methanal.View.TextInput.methods(
     function __init__(self, node, args) {
