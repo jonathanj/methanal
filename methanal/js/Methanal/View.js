@@ -586,7 +586,6 @@ Methanal.View.VerifiedPasswordInput.methods(
         return password.length > 4;
     },
 
-
     function baseValidator(self, value) {
         if (value !== self.confirmPasswordNode.value || value === null || self.confirmPasswordNode.value === null)
             return 'Passwords do not match.';
@@ -616,16 +615,19 @@ Methanal.View.SlugifyingInput.methods(
             self.slugInputName = args.slugInputName;
         },
 
-        function _updateSlugInput(self, value) {
-            self.getForm().getControl(self.slugInputName).inputNode.value = Methanal.Util.slugify(value);
+        function getSlugInput(self) {
+            return self.getForm().getControl(self.slugInputName);
         },
         
         function onKeyUp(self, node) {
-            self._updateSlugInput(node.value);
+            self.getSlugInput().setValue(Methanal.Util.slugify(node.value));
         },
         
         function onChange(self, node) {
-            self._updateSlugInput(node.value);
+            Methanal.View.SlugifyingInput.upcall(self, 'onChange', node);
+            var slugInput = self.getSlugInput();
+            slugInput.setValue(Methanal.Util.slugify(node.value));
+            slugInput.onChange(slugInput.node);
         });
 
 
