@@ -152,10 +152,17 @@ Methanal.Util.cycle = function cycle(/*...*/) {
     };
 }
 
+
+
 /**
- * Find the index of C{v} in the array C{a}.
+ * Find the index of a value in an array.
  *
- * @return: Index of C{v} in C{a} or C{-1} if not found.
+ * @type  a: C{Array}
+ *
+ * @param v: Value to determine the index of in L{a}
+ *
+ * @rtype:  C{number}
+ * @return: Index of the value in the array, or C{-1} if not found
  */
 Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
     for (var i = 0; i < a.length; ++i)
@@ -163,6 +170,7 @@ Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
             return i;
     return -1;
 };
+
 
 
 Methanal.Util.detachWidget = function detachWidget(widget) {
@@ -221,4 +229,41 @@ Methanal.Util.reduce = function reduce(f, xs, z) {
     }
 
     return acc;
-}
+};
+
+
+
+/**
+ * Quote quote characters in a string.
+ */
+Methanal.Util._reprString = function _reprString(o) {
+    return ('"' + o.replace(/([\"\\])/g, '\\$1') + '"'
+        ).replace(/[\f]/g, "\\f"
+        ).replace(/[\b]/g, "\\b"
+        ).replace(/[\n]/g, "\\n"
+        ).replace(/[\t]/g, "\\t"
+        ).replace(/[\r]/g, "\\r");
+};
+
+
+
+/**
+ * Represent an object in a human-readable form.
+ *
+ * @rtype:  C{String}
+ */
+Methanal.Util.repr = function repr(o) {
+    if (o === null)
+        return 'null';
+    if (typeof(o) == 'string') {
+        return Methanal.Util._reprString(o);
+    } else if (typeof(o) == 'undefined') {
+        return 'undefined';
+    } else if (typeof(o) == 'function') {
+        if (o.name)
+            return '<function ' + o.name + '>';
+    } else if (o instanceof Array) {
+        return o.toSource();
+    }
+    return o.toString();
+};

@@ -2,8 +2,7 @@
 // import Methanal.Util
 
 
-Methanal.Tests.TestUtil.TestUtil = Divmod.UnitTest.TestCase.subclass('Methanal.Test.TestUtil.TestUtil');
-Methanal.Tests.TestUtil.TestUtil.methods(
+Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
     function test_strToInt(self) {
         var CASES = [
             ['1234', 1234],
@@ -22,6 +21,7 @@ Methanal.Tests.TestUtil.TestUtil.methods(
         }
     },
 
+
     function test_reduce(self) {
         var reduce = Methanal.Util.reduce;
 
@@ -38,4 +38,16 @@ Methanal.Tests.TestUtil.TestUtil.methods(
         self.assertThrows(Error, function () { return reduce(add, []); });
         self.assertIdentical(reduce(add, [], 10), 10);
         self.assertIdentical(reduce(add, [10]), 10);
+    },
+
+
+    /**
+     * Test L{Methanal.Util._reprString} correctly escapes various whitespace
+     * characters.
+     */
+    function test_reprString(self) {
+        var s = '\r\n\f\b\t';
+        var repr = Methanal.Util._reprString(s);
+        var expected = "\"\\r\\n\\f\\b\\t\"";
+        self.assertIdentical(repr, expected);
     });
