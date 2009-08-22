@@ -234,6 +234,20 @@ Methanal.Util.reduce = function reduce(f, xs, z) {
 
 
 /**
+ * Quote quote characters in a string.
+ */
+Methanal.Util._reprString = function _reprString(o) {
+    return ('"' + o.replace(/([\"\\])/g, '\\$1') + '"'
+        ).replace(/[\f]/g, "\\f"
+        ).replace(/[\b]/g, "\\b"
+        ).replace(/[\n]/g, "\\n"
+        ).replace(/[\t]/g, "\\t"
+        ).replace(/[\r]/g, "\\r");
+};
+
+
+
+/**
  * Represent an object in a human-readable form.
  *
  * @rtype:  C{String}
@@ -242,12 +256,14 @@ Methanal.Util.repr = function repr(o) {
     if (o === null)
         return 'null';
     if (typeof(o) == 'string') {
-        return Divmod.Base.reprString(o);
+        return Methanal.Util._reprString(o);
     } else if (typeof(o) == 'undefined') {
         return 'undefined';
     } else if (typeof(o) == 'function') {
         if (o.name)
             return '<function ' + o.name + '>';
+    } else if (o instanceof Array) {
+        return o.toSource();
     }
     return o.toString();
 };
