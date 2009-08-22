@@ -1,19 +1,11 @@
 // import Divmod.UnitTest
 // import Methanal.Validators
 // import Methanal.Util
+// import Methanal.Tests.Util
 
 
 
-Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestValidators, 'TestValidators').methods(
-    /**
-     * Assert that C{a} and C{b} are not identical.
-     */
-    function assertNotIdentical(self, a, b, /* optional */ message) {
-        self.compare(function (x, y) { return x !== y; },
-                     '!==', a, b, message);
-    },
-
-
+Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestValidators, 'TestValidators').methods(
     /**
      * Assert that C{value} is a valid input for C{validator}.
      */
