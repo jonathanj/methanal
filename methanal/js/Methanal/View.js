@@ -858,114 +858,75 @@ Methanal.View.CheckboxInput.methods(
     });
 
 
+
 /**
- * A form widget for textually entering dates.
+ * Textual date input.
  *
- * The following date formats are supported::
- *
- *     YYYY/MM/DD, YYYY-MM-DD, YYYY.MM.DD
- *     DD/MM/YYYY, DD-MM-YYYY, DD.MM.YYYY
- *
- * As well as the special inputs "yesterday", "today" and "tomorrow".
+ * See L{Methanal.Util.Time.guess} for possible input values.
  */
-Methanal.View.DateInput = Methanal.View.TextInput.subclass('Methanal.View.DateInput');
-Methanal.View.DateInput.methods(
-    function nodeInserted(self) {
-        self.dateReprNode = self.nodeById('date-representation');
-        Methanal.View.DateInput.upcall(self, 'nodeInserted');
-    },
-
-    function splitDate(self, value) {
-        var delims = ['-', '/', '.'];
-
-        for (var i = 0; i < delims.length; ++i) {
-            var parts = value.split(delims[i]);
-            if (parts.length == 3)
-                return parts;
-        }
-
-        return null;
-    },
-
-    function parseDate(self, value) {
-        if (value.length === 0)
+Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
+    /**
+     * Parse input.
+     *
+     * @raise Methanal.Util.TimeParseError: If L{value} is not valid or
+     *     guess-able value
+     *
+     * @rtype:  L{Methanal.Util.Time}
+     * @return: Parsed time or C{null} if L{value} is empty
+     */
+    function _parse(self, value) {
+        if (value.length == 0)
             return null;
+        return Methanal.Util.Time.guess(value).oneDay();
+    },
 
-        var parts = self.splitDate(value);
-        if (parts != null) {
-            var y;
-            var m;
-            var d;
 
-            m = Methanal.Util.strToInt(parts[1]) - 1;
-            if (parts[0].length == 4) {
-                y = Methanal.Util.strToInt(parts[0]);
-                d = Methanal.Util.strToInt(parts[2]);
-            } else {
-                y = Methanal.Util.strToInt(parts[2]);
-                d = Methanal.Util.strToInt(parts[0]);
-            }
-
-            if (y > 0 && m >= 0 && m < 12 && d > 0 && d < 32)
-                return new Date(y, m, d);
-        } else {
-            var value = value.toLowerCase();
-            if (value == 'today')
-                return new Date();
-            else if (value == 'yesterday')
-                return new Date((new Date()).getTime() - 3600 * 24 * 1000);
-            else if (value == 'tomorrow')
-                return new Date((new Date()).getTime() + 3600 * 24 * 1000);
+    /**
+     * Update the friendly representation of the date value.
+     */
+    function _updateRepr(self, value) {
+        var msg = '';
+        try {
+            var time = self._parse(value);
+            if (time)
+                msg = d.asHumanly();
+        } catch (e) {
+            msg = 'Unknown date';
         }
-
-        return undefined;
+        Methanal.Util.replaceNodeText(self.nodeById('repr'), msg);
     },
 
-    function reprDate(self, value) {
-        var days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        var r = [];
 
-        r.push(days[value.getDay()] + ',');
-        r.push(value.getDate().toString());
-        r.push(months[value.getMonth()]);
-        r.push(value.getFullYear().toString());
-
-        return r.join(' ');
+    function setValue(self, value) {
+        Methanal.View.DateInput.upcall(self, 'setValue', value);
+        self._updateRepr(self.inputNode.value);
     },
 
-    function updateRepr(self, node) {
-        var dateReprNode = self.dateReprNode;
-        var d = self.parseDate(node.value);
-        if (d === undefined)
-            Methanal.Util.replaceNodeText(dateReprNode, 'Unknown date format');
-        else if (d === null)
-            Methanal.Util.replaceNodeText(dateReprNode, '');
-        else
-            Methanal.Util.replaceNodeText(dateReprNode, self.reprDate(d));
-    },
-
-    function dateChanged(self, node) {
-        self.updateRepr(node);
-    },
-
-    function setValue(self, data) {
-        Methanal.View.DateInput.upcall(self, 'setValue', data);
-        self.updateRepr(self.inputNode);
-    },
 
     function getValue(self) {
         var value = Methanal.View.DateInput.upcall(self, 'getValue');
-        var d = self.parseDate(value);
-        if (d === null || d === undefined)
+        try {
+            var time = self._parse(value);
+            if (time !== null)
+                return time.asTimestamp();
             return null;
-
-        return d.getTime();
+        } catch (e) {
+            return undefined;
+        }
     },
+
 
     function baseValidator(self, value) {
         if (value === undefined)
             return 'Invalid date value';
+    },
+
+
+    /**
+     * Handle "onkeyup" DOM event.
+     */
+    function onKeyUp(self, node) {
+        self._updateRepr(node.value);
     });
 
 
