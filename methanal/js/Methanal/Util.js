@@ -552,13 +552,15 @@ Methanal.Util.Time.guess = function guess(value) {
         if (parts[0].length == 4) {
             y = Methanal.Util.strToInt(parts[0]);
             d = Methanal.Util.strToInt(parts[2]);
-        } else {
+        } else if (parts[2].length == 4) {
             d = Methanal.Util.strToInt(parts[0]);
             y = Methanal.Util.strToInt(parts[2]);
         }
 
         if (_validDate(y, m, d))
-            return Methanal.Util.Time.fromDate(new Date(y, m, d));
+            // TODO: In the future, "guess" should be able to guess times as
+            // well as dates.
+            return Methanal.Util.Time.fromDate(new Date(y, m, d)).oneDay();
     }
 
     throw new Methanal.Util.TimeParseError(
