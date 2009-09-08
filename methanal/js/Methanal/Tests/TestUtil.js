@@ -105,35 +105,49 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
 
     /**
      * L{Methanal.Util.Time.guess} creates a L{Methanal.Util.Time} instance
-     * when given an input format it can parse, otherwise
-     * L{Methanal.Util.TimeParseError} is thrown.
+     * when given an input format it can parse.
      */
     function test_guess(self) {
-        self.assertIdentical(
-            Methanal.Util.Time.guess('2009/9/1').asTimestamp(),
-            1251756000000);
-        self.assertIdentical(
-            Methanal.Util.Time.guess('2009.09.01').asTimestamp(),
-            1251756000000);
-        self.assertIdentical(
-            Methanal.Util.Time.guess('2009-09-01').asTimestamp(),
-            1251756000000);
-        self.assertIdentical(
-            Methanal.Util.Time.guess('1/9/2009').asTimestamp(),
-            1251756000000);
-        self.assertIdentical(
-            Methanal.Util.Time.guess('01.09.2009').asTimestamp(),
-            1251756000000);
-        self.assertIdentical(
-            Methanal.Util.Time.guess('01-09-2009').asTimestamp(),
-            1251756000000);
+        function assertTimeParsed(data, timestamp) {
+            self.assertIdentical(
+                Methanal.Util.Time.guess(data).asTimestamp(),
+                timestamp);
+        };
+
+        assertTimeParsed('2009/9/1',   1251756000000);
+        assertTimeParsed('2009.09.01', 1251756000000);
+        assertTimeParsed('2009-09-01', 1251756000000);
+        assertTimeParsed('1/9/2009',   1251756000000);
+        assertTimeParsed('01.09.2009', 1251756000000);
+        assertTimeParsed('01-09-2009', 1251756000000);
+        assertTimeParsed('1/9/2009',   1251756000000);
+        assertTimeParsed('29/2/2008',  1204236000000);
+    },
+
+    
+    /**
+     * L{Methanal.Util.Time.guess} throws L{Methanal.Util.TimeParseError} when
+     * the input is not in any recognisable format, and reraises the original
+     * exception if something other than L{Methanal.Util.TimeParseError} occurs.
+     */
+    function test_guessFailure(self) {
+        function assertTimeParseError(data) {
+            self.assertThrows(
+                Methanal.Util.TimeParseError,
+                function() { return Methanal.Util.Time.guess(data); });
+        };
+
+        assertTimeParseError('');
+        assertTimeParseError('hello');
+        assertTimeParseError('1/2/3');
+        assertTimeParseError('2009/01');
+        assertTimeParseError('2009/01');
+        assertTimeParseError('2009/01/32');
+        assertTimeParseError('2009/02/29');
 
         self.assertThrows(
-            Methanal.Util.TimeParseError,
-            function() { return Methanal.Util.Time.guess(''); });
-        self.assertThrows(
-            Methanal.Util.TimeParseError,
-            function() { return Methanal.Util.Time.guess('hello'); });
+            TypeError,
+            function() { return Methanal.Util.Time.guess(undefined); });
     },
 
 

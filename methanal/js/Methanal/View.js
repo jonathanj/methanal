@@ -891,6 +891,8 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
             if (time)
                 msg = d.asHumanly();
         } catch (e) {
+            if (!(e instanceof Methanal.Util.TimeParseError))
+                msg = e.toString();
             msg = 'Unknown date';
         }
         Methanal.Util.replaceNodeText(self.nodeById('repr'), msg);

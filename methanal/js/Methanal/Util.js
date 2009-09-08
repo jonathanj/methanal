@@ -502,7 +502,7 @@ Methanal.Util.Time.isLeapYear = function isLeapYear(year) {
 Methanal.Util.Time._monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 /**
- * Get the number of days for L{month} in C{year}.
+ * Get the number of days for C{month} in C{year}.
  */
 Methanal.Util.Time.getMonthLength = function getMonthLength(year, month) {
     if (month == 1 && Methanal.Util.Time.isLeapYear(year))
@@ -542,6 +542,8 @@ Methanal.Util.Time.guess = function guess(value) {
     try {
         return Methanal.Util.Time.fromRelative(value);
     } catch (e) {
+        if (!(e instanceof Methanal.Util.TimeParseError))
+            throw e;
     }
 
     var parts = _splitDate();
