@@ -109,9 +109,9 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      */
     function test_guess(self) {
         function assertTimeParsed(data, timestamp) {
-            self.assertIdentical(
-                Methanal.Util.Time.guess(data).asTimestamp(),
-                timestamp);
+            var time = Methanal.Util.Time.guess(data);
+            self.assertIdentical(time._oneDay, true);
+            self.assertIdentical(time.asTimestamp(), timestamp);
         };
 
         assertTimeParsed('2009/9/1',   1251756000000);
