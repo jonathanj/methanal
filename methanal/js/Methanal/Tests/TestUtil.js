@@ -104,3 +104,210 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').meth
         self.assertIdentical(s.contains('b'), true);
         self.assertIdentical(s.contains('c'), false);
     });
+
+
+
+/**
+ * Tests for L{Methanal.Util.Time}.
+ *
+ * @type _knownTime: L{Methanal.Util.Time}
+ * @ivar _knownTime: A known point in time
+ */
+Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
+    function setUp(self) {
+        self._knownTime = Methanal.Util.Time.fromDate(
+            new Date(2009, 8, 6, 1, 36, 23, 2));
+    },
+
+
+    /**
+     * L{Methanal.Util.TimeDelta} correctly specifies a given duration in
+     * milliseconds.
+     */
+    function test_timedelta(self) {
+        var td = Methanal.Util.TimeDelta({'days': 1});
+        self.assertIdentical(td, 1000 * 3600 * 24);
+
+        var td = Methanal.Util.TimeDelta({'days': -1});
+        self.assertIdentical(td, 1000 * 3600 * -24);
+
+        var td = Methanal.Util.TimeDelta({'days': 1,
+                                          'hours': 2});
+        self.assertIdentical(td, 1000 * 3600 * 26);
+
+        var td = Methanal.Util.TimeDelta({'days': 1,
+                                          'hours': 2,
+                                          'minutes': 3});
+        self.assertIdentical(td, 1000 * (3600 * 26 + 60 * 3));
+
+        var td = Methanal.Util.TimeDelta({'days': 1,
+                                          'hours': 2,
+                                          'minutes': 3,
+                                          'seconds': 4});
+        self.assertIdentical(td, 1000 * (3600 * 26 + 60 * 3 + 4));
+
+        var td = Methanal.Util.TimeDelta({'days': 1,
+                                          'hours': 2,
+                                          'minutes': 3,
+                                          'seconds': 4,
+                                          'milliseconds': 5});
+        self.assertIdentical(td, 1000 * (3600 * 26 + 60 * 3 + 4) + 5);
+    },
+
+
+    /**
+     * L{Methanal.Util.Time.guess} creates a L{Methanal.Util.Time} instance
+     * when given an input format it can parse.
+     */
+    function test_guess(self) {
+        function assertTimeParsed(data, timestamp) {
+            var time = Methanal.Util.Time.guess(data);
+            self.assertIdentical(time._oneDay, true);
+            self.assertIdentical(time.asTimestamp(), timestamp);
+        };
+
+        assertTimeParsed('2009/9/1',   1251756000000);
+        assertTimeParsed('2009.09.01', 1251756000000);
+        assertTimeParsed('2009-09-01', 1251756000000);
+        assertTimeParsed('1/9/2009',   1251756000000);
+        assertTimeParsed('01.09.2009', 1251756000000);
+        assertTimeParsed('01-09-2009', 1251756000000);
+        assertTimeParsed('1/9/2009',   1251756000000);
+        assertTimeParsed('29/2/2008',  1204236000000);
+    },
+
+    
+    /**
+     * L{Methanal.Util.Time.guess} throws L{Methanal.Util.TimeParseError} when
+     * the input is not in any recognisable format, and reraises the original
+     * exception if something other than L{Methanal.Util.TimeParseError} occurs.
+     */
+    function test_guessFailure(self) {
+        function assertTimeParseError(data) {
+            self.assertThrows(
+                Methanal.Util.TimeParseError,
+                function() { return Methanal.Util.Time.guess(data); });
+        };
+
+        assertTimeParseError('');
+        assertTimeParseError('hello');
+        assertTimeParseError('1/2/3');
+        assertTimeParseError('2009/01');
+        assertTimeParseError('2009/01');
+        assertTimeParseError('2009/01/32');
+        assertTimeParseError('2009/02/29');
+
+        self.assertThrows(
+            TypeError,
+            function() { return Methanal.Util.Time.guess(undefined); });
+    },
+
+
+    /**
+     * Create a L{Methanal.Util.Time} instance from a C{Date}.
+     */
+    function test_fromDate(self) {
+        var d = new Date();
+        var t = Methanal.Util.Time.fromDate(d);
+        self.assertIdentical(t.asTimestamp(), d.getTime());
+    },
+
+
+    /**
+     * Create a L{Methanal.Util.Time} instance from a valid relative time
+     * reference, while invalid references throw
+     * L{Methanal.Util.TimeParseError}.
+     */
+    function test_fromRelative(self) {
+        var today = self._knownTime;
+
+        var t = Methanal.Util.Time.fromRelative('tomorrow', today);
+        self.assertIdentical(t.asHumanly(), 'Mon, 7 Sep 2009');
+        var t = Methanal.Util.Time.fromRelative('yesterday', today);
+        self.assertIdentical(t.asHumanly(), 'Sat, 5 Sep 2009');
+        var t = Methanal.Util.Time.fromRelative('today', today);
+        self.assertIdentical(t.asHumanly(), 'Sun, 6 Sep 2009');
+
+        var t = Methanal.Util.Time.fromRelative('sun', today);
+        self.assertIdentical(t.asHumanly(), 'Sun, 13 Sep 2009');
+        var t = Methanal.Util.Time.fromRelative('mon', today);
+        self.assertIdentical(t.asHumanly(), 'Mon, 7 Sep 2009');
+        var t = Methanal.Util.Time.fromRelative('satur', today);
+        self.assertIdentical(t.asHumanly(), 'Sat, 12 Sep 2009');
+
+        self.assertThrows(
+            Methanal.Util.TimeParseError,
+            function() {
+                return Methanal.Util.Time.fromRelative('', today);
+            });
+        self.assertThrows(
+            Methanal.Util.TimeParseError,
+            function() {
+                return Methanal.Util.Time.fromRelative('hello', today);
+            });
+    },
+
+
+    /**
+     * L{Methanal.Util.Time.asDate} converts a Time into a C{Date} representing
+     * the same time.
+     */
+    function test_asDate(self) {
+        var t = Methanal.Util.Time();
+        var d = t.asDate();
+        self.assertIdentical(t.asTimestamp(), d.getTime());
+    },
+
+
+    /**
+     * L{Methanal.Util.Time.asTimestamp} converts a Time into the number of
+     * milliseconds elapsed since the epoch.
+     */
+    function test_asTimestamp(self) {
+        self.assertIdentical(self._knownTime.asTimestamp(), 1252193783002);
+    },
+
+
+    /**
+     * L{Methanal.Util.Time.asHumanly} converts a Time into a human-readable
+     * string. Times that have been truncated to a date have an appropriately
+     * accurate human-readable version.
+     */
+    function test_asHumanly(self) {
+        self.assertIdentical(
+            self._knownTime.asHumanly(), 'Sun, 6 Sep 2009 01:36:23');
+        self.assertIdentical(
+            self._knownTime.oneDay().asHumanly(), 'Sun, 6 Sep 2009');
+    },
+
+
+    /**
+     * L{Methanal.Util.Time.oneDay} truncates a Time to only a date.
+     */
+    function test_oneDay(self) {
+        var t = Methanal.Util.Time();
+        var od = t.oneDay().asDate();
+        t = t.asDate();
+        self.assertIdentical(od.getFullYear(), t.getFullYear());
+        self.assertIdentical(od.getMonth(), t.getMonth());
+        self.assertIdentical(od.getDate(), t.getDate());
+        self.assertIdentical(od.getHours(), 0);
+        self.assertIdentical(od.getMinutes(), 0);
+        self.assertIdentical(od.getSeconds(), 0);
+        self.assertIdentical(od.getMilliseconds(), 0);
+    },
+
+    
+    /**
+     * L{Methanal.Util.Time.offset} offsets a Time by the given number of
+     * milliseconds.
+     */
+    function test_offset(self) {
+        var t = self._knownTime.offset(Methanal.Util.TimeDelta({'days': -1}));
+        self.assertIdentical(t.asTimestamp(), 1252107383002);
+        self.assertIdentical(t.oneDay().asHumanly(), 'Sat, 5 Sep 2009');
+
+        var t = self._knownTime.offset(Methanal.Util.TimeDelta({'days': 1}));
+        self.assertIdentical(t.asTimestamp(), 1252280183002);
+        self.assertIdentical(t.oneDay().asHumanly(), 'Mon, 7 Sep 2009');
+    });
