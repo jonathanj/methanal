@@ -267,3 +267,304 @@ Methanal.Util.repr = function repr(o) {
     }
     return o.toString();
 };
+
+
+
+/**
+ * A duration of time, expressed as milliseconds.
+ *
+ * This provides a convenient way to obtain a duration without resorting to
+ * manual calculations::
+ *
+ *     Methanal.Util.TimeDelta({'days':    2,
+ *                              'hours':   5,
+ *                              'minutes': 37})
+ *
+ * @type  values: C{object} mapping C{String} to C{Number}
+ * @param values: Mapping of time units to duration, valid units are: C{days},
+ *     C{hours}, C{minutes}, C{seconds}, C{milliseconds}
+ *
+ * @rtype:  C{Number}
+ * @return: The amount of time L{values} represents, in milliseconds
+ */
+Methanal.Util.TimeDelta = function TimeDelta(values) {
+    var _offset = (values.days || 0) * 3600 * 24 * 1000;
+    _offset += (values.hours || 0) * 3600 * 1000;
+    _offset += (values.minutes || 0) * 60 * 1000;
+    _offset += (values.seconds || 0) * 1000;
+    _offset += (values.milliseconds || 0);
+    return _offset;
+};
+
+
+
+/**
+ * Parsing a time string failed.
+ */
+Divmod.Error.subclass(Methanal.Util, 'TimeParseError');
+
+
+
+/**
+ * A high-level object built on top of C{Date}.
+ *
+ * @type _date: C{Date}
+ * @ivar _date: Underlying Date instance
+ *
+ * @type _oneDay: C{boolean}
+ * @ivar _oneDay: Is this a truncated Time instance?
+ */
+Divmod.Class.subclass(Methanal.Util, 'Time').methods(
+    function __init__(self) {
+        self._date = new Date();
+        self._oneDay = false;
+    },
+
+
+    /**
+     * C{Date} representation.
+     */
+    function asDate(self) {
+        return self._date;
+    },
+
+
+    /**
+     * The number of milliseconds since the epoch.
+     */
+    function asTimestamp(self) {
+        return self._date.getTime();
+    },
+
+
+    /**
+     * A human-readable string representation.
+     */
+    function asHumanly(self) {
+        var _date = self._date;
+        var r = [];
+        r.push(self.getDayName(true) + ',');
+        r.push(_date.getDate().toString());
+        r.push(self.getMonthName(true));
+        r.push(_date.getFullYear().toString());
+        if (!self._oneDay) {
+            function _pad(s) {
+                return (s.length < 2 ? '0' : '') + s;
+            }
+            r.push(_pad(_date.getHours().toString()) + ':' +
+                   _pad(_date.getMinutes().toString()) + ':' +
+                   _pad(_date.getSeconds().toString()));
+        }
+        return r.join(' ');
+    },
+
+
+    /**
+     * Get the name of the day of the week.
+     *
+     * @type  shortened: C{boolean}
+     * @param shortened: Use a 3-letter shortening of the name
+     *
+     * @rtype: C{String}
+     */
+    function getDayName(self, shortened) {
+        var name = Methanal.Util.Time._dayNames[self._date.getDay()];
+        return shortened ? name.substr(0, 3) : name;
+    },
+
+
+    /**
+     * Get the name of the month.
+     *
+     * @type  shortened: C{boolean}
+     * @param shortened: Use a 3-letter shortening of the name
+     *
+     * @rtype: C{String}
+     */
+    function getMonthName(self, shortened) {
+        var name = Methanal.Util.Time._monthNames[self._date.getMonth()];
+        return shortened ? name.substr(0, 3) : name;
+    },
+
+
+    /**
+     * Truncate to a date.
+     *
+     * @rtype: L{Methanal.Util.Time}
+     * @return: A new instance representing the truncated date
+     */
+    function oneDay(self) {
+        var d = new Date(
+            self._date.getFullYear(),
+            self._date.getMonth(),
+            self._date.getDate());
+        var t = Methanal.Util.Time.fromDate(d);
+        t._oneDay = true;
+        return t;
+    },
+    
+
+    /**
+     * Offset the current instance by some amount of time.
+     *
+     * @type  delta: C{Number}
+     * @param delta: An amount of time to offset the current instance by, in
+     *      milliseconds
+     *
+     * @rtype: L{Methanal.Util.Time}
+     * @return: A new instance representing the newly offset time
+     */
+    function offset(self, delta) {
+        var d = new Date(self.asTimestamp() + delta);
+        var t = Methanal.Util.Time.fromDate(d);
+        t._oneDay = self._oneDay;
+        return t;
+    });
+
+
+
+Methanal.Util.Time._dayNames = [
+    'Sunday', 'Monday', 'Tuesday', 'Wednesday',
+    'Thursday', 'Friday', 'Saturday'];
+Methanal.Util.Time._monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+
+
+
+/**
+ * Create a L{Methanal.Util.Time} instance from a C{Date}.
+ */
+Methanal.Util.Time.fromDate = function fromDate(dateObj) {
+    var t = Methanal.Util.Time();
+    t._date = dateObj;
+    return t;
+};
+
+
+
+/**
+ * Create a L{Methanal.Util.Time} instance from a relative date reference.
+ *
+ * @type  value: C{String}
+ * @param value: Relative date reference, valid values are: C{today},
+ *     C{yesterday}, C{tomorrow} and any day of the week's name (which should
+ *     be at least 3 letters long)
+ *
+ * @raise Methanal.Util.TimeParseError: If no information can be gleaned from
+ *     L{value} 
+ *
+ * @rtype: L{Methanal.Util.Time}
+ */
+Methanal.Util.Time.fromRelative = function fromRelative(value, _today) {
+    var today = (_today ? _today : Methanal.Util.Time()).oneDay();
+
+    value = value.toLowerCase();
+    switch (value) {
+        case 'today':
+            return today;
+        case 'yesterday':
+            return today.offset(Methanal.Util.TimeDelta({'days': -1}));
+        case 'tomorrow':
+            return today.offset(Methanal.Util.TimeDelta({'days': 1}));
+    }
+
+    if (value.length >= 3) {
+        var dayNames = Methanal.Util.Time._dayNames;
+        for (var i = 0; i < dayNames.length; ++i) {
+            if (dayNames[i].toLowerCase().indexOf(value) == 0) {
+                var todayDay = today.asDate().getDay();
+                if (i <= todayDay)
+                    i += 7;
+                return today.offset(
+                    Methanal.Util.TimeDelta({'days': i - todayDay}));
+            }
+        }
+    }
+
+    throw new Methanal.Util.TimeParseError(
+        'Unknown relative value: ' + Methanal.Util._reprString(value));
+};
+
+
+
+/**
+ * Determine whether C{year} is a leap year.
+ */
+Methanal.Util.Time.isLeapYear = function isLeapYear(year) {
+    if (year % 100 == 0)
+        return (year % 400 == 0);
+    return (year % 4 == 0);
+};
+
+
+
+Methanal.Util.Time._monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+/**
+ * Get the number of days for C{month} in C{year}.
+ */
+Methanal.Util.Time.getMonthLength = function getMonthLength(year, month) {
+    if (month == 1 && Methanal.Util.Time.isLeapYear(year))
+        return 29;
+    return Methanal.Util.Time._monthLengths[month];
+};
+
+
+
+/**
+ * Create a L{Methanal.Util.Time} instance from a semi-structured string.
+ *
+ * @type  value: C{String}
+ * @param value: Either a numerical YYYYMMDD or DDMMYYY string (separated by
+ *     C{/}, C{.} or C{-}) or a relative time reference, as supported by
+ *     L{Methanal.Util.Time.fromRelative}
+ *
+ * @rtype: L{Methanal.Util.Time}
+ */
+Methanal.Util.Time.guess = function guess(value) {
+    function _splitDate() {
+        var delims = ['-', '/', '.'];
+        for (var i = 0; i < delims.length; ++i) {
+            var parts = value.split(delims[i]);
+            if (parts.length == 3)
+                return parts;
+        }
+        return null;
+    };
+
+    function _validDate(year, month, day) {
+        if (year > 0 && month >= 0 && month < 12)
+            return day > 0 && day <= Methanal.Util.Time.getMonthLength(year, month);
+        return false;
+    };
+
+    try {
+        return Methanal.Util.Time.fromRelative(value);
+    } catch (e) {
+        if (!(e instanceof Methanal.Util.TimeParseError))
+            throw e;
+    }
+
+    var parts = _splitDate();
+    if (parts !== null) {
+        var y, m, d;
+
+        m = Methanal.Util.strToInt(parts[1]) - 1;
+        if (parts[0].length == 4) {
+            y = Methanal.Util.strToInt(parts[0]);
+            d = Methanal.Util.strToInt(parts[2]);
+        } else if (parts[2].length == 4) {
+            d = Methanal.Util.strToInt(parts[0]);
+            y = Methanal.Util.strToInt(parts[2]);
+        }
+
+        if (_validDate(y, m, d))
+            // TODO: In the future, "guess" should be able to guess times as
+            // well as dates.
+            return Methanal.Util.Time.fromDate(new Date(y, m, d)).oneDay();
+    }
+
+    throw new Methanal.Util.TimeParseError(
+        'Unguessable value: ' + Methanal.Util._reprString(value));
+};
