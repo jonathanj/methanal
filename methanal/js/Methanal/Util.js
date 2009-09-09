@@ -1,25 +1,33 @@
 // import Nevow.Athena
 
+
+
 /**
  * Add a class to an element's "className" attribute.
  *
  * This operation is intended to preserve any other values that were already
  * present.
+ *
+ * @type node: DOM node
+ *
+ * @type  cls: C{String}
+ * @param cls: CSS class name to add
  */
 Methanal.Util.addElementClass = function addElementClass(node, cls) {
     var current = node.className;
 
-    // trivial case, no className yet
+    // Trivial case, no "className" yet.
     if (current == undefined || current.length === 0) {
         node.className = cls;
         return;
     }
 
-    // the other trivial case, already set as the only class
+    // Other trivial case, already set as the only class.
     if (current == cls) {
         return;
     }
 
+    // Non-trivial case.
     var classes = current.split(' ');
     for (var i = 0; i < classes.length; ++i) {
         if (classes[i] === cls) {
@@ -30,40 +38,49 @@ Methanal.Util.addElementClass = function addElementClass(node, cls) {
 };
 
 
+
 /**
- * Remove a class from an element's "className" attribute.
+ * Remove all occurences of class from an element's "className" attribute.
  *
  * This operation is intended to preserve any other values that were already
  * present.
+ *
+ * @type node: DOM node
+ *
+ * @type  cls: C{String}
+ * @param cls: CSS class name to remove
  */
 Methanal.Util.removeElementClass = function removeElementClass(node, cls) {
     var current = node.className;
 
-    // trivial case, no className yet
-    if (current == undefined || current.length === 0) {
+    // Trivial case, no "className" yet.
+    if (!current) {
         return;
     }
 
-    // other trivial case, set only to className
+    // Other trivial case, set only to "className".
     if (current == cls) {
-        node.className = "";
+        node.className = '';
         return;
     }
 
-    // non-trivial case
+    // Non-trivial case.
     var classes = current.split(' ');
     for (var i = 0; i < classes.length; ++i) {
         if (classes[i] === cls) {
             classes.splice(i, 1);
             node.className = classes.join(' ');
-            return;
+            i--;
         }
     }
 };
 
 
+
 /**
  * Remove all the children of a node.
+ *
+ * @type node: DOM node
  */
 Methanal.Util.removeNodeContent = function removeNodeContent(node) {
     while (node.lastChild)
@@ -71,8 +88,11 @@ Methanal.Util.removeNodeContent = function removeNodeContent(node) {
 };
 
 
+
 /**
  * Replace all of a node's children with new ones.
+ *
+ * @type node: DOM node
  *
  * @type children: C{Array}
  */
@@ -83,12 +103,19 @@ Methanal.Util.replaceNodeContent = function replaceNodeContent(node, children) {
 };
 
 
+
 /**
  * Replace a node's text node with new text.
+ *
+ * @type node: DOM node
+ *
+ * @type text: C{String}
  */
 Methanal.Util.replaceNodeText = function replaceNodeText(node, text) {
-    Methanal.Util.replaceNodeContent(node, [node.ownerDocument.createTextNode(text)]);
+    Methanal.Util.replaceNodeContent(node,
+        [node.ownerDocument.createTextNode(text)]);
 };
+
 
 
 // XXX: what does this do that's special again?
@@ -101,10 +128,15 @@ Methanal.Util.formatFailure = function formatFailure(failure) {
 };
 
 
+
 /**
  * Convert a string to a base-10 integer.
  *
  * Not quite as simple to do properly as one might think.
+ *
+ * @type s: C{String}
+ *
+ * @rtype: C{Integer}
  */
 Methanal.Util.strToInt = function strToInt(s) {
     if (typeof s !== 'string')
@@ -120,10 +152,15 @@ Methanal.Util.strToInt = function strToInt(s) {
 };
 
 
+
 /**
- * Pretty print a decimal number.
+ * Pretty print a decimal number with thousands separators.
  *
  * Useful for formatting large currency amounts in a human-readable way.
+ *
+ * @type  value: C{number}
+ *
+ * @rtype: C{String}
  */
 Methanal.Util.formatDecimal = function formatDecimal(value) {
     var value = value.toString();
@@ -139,8 +176,14 @@ Methanal.Util.formatDecimal = function formatDecimal(value) {
 };
 
 
+
 /**
- * Create a callable that cycles through the initial inputs when called.
+ * Create a callable that cycles through the initial inputs.
+ *
+ * Like Python's C{itertools.cycle} function.
+ *
+ * @rtype: C{function}
+ * @return: A function that returns the next object in the sequence
  */
 Methanal.Util.cycle = function cycle(/*...*/) {
     var i = -1;
@@ -150,7 +193,7 @@ Methanal.Util.cycle = function cycle(/*...*/) {
         i = ++i % n;
         return args[i];
     };
-}
+};
 
 
 
@@ -173,16 +216,17 @@ Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
 
 
 
+// XXX: DEPRECATED.
 Methanal.Util.detachWidget = function detachWidget(widget) {
-    var children = widget.widgetParent.childWidgets;
-    var index = Methanal.Util.arrayIndexOf(children, widget);
-    if (index !== -1)
-        children.splice(index, 1);
-
-    delete Nevow.Athena.Widget._athenaWidgets[widget._athenaID];
+    Divmod.msg('Deprecated: Use Nevow.Athena.Widget instead');
+    widget.detach();
 };
 
 
+
+/**
+ * Call a widget's (and all child widgets') C{nodeInserted} method.
+ */
 Methanal.Util.nodeInserted = function nodeInserted(widget) {
     if (widget.nodeInserted !== undefined)
         widget.nodeInserted();
@@ -192,17 +236,24 @@ Methanal.Util.nodeInserted = function nodeInserted(widget) {
 };
 
 
+
 /**
  * Left fold on a list.
  *
  * Applies a function of two arguments cumulatively to the elements of a list
  * from left to right, so as to reduce the list to a single value.
  *
- * @param f: The reducing function.
+ * @type f: C{function} taking two arguments
+ * @param f: The reducing function
  *
- * @param xs: The list to reduce.
+ * @type xs: C{Array}
+ * @param xs: The list to reduce
  *
- * @param z: If not undefined, used as the initial value.
+ * @param z: The initial value, if not C{undefined}
+ *
+ * @raise Error: If L{xs} is empty and L{z} is not defined
+ *
+ * @return: The reduced value
  **/
 Methanal.Util.reduce = function reduce(f, xs, z) {
     if (xs.length === 0) {
@@ -250,7 +301,7 @@ Methanal.Util._reprString = function _reprString(o) {
 /**
  * Represent an object in a human-readable form.
  *
- * @rtype:  C{String}
+ * @rtype: C{String}
  */
 Methanal.Util.repr = function repr(o) {
     if (o === null)
@@ -267,3 +318,89 @@ Methanal.Util.repr = function repr(o) {
     }
     return o.toString();
 };
+
+
+
+/**
+ * Throbber helper.
+ *
+ * Finds a node with the ID "throbber" and provides convenience functions
+ * to operate it.
+ *
+ * @type toggleDisplay: C{String}
+ * @ivar toggleDisplay: When defined, specifies the C{style.display} attribute
+ *     value used when making the throbber visible
+ *
+ * @type _node: DOM node
+ * @ivar _node: DOM node of the throbber graphic
+ */
+Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
+    /**
+     * Create the throbber helper.
+     *
+     * @type  widget: L{Nevow.Athena.Widget}
+     * @param widget: The widget containing the throbber node
+     */
+    function __init__(self, widget, toggleDisplay) {
+        Fusion.Util.Throbber.upcall(self, '__init__');
+        self._node = widget.nodeById('throbber');
+        self.toggleDisplay = toggleDisplay;
+    },
+
+
+    /**
+     * Display the throbber.
+     */
+    function start(self) {
+        self._node.style.visibility = 'visible';
+        if (self.toggleDisplay !== undefined)
+            self._node.style.display = self.toggleDisplay;
+    },
+
+
+    /**
+     * Hide the throbber.
+     */
+    function stop(self) {
+        self._node.style.visibility = 'hidden';
+        if (self.toggleDisplay !== undefined)
+            self._node.style.display = 'none';
+    });
+
+
+
+/**
+ * An unordered collection of unique C{String} elements.
+ */
+Divmod.Class.subclass(Methanal.Util, 'StringSet').methods(
+    /**
+     * Initialise the set.
+     *
+     * @type  seq: C{Array} of C{String}
+     * @param seq: Strings to initialise the set with
+     */
+    function __init__(self, seq) {
+        var s = {};
+        if (seq) {
+            for (var i = 0; i < seq.length; ++i)
+                s[seq[i]] = true;
+        }
+        self._set = s;
+    },
+
+
+    /**
+     * Apply a function over each element of the set.
+     */
+    function each(self, fn) {
+        for (var name in self._set)
+            fn(name);
+    },
+
+
+    /**
+     * Test whether C{value} is in the set.
+     */
+    function contains(self, value) {
+        return self._set[value] === true;
+    });

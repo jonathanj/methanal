@@ -26,6 +26,10 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestDeps, 'TestDeps').metho
     },
 
 
+    /**
+     * L{Methanal.Deps.oneOf} determines whether a given value appears in a
+     * specified C{Array}.
+     */
     function test_oneOf(self) {
         var oneOf = Methanal.Deps.oneOf;
         self.assertDepends(oneOf(['foo', 'bar']), 'foo');

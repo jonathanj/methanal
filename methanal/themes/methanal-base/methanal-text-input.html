@@ -2,8 +2,10 @@
     <input class="methanal-input" type="text">
         <nevow:attr name="value" nevow:render="value" />
         <athena:handler event="onchange" handler="onChange" />
+        <athena:handler event="onkeyup" handler="onKeyUp" />
         <athena:handler event="onblur" handler="onBlur" />
         <athena:handler event="onfocus" handler="onFocus" />
     </input>
+    <span style="display: none;" class="friendly-representation" id="displayValue" />
     <span class="methanal-error" id="error" />
 </div>

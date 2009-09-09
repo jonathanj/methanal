@@ -434,52 +434,44 @@ class DateInput(TextInput):
 
 
 
+class IntegerInput(TextInput):
+    """
+    Integer input.
+    """
+    jsClass = u'Methanal.View.IntegerInput'
+
+
+    def getValue(self):
+        value = self.param.value
+        if value is None:
+            return u''
+        return int(value)
+
+
+
 class DecimalInput(TextInput):
     """
     Decimal input.
     """
-    fragmentName = 'methanal-decimal-input'
     jsClass = u'Methanal.View.DecimalInput'
 
 
-    def __init__(self, decimalPlaces=None, showRepr=True, minValue=None,
-                 maxValue=None, **kw):
+    def __init__(self, precision=None, **kw):
         """
         Initialise the input.
 
-        @type decimalPlaces: C{int}
-        @param decimalPlaces: The number of digits of precision to allow, or
+        @type precision: C{int}
+        @param precision: The number of digits of precision to allow, or
             C{None} to use the model parameter's value
-
-        @type showRepr: C{bool}
-        @param showRepr: Flag indicating whether to show a human-readable
-            representation of the input's value
-
-        @type minValue: C{number}
-        @param minValue: Minimum allowed value
-
-        @type maxValue: C{number}
-        @param maxValue: Maximum allowed value
         """
         super(DecimalInput, self).__init__(**kw)
-        if decimalPlaces is None:
-            decimalPlaces = self.param.decimalPlaces
-        self.decimalPlaces = decimalPlaces
-        self.showRepr = showRepr
-        self.minValue = minValue
-        self.maxValue = maxValue
+        if precision is None:
+            precision = self.param.decimalPlaces
+        self.precision = precision
 
 
     def getArgs(self):
-        def _floatOrNone(value):
-            if value is not None:
-                return float(value)
-            return None
-
-        return {u'decimalPlaces': self.decimalPlaces,
-                u'showRepr': self.showRepr,
-                u'minValue': _floatOrNone(self.minValue),
-                u'maxValue': _floatOrNone(self.maxValue)}
+        return {u'precision': self.precision}
 
 
     def getValue(self):
@@ -504,38 +496,6 @@ class PercentInput(DecimalInput):
     Decimal input, with values interpreted as percentages.
     """
     jsClass = u'Methanal.View.PercentInput'
-
-
-    def __init__(self, minValue=Decimal('0.0000'), maxValue=Decimal('1.0000'),
-                 showRepr=True, **kw):
-        super(PercentInput, self).__init__(
-            showRepr=showRepr, minValue=minValue, maxValue=maxValue, **kw)
-
-
-
-class IntegerInput(DecimalInput):
-    """
-    Integer input.
-    """
-    jsClass = u'Methanal.View.IntegerInput'
-
-
-    def __init__(self, **kw):
-        super(IntegerInput, self).__init__(
-            decimalPlaces=0, showRepr=False, **kw)
-
-
-    def getValue(self):
-        value = self.param.value
-        if value is None:
-            return u''
-
-        return int(value)
-
-
-    def invoke(self, data):
-        value = data[self.param.name]
-        self.param.value = value
 
 
 
@@ -596,7 +556,7 @@ class MultiSelectInput(ChoiceInput):
 
 
 
-class GroupedSelectInput(ChoiceInput):
+class GroupedSelectInput(SelectInput):
     """
     Dropdown input with grouped values.
 
@@ -606,10 +566,6 @@ class GroupedSelectInput(ChoiceInput):
                          ...]),
          ...)
     """
-    fragmentName = 'methanal-select-input'
-    jsClass = u'Methanal.View.GroupedSelectInput'
-
-
     @renderer
     def options(self, req, tag):
         option = tag.patternGenerator('option')
