@@ -4,15 +4,36 @@
 // import Methanal.Util
 
 
-Methanal.View._Handler = Divmod.Class.subclass('Methanal.View._Handler');
-Methanal.View._Handler.methods(
-    function __init__(self, handlerId, cache, fn, inputs, outputs) {
-        self.handlerId = handlerId;
+
+/**
+ * Validator / dependency handler.
+ *
+ * @type handlerID: C{Integer}
+ * @ivar handlerID: Handler identifier
+ *
+ * @type cache: L{Methanal.View._HandlerCache}
+ * @ivar cache: Parent cache
+ *
+ * @type fn: C{function}
+ * @ivar fn: Handler function called with the values from inputs named in
+ *     L{inputs}
+ *
+ * @type inputs: C{Array} of C{String}
+ * @ivar inputs: Names of form inputs whose values are passed to L{fn} in order
+ *     to determine visible outputs
+ *
+ * @type outputs: C{Array} of C{String}
+ * @ivar outputs: Names of form outputs 
+ */
+Divmod.Class.subclass(Methanal.View, '_Handler').methods(
+    function __init__(self, handlerID, cache, fn, inputs, outputs) {
+        self.handlerID = handlerID;
         self.cache = cache;
         self.fn = fn;
         self.inputs = inputs;
         self.outputs = outputs;
     },
+
 
     function update(self) {
         var values = [];
@@ -24,72 +45,68 @@ Methanal.View._Handler.methods(
     });
 
 
-Methanal.View.HandlerError = Divmod.Error.subclass('Methanal.View.HandlerError');
-Methanal.View.HandlerError.methods(
+
+Divmod.Error.subclass(Methanal.View, 'HandlerError').methods(
     function toString(self) {
         return 'HandlerError: ' + self.message;
     });
 
 
-Methanal.View.MissingControlError = Divmod.Error.subclass('Methanal.View.MissingControlError');
-Methanal.View.MissingControlError.methods(
+
+/**
+ * Getting a control by name failed because the control does not exist.
+ */
+Divmod.Error.subclass(Methanal.View, 'MissingControlError').methods(
     function toString(self) {
         return 'MissingControlError: ' + self.message;
     });
 
 
-Methanal.View._HandlerCache = Divmod.Class.subclass('Methanal.View._HandlerCache');
-Methanal.View._HandlerCache.methods(
+
+/**
+ * Management of L{Methanal.View._Handler}s.
+ *
+ * @type _inputToHandlers: C{object} mapping C{String} to {object}
+ * @ivar _inputTohandlers: Mapping of input control names to sets of handler
+ *     identifiers
+ *
+ * @type _outputToHandlers: C{object} mapping C{String} to {object}
+ * @ivar _outputTohandlers: Mapping of output control names to sets of handler
+ *     identifiers
+ *
+ * @type _handlers: C{object} mapping C{Integer} to L{Methanal.View._Handler}
+ * @ivar _handlers: Mapping of handler identifiers to handler instances
+ *
+ * @type getData: C{function} taking C{String}
+ * @ivar getData: The function for getting the value of a control by name
+ *
+ * @type update: C{function} taking C{String}, C{Array}
+ * @ivar update: Called for each output control name with a sequence of values
+ *     from handler functions
+ */
+Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
     function __init__(self, getData, update) {
         self.getData = getData;
         self.update = update;
-        self.inputToHandlers = {};
-        self.outputToHandlers = {};
-        self.handlers = {};
-        self.handlerId = 0;
+        self._inputToHandlers = {};
+        self._outputToHandlers = {};
+        self._handlers = {};
+        self._handlerID = 0;
     },
 
-    function addHandler(self, fn, inputs, outputs) {
-        if (fn === undefined)
-            throw Methanal.View.HandlerError('Specified handler function is not defined');
 
-        var handler = Methanal.View._Handler(self.handlerId, self, fn, inputs, outputs);
-
-        for (var i = 0; i < inputs.length; ++i) {
-            var input = inputs[i];
-            var handlers = self.inputToHandlers[input];
-            if (handlers === undefined) {
-                handlers = self.inputToHandlers[input] = {};
-            }
-            handlers[self.handlerId] = 1;
-        }
-
-        for (var i = 0; i < outputs.length; ++i) {
-            var output = outputs[i];
-            var handlers = self.outputToHandlers[output];
-            if (handlers === undefined) {
-                handlers = self.outputToHandlers[output] = {};
-            }
-            handlers[self.handlerId] = 1;
-        }
-
-        self.handlers[self.handlerId] = handler;
-        self.handlerId += 1;
-    },
-
-    function refresh(self, outputs) {
-        for (var handlerId in self.handlers) {
-            self.handlers[handlerId].update();
-        }
-
-        self.updateOutputs(outputs);
-    },
-
-    function updateOutputs(self, outputs) {
+    /**
+     * Call L{self.update} for the specified output controls and handler values.
+     *
+     * @type  outputs: C{object} mapping C{String}
+     * @param outputs: Names of output controls to update; only the keys are
+     *     relevant
+     */
+    function _updateOutputs(self, outputs) {
         for (var output in outputs) {
             var results = [];
-            for (var handlerId in self.outputToHandlers[output]) {
-                var handler = self.handlers[handlerId];
+            for (var handlerID in self._outputToHandlers[output]) {
+                var handler = self._handlers[handlerID];
                 results.push(handler.value);
             }
             if (results.length > 0) {
@@ -98,118 +115,181 @@ Methanal.View._HandlerCache.methods(
         }
     },
 
+
+    /**
+     * Update a control name to handler mapping.
+     *
+     * @type  names: C{Array} of C{String}
+     * @param names: Sequence of control names
+     *
+     * @type  mapping: C{object} mapping C{String} to {object}
+     * @param mapping: Mapping of control names to sets of handler identifiers
+     */
+    function _updateHandlerMapping(self, names, mapping) {
+        for (var i = 0; i < names.length; ++i) {
+            var name = names[i];
+            var handlers = mapping[name];
+            if (handlers === undefined) {
+                handlers = mapping[name] = {};
+            }
+            handlers[self._handlerID] = 1;
+        }
+    },
+
+
+    /**
+     * Add a new handler.
+     *
+     * @type  fn: C{function}
+     * @param fn: Handler function taking arguments for as many L{inputs}
+     *
+     * @type  inputs: C{Array} of C{String}
+     * @param inputs: Sequence of control names whose data is considered
+     *     for determining the visibility of L{outputs}
+     *
+     * @type  outputs: C{Array} of C{String}
+     * @param outputs: Sequence of control names of output controls
+     */
+    function addHandler(self, fn, inputs, outputs) {
+        if (fn === undefined) {
+            throw Methanal.View.HandlerError(
+                'Specified handler function is not defined');
+        }
+
+        var handler = Methanal.View._Handler(
+            self._handlerID, self, fn, inputs, outputs);
+
+        self._updateHandlerMapping(inputs, self._inputToHandlers);
+        self._updateHandlerMapping(outputs, self._outputToHandlers);
+
+        self._handlers[self._handlerID] = handler;
+        self._handlerID += 1;
+    },
+
+
+    /**
+     * Ensure all specified output controls are updated.
+     */
+    function refresh(self, outputs) {
+        for (var handlerID in self._handlers) {
+            self._handlers[handlerID].update();
+        }
+
+        self._updateOutputs(outputs);
+    },
+
+
+    /**
+     * Update relevant output controls when an input control has changed.
+     *
+     * @type  input: C{String}
+     * @param input: Input control name
+     */
     function changed(self, input) {
-        var handlers = self.inputToHandlers[input];
+        var handlers = self._inputToHandlers[input];
         var outputs = {};
-        for (var handlerId in handlers) {
-            var handler = self.handlers[handlerId];
+        for (var handlerID in handlers) {
+            var handler = self._handlers[handlerID];
             handler.update();
             for (var i = 0; i < handler.outputs.length; ++i) {
                 outputs[handler.outputs[i]] = 1;
             }
         }
 
-        self.updateOutputs(outputs);
+        self._updateOutputs(outputs);
     });
 
 
-Methanal.View.FormBehaviour = Nevow.Athena.Widget.subclass('Methanal.View.FormBehaviour');
-Methanal.View.FormBehaviour.methods(
+
+/**
+ * Base class for things that behave like forms.
+ *
+ * @type _validatorCache: L{Methanal.View._HandlerCache}
+ *
+ * @type _depCache: L{Methanal.View._HandlerCache}
+ *
+ * @type controls: C{object} mapping C{String} to L{Methanal.View.FormInput}
+ * @ivar controls: Mapping of form input names to form inputs; each form input
+ *     adds itself to this mapping when it is loaded
+ *
+ * @type subforms: C{object} mapping C{String} to L{Methanal.View.FormBehaviour}
+ * @ivar subforms: Mapping of form names to sub forms. Do not use this!
+ *
+ * @type fullyLoaded: C{boolean}
+ * @ivar fullyLoaded: Have all the form inputs reported that they're finished
+ *     loading?
+ */
+Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
+    /**
+     * Handler cache update function for validators.
+     *
+     * C{values} represents a sequence of error messages, the first one is set
+     * on the named control, assuming the control is active. If C{values} is
+     * empty, all previously set errors are cleared.
+     */
+    function _validatorUpdate(self, name, values) {
+        var control = self.getControl(name);
+        if (control.active) {
+            for (var i = 0; i < values.length; ++i) {
+                var value = values[i];
+                if (value) {
+                    control.setError(value);
+                    return;
+                }
+            }
+        }
+        control.clearError();
+    },
+
+
+    /**
+     * Handler cache update function for dependencies.
+     *
+     * Activate the named control if all values in C{values} are a true value.
+     */
+    function _depUpdate(self, name, values) {
+        function _and(x, y) {
+            return x && y;
+        };
+
+        var control = self.getControl(name);
+        result = Methanal.Util.reduce(_and, values, true);
+        control.setActive(result);
+    },
+
+
+    /**
+     * Initialise internal form attributes.
+     *
+     * This should be called as soon as possible, to initialise the validator
+     * and dependency caches, as well as defining several public-facing form
+     * attributes.
+     */
     function formInit(self) {
         self.controls = {};
         self.subforms = {};
-        self.validatorCache = Methanal.View._HandlerCache(
-            function _getData(name) {
-                return self.getControl(name).getValue();
-            },
-            function _update(name, values) {
-                var control = self.getControl(name);
-                if (control.active) {
-                    for (var i = 0; i < values.length; ++i) {
-                        var value = values[i];
-                        if (value) {
-                            control.setError(value);
-                            return;
-                        }
-                    }
-                }
-                control.clearError();
-            });
 
-        self.depCache = Methanal.View._HandlerCache(
-            function _getData(name) {
-                return self.getControl(name).getValue();
-            },
-            function _update(name, values) {
-                function _and(x, y) {
-                    return x && y;
-                };
+        function getData(name) {
+            return self.getControl(name).getValue();
+        };
 
-                var control = self.getControl(name);
-                result = Methanal.Util.reduce(_and, values, true);
-                control.setActive(result);
-            });
+        self._validatorCache = Methanal.View._HandlerCache(
+            getData,
+            function (name, values) { self._validatorUpdate(name, values); });
+
+        self._depCache = Methanal.View._HandlerCache(
+            getData,
+            function (name, values) { self._depUpdate(name, values); });
 
         self.fullyLoaded = false;
     },
 
-    function loadedUp(self, control) {
-        if (self.fullyLoaded) {
-            Divmod.msg('XXX: Control reported in after all controls were supposedly loaded!');
-            return;
-        }
 
-        delete self.controlNames[control.name];
-        for (var name in self.controlNames) {
-            return;
-        }
-
-        self.fullyLoaded = true;
-
-        for (var name in self.depCache.inputToHandlers) {
-            var node = self.getControl(name).widgetParent.node;
-            Methanal.Util.addElementClass(node, 'dependancy-parent');
-            node.title = 'Other fields depend on this field';
-        }
-
-        self.depCache.refresh(self.controls);
-        self.validatorCache.refresh(self.controls);
-        self.refreshValidity();
-    },
-
-    function getControl(self, controlName) {
-        var control = self.controls[controlName];
-        if (control === undefined) {
-            throw Methanal.View.MissingControlError(controlName);
-        }
-        return control;
-    },
-
-    function addValidator(self, controls, fns) {
-        for (var i = 0; i < fns.length; ++i) {
-            self.validatorCache.addHandler(fns[i], controls, controls);
-        }
-    },
-
-    function addValidators(self, validators) {
-        for (var i = 0; i < validators.length; ++i) {
-            var controls = validators[i][0];
-            var fns = validators[i][1];
-            self.addValidator(controls, fns);
-        }
-    },
-
-    function valueChanged(self, control) {
-        self.checkDeps(control);
-        self.validate(control);
-    },
-
-    function validate(self, control) {
-        self.validatorCache.changed(control.name);
-        self.refreshValidity();
-    },
-
-    function refreshValidity(self) {
+    /**
+     * Refresh the validity of the form, based on the states of form inputs and
+     * sub-forms.
+     */
+    function _refreshValidity(self) {
         self.setValid();
 
         for (var controlName in self.controls) {
@@ -228,23 +308,172 @@ Methanal.View.FormBehaviour.methods(
         }
     },
 
-    function addDepCheckers(self, checkers) {
-        for (var i = 0; i < checkers.length; ++i) {
-            var checkerInfo = checkers[i];
-            var inputControls = checkerInfo[0];
-            var outputControls = checkerInfo[1];
-            var checker = checkerInfo[2];
-            self.depCache.addHandler(checker, inputControls, outputControls);
+
+    /**
+     * Report a control as having finished loading.
+     *
+     * Once all controls in L{controlNames} have reported in, form loading
+     * completes by refreshing validators and dependencies, controls cannot
+     * report in loading is complete.
+     *
+     * @type  control: L{Methanal.View.FormInput}
+     * @param control: Control to report in
+     */
+    function loadedUp(self, control) {
+        if (self.fullyLoaded) {
+            Divmod.msg('XXX: Control reported in after all controls were supposedly loaded!');
+            return;
+        }
+
+        delete self.controlNames[control.name];
+        for (var name in self.controlNames) {
+            return;
+        }
+
+        self.fullyLoaded = true;
+
+        for (var name in self._depCache._inputToHandlers) {
+            var node = self.getControl(name).widgetParent.node;
+            Methanal.Util.addElementClass(node, 'dependancy-parent');
+            node.title = 'Other fields depend on this field';
+        }
+
+        self._depCache.refresh(self.controls);
+        self._validatorCache.refresh(self.controls);
+        self._refreshValidity();
+    },
+
+
+    /**
+     * Get a form input by name.
+     *
+     * @type controlName: C{String}
+     *
+     * @raise MissingControlError: If the control given by L{controlName}
+     *     does not exist
+     *
+     * @rtype: L{Methanal.View.FormInput}
+     */
+    function getControl(self, controlName) {
+        var control = self.controls[controlName];
+        if (control === undefined) {
+            throw Methanal.View.MissingControlError(controlName);
+        }
+        return control;
+    },
+
+
+    /**
+     * Attach a collection of validation functions to a group of form inputs.
+     *
+     * A "validator" is a C{[[String], [function]]} pair, an array of
+     * controlNames and validation functions.
+     *
+     * The values of the form inputs, named by L{controlNames}, are all passed
+     * to each function in L{fns}. This means that a "validator" can take
+     * multiple form inputs' values into account in order to perform validation
+     * for all of them.
+     *
+     * Use L{addValidators} to attach more than one "validator" at a time.
+     *
+     * @type  names: C{Array} of C{String}
+     * @param names: Form input names to attach
+     *
+     * @type  fns: C{Array} of C{function}
+     * @param fns: Validation functions to attach to each control named in
+     *     L{names}
+     */
+    function addValidator(self, names, fns) {
+        for (var i = 0; i < fns.length; ++i) {
+            self._validatorCache.addHandler(fns[i], names, names);
         }
     },
 
-    function checkDeps(self, control) {
-        self.depCache.changed(control.name);
+
+    /**
+     * Attach multiple validators at once.
+     *
+     * A "validator" is a C{[[String], [function]]} pair; an array of
+     * controlNames and validation functions.
+     *
+     * @type  validators: C{Array} of validators
+     * @param validators: Each validator is attached by calling L{addValidator}
+     */
+    function addValidators(self, validators) {
+        for (var i = 0; i < validators.length; ++i) {
+            var controls = validators[i][0];
+            var fns = validators[i][1];
+            self.addValidator(controls, fns);
+        }
+    },
+
+
+    /**
+     * An event that is called when a form input's value is changed.
+     */
+    function valueChanged(self, control) {
+        self._depCache.changed(control.name);
+        self.validate(control);
+    },
+
+
+    /**
+     * Re-evaluate the validators for all form inputs.
+     */
+    function validate(self, control) {
+        self._validatorCache.changed(control.name);
+        self._refreshValidity();
+    },
+
+
+    /**
+     * Attach a collection of dependency functions to a group of form inputs.
+     *
+     * A "checker" is a C{[[String], [String], function} triple; an array of
+     * input control names, output control names and a checker function.
+     *
+     * The values of the form inputs, named by L{inputNames}, are all passed to
+     * L{fn}. This means that a "checker" can take multiple form inputs' values
+     * into account in order to determine whether or not a dependency is met.
+     *
+     * The controls named by L{outputNames} determine which form inputs will
+     * be made visible if L{fn} indicates that a dependency is met.
+     *
+     * Use L{addDepCheckers} to attach more than one "checker" at a time.
+     */
+    function addDepChecker(self, inputNames, outputNames, fn) {
+        self._depCache.addHandler(fn, inputNames, outputNames);
+    },
+
+
+    /**
+     * Attach multiple dependency checkers at once.
+     *
+     * A "checker" is a C{[[String], [String], function} triple; an array of
+     * input control names, output control names and a checker function.
+     *
+     * @type  checkers: C{Array} of checkers
+     * @param checkers: Each checker is attached by called L{addDepChecker}
+     */
+    function addDepCheckers(self, checkers) {
+        for (var i = 0; i < checkers.length; ++i) {
+            var inputNames = checkers[i][0];
+            var outputNames = checkers[i][1];
+            var fn = checkers[i][2];
+            self.addDepChecker(inputNames, outputNames, fn);
+        }
     });
 
 
-Methanal.View.LiveForm = Methanal.View.FormBehaviour.subclass('Methanal.View.LiveForm');
-Methanal.View.LiveForm.methods(
+
+/**
+ * @type viewOnly: C{boolean}
+ * @ivar viewOnly: Should the submit button for this form be visible?
+ *
+ * @type controlNames: C{Array} of C{String}
+ * @ivar controlNames: Names of form inputs
+ */
+Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function __init__(self, node, viewOnly, controlNames) {
         Methanal.View.LiveForm.upcall(self, '__init__', node);
         self.viewOnly = viewOnly;
@@ -252,18 +481,63 @@ Methanal.View.LiveForm.methods(
         self.formInit();
     },
 
+
+    function nodeInserted(self) {
+        self._formErrorNode = self.nodeById('form-error');
+        if (!self.viewOnly) {
+            self._submitNode = self.nodeById('submit');
+        }
+        self.throbber = Methanal.Util.Throbber(self);
+    },
+
+
+    /**
+     * Enable the form's submit button.
+     *
+     * This does nothing if the form is "view only."
+     */
+    function _enableSubmit(self) {
+        if (self.viewOnly) {
+            return;
+        }
+        self._submitNode.disabled = false;
+        Methanal.Util.removeElementClass(self._submitNode, 'methanal-submit-disabled');
+    },
+
+
+    /**
+     * Disable the form's submit button.
+     *
+     * This does nothing if the form is "view only."
+     */
+    function _disableSubmit(self) {
+        if (self.viewOnly) {
+            return;
+        }
+        self._submitNode.disabled = true;
+        Methanal.Util.addElementClass(self._submitNode, 'methanal-submit-disabled');
+    },
+
+
+    /**
+     * Get the form associated with this widget.
+     */
     function getForm(self) {
         return self;
     },
 
-    function nodeInserted(self) {
-        self.formErrorNode = self.nodeById('form-error');
-        if (!self.viewOnly) {
-            self.submitNode = self.nodeById('submit');
-        }
-        self.throbberNode = self.nodeById('throbber');
-    },
 
+    /**
+     * Gather form data and invoke the server-side callback.
+     *
+     * If submission is successful L{submitSuccess} is called, and the
+     * return value of the server-side callback is passed. If unsuccessful
+     * L{submitFailure} is called and the failure is passed.
+     *
+     * @rtype: C{Deferred}
+     * @return: A deferred that fires with the return value of L{submitSuccess}
+     *     or, in the case of a failure, L{submitFailure}
+     */
     function submit(self) {
         var data = {};
         for (var name in self.controls) {
@@ -275,57 +549,42 @@ Methanal.View.LiveForm.methods(
             data[form.name] = form.getValue();
         }
 
-        Methanal.Util.replaceNodeText(self.formErrorNode, '');
-        self.disableSubmit();
-        self.enableThrobber();
+        Methanal.Util.replaceNodeText(self._formErrorNode, '');
+        self._disableSubmit();
+        self.throbber.start();
 
         var d = self.callRemote('invoke', data);
-        d.addCallback(function (value) {
-            self.disableThrobber();
-            self.enableSubmit();
-            return self.submitSuccess(value);
+        d.addBoth(function (value) {
+            self.throbber.stop();
+            self._enableSubmit();
+            return value;
         });
-        d.addErrback(function (value) {
-            self.disableThrobber();
-            self.enableSubmit();
-            return self.submitFailure(value);
-        });
+        d.addCallback(function (value) { return self.submitSuccess(value); });
+        d.addErrback(function (value) { return self.submitFailure(value); });
         return d;
     },
 
+
+    /**
+     * Callback for successful form submission.
+     */
     function submitSuccess(self, value) {
     },
 
+
+    /**
+     * Callback for a failure form submission.
+     */
     function submitFailure(self, value) {
-        Methanal.Util.replaceNodeText(self.formErrorNode, Methanal.Util.formatFailure(value));
+        Methanal.Util.replaceNodeText(self._formErrorNode, Methanal.Util.formatFailure(value));
     },
 
-    function enableThrobber(self) {
-        self.throbberNode.style.visibility = 'visible';
-    },
 
-    function disableThrobber(self) {
-        self.throbberNode.style.visibility = 'hidden';
-    },
-
-    function enableSubmit(self) {
-        if (self.viewOnly) {
-            return;
-        }
-        var node = self.submitNode;
-        node.disabled = false;
-        Methanal.Util.removeElementClass(node, 'methanal-submit-disabled');
-    },
-
-    function disableSubmit(self) {
-        if (self.viewOnly) {
-            return;
-        }
-        var node = self.submitNode;
-        node.disabled = true;
-        Methanal.Util.addElementClass(node, 'methanal-submit-disabled');
-    },
-
+    /**
+     * Athena handler for the form's "onsubmit" event.
+     *
+     * If the form is "view only", no form submission takes place.
+     */
     function handleSubmit(self) {
         if (self.viewOnly) {
             return false;
@@ -334,25 +593,61 @@ Methanal.View.LiveForm.methods(
         return false;
     },
 
+
+    /**
+     * Enable the form for submission.
+     */
     function setValid(self) {
-        self.enableSubmit();
+        self._enableSubmit();
     },
 
+    
+    /**
+     * Disable form submission.
+     */
     function setInvalid(self) {
-        self.disableSubmit();
+        self._disableSubmit();
     });
 
 
-Methanal.View.InputContainer = Nevow.Athena.Widget.subclass('Methanal.View.InputContainer');
-Methanal.View.InputContainer.methods(
+
+/**
+ * A generic container for form inputs.
+ */
+Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
+    /**
+     * Get the form associated with this widget.
+     */
     function getForm(self) {
         return self.widgetParent.getForm();
     },
 
+
+    /**
+     * Set the error state.
+     *
+     * @type  error: C{String}
+     * @param error: Error message
+     */
     function setError(self, error) {
         Methanal.Util.addElementClass(self.node, 'methanal-control-error');
     },
 
+
+    /**
+     * Reset the error state.
+     */
+    function clearError(self) {
+        Methanal.Util.removeElementClass(self.node, 'methanal-control-error');
+    },
+
+
+    /**
+     * Check child widgets for errors.
+     *
+     * If any child widget has an error, the container's error is set to the
+     * same value.
+     */
     function checkForErrors(self) {
         for (var i = 0; i < self.childWidgets.length; ++i) {
             var childWidget = self.childWidgets[i];
@@ -365,15 +660,26 @@ Methanal.View.InputContainer.methods(
         self.clearError();
     },
 
-    function clearError(self) {
-        Methanal.Util.removeElementClass(self.node, 'methanal-control-error');
-    },
 
+    /**
+     * Set the container as active.
+     *
+     * The container's visibility is determined by whether it is active or not,
+     * inactive controls' values are not used in form submission.
+     *
+     * @type active: C{boolean}
+     */
     function setActive(self, active) {
         self.node.style.display = active ? 'block' : 'none';
         Methanal.Util.addElementClass(self.node, 'dependancy-child');
     },
 
+
+    /**
+     * Check the container's active-ness based on that of its child widgets.
+     *
+     * If no child widgets are active, the container is set as inactive.
+     */
     function checkActive(self) {
         for (var i = 0; i < self.childWidgets.length; ++i) {
             var childWidget = self.childWidgets[i];
@@ -387,51 +693,66 @@ Methanal.View.InputContainer.methods(
     });
 
 
-Methanal.View.FormRow = Methanal.View.InputContainer.subclass('Methanal.View.FormRow');
-Methanal.View.FormRow.methods(
-    function __init__(self, node) {
-        Methanal.View.InputContainer.upcall(self, '__init__', node);
+
+/**
+ * Container for visually organising inputs into rows.
+ */
+Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow').methods(
+    function nodeInserted(self) {
+        self._errorTextNode = self.nodeById('error-text');
     },
 
-    function nodeInserted(self) {
-        self.errorTextNode = self.nodeById('error-text');
-    },
 
     function setError(self, error) {
         Methanal.View.FormRow.upcall(self, 'setError', error);
-        Methanal.Util.replaceNodeText(self.errorTextNode, error);
+        Methanal.Util.replaceNodeText(self._errorTextNode, error);
     },
+
 
     function clearError(self) {
         Methanal.View.FormRow.upcall(self, 'clearError');
-        Methanal.Util.replaceNodeText(self.errorTextNode, '');
+        Methanal.Util.replaceNodeText(self._errorTextNode, '');
     });
 
 
-Methanal.View.SimpleForm = Methanal.View.LiveForm.subclass('Methanal.View.SimpleForm');
-Methanal.View.SimpleForm.methods(
+
+/**
+ * A cut-down L{LiveForm}.
+ *
+ * Simple forms have no way of submitting their data, their intended use is
+ * a container for other controls to cleanly house their inputs, that
+ * communicate data in their own way.
+ */
+Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     function __init__(self, node, controlNames) {
-        Methanal.View.SimpleForm.upcall(self, '__init__', node, true, controlNames);
+        Methanal.View.SimpleForm.upcall(
+            self, '__init__', node, true, controlNames);
     },
+
 
     function nodeInserted(self) {
+        // Explicitly override LiveForm's "nodeInserted" method, most of the
+        // nodes it attempts to find will not exist in a simple form.
     },
 
-    function getContainer(self) {
-        return self.widgetParent;
-    },
 
     function setValid(self) {
-        self.getContainer().clearError();
+        self.widgetParent.clearError();
     },
 
+
     function setInvalid(self) {
-        self.getContainer().setError('');
+        self.widgetParent.setError('');
     });
 
 
-Methanal.View.GroupInput = Methanal.View.FormBehaviour.subclass('Methanal.View.GroupInput');
-Methanal.View.GroupInput.methods(
+
+/**
+ * Some kind of horrible input / form Frankenstein monster.
+ *
+ * Do not use this.
+ */
+Methanal.View.FormBehaviour.subclass(Methanal.View, 'GroupInput').methods(
     function __init__(self, node, name, controlNames) {
         Methanal.View.GroupInput.upcall(self, '__init__', node);
         self.formInit();
@@ -440,9 +761,11 @@ Methanal.View.GroupInput.methods(
         self.controlNames = controlNames;
     },
 
+
     function getForm(self) {
         return self;
     },
+
 
     function setWidgetParent(self, widgetParent) {
         Methanal.View.GroupInput.upcall(self, 'setWidgetParent', widgetParent);
@@ -451,14 +774,18 @@ Methanal.View.GroupInput.methods(
         }
     },
 
+
     function clearError(self) {
     },
+
 
     function setError(self, error) {
     },
 
+
     function setValue(self, value) {
     },
+
 
     function getValue(self) {
         var data = {};
@@ -473,56 +800,109 @@ Methanal.View.GroupInput.methods(
         return data;
     },
 
+
     function validate(self, control) {
         Methanal.View.GroupInput.upcall(self, 'validate', control);
         self.widgetParent.getForm().validate(control);
     },
 
+
     function setValid(self) {
         self.valid = true;
     },
+
 
     function setInvalid(self) {
         self.valid = false;
     });
 
 
-Methanal.View.FormInput = Nevow.Athena.Widget.subclass('Methanal.View.FormInput');
-Methanal.View.FormInput.methods(
+
+/**
+ * Base class for form inputs.
+ *
+ * @type name: C{String}
+ * @ivar name: A name, unique to the form, for this input, by which it can be
+ *     addressed
+ *
+ * @type label: C{String}
+ * @ivar label: Brief but descriptive text about the input
+ *
+ * @type active: C{boolean}
+ * @ivar active: Is this input currently active?
+ *
+ * @type error: C{String}
+ * @ivar error: Error message applicable to this input, or C{null} if there is
+ *     no error
+ *
+ * @type inputNode: DOM node
+ * @ivar inputNode: The DOM node representing the primary source of data input;
+ *     the base implementation will attempt to get and set values for this
+ *     input
+ */
+Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
+    /**
+     * Initialise a form input.
+     *
+     * @param args.name: See L{name}
+     *
+     * @param args.label: See L{label}
+     *
+     * @param args.value: Initial value for this input
+     */
     function __init__(self, node, args) {
         Methanal.View.FormInput.upcall(self, '__init__', node);
         self.name = args.name;
         self._initialValue = args.value;
         self.label = args.label;
-
         self.active = true;
-        self.inserted = false;
         self.error = null;
     },
 
+
     function nodeInserted(self) {
-        self.inserted = true;
         self.inputNode = self.getInputNode();
-        self.errorNode = self.nodeById('error');
+        self._errorNode = self.nodeById('error');
         self.setValue(self._initialValue);
+
+        function _baseValidator(value) {
+            return self.baseValidator(value);
+        };
 
         var form = self.getForm();
         form.controls[self.name] = self;
-        form.addValidator([self.name], [(function _baseValidator(value) { return self.baseValidator(value); })]);
+        form.addValidator([self.name], [_baseValidator]);
         form.loadedUp(self);
     },
 
+
+    /**
+     * Get the form associated with this input.
+     */
     function getForm(self) {
         return self.widgetParent.getForm();
     },
 
+
+    /**
+     * Get the DOM node primarily responsible for data input.
+     */
     function getInputNode(self) {
         return self.node.getElementsByTagName('input')[0];
     },
 
+
+    /**
+     * Set the input's error.
+     *
+     * This also has the parent recheck its inputs for errors.
+     *
+     * @type  error: C{String}
+     * @param error: Error message
+     */
     function setError(self, error) {
         Methanal.Util.addElementClass(self.node, 'methanal-control-error');
-        var node = self.errorNode;
+        var node = self._errorNode;
         Methanal.Util.replaceNodeText(node, '\xa0');
         error = self.label + ': ' + error;
         node.title = error;
@@ -531,15 +911,27 @@ Methanal.View.FormInput.methods(
         self.widgetParent.checkForErrors();
     },
 
+
+    /**
+     * Reset the error state.
+     */
     function clearError(self) {
         Methanal.Util.removeElementClass(self.node, 'methanal-control-error');
-        var node = self.errorNode;
+        var node = self._errorNode;
         Methanal.Util.replaceNodeText(node, '');
         node.style.display = 'none';
         self.error = null;
         self.widgetParent.checkForErrors();
     },
 
+    /**
+     * Set the input as active.
+     *
+     * The input's visibility is determined by whether it is active or not,
+     * inactive controls' values are not used in form submission.
+     *
+     * @type active: C{boolean}
+     */
     function setActive(self, active) {
         self.active = active;
         self.node.style.display = active ? 'block' : 'none';
@@ -547,118 +939,274 @@ Methanal.View.FormInput.methods(
         self.getForm().validate(self);
     },
 
+
+    /**
+     * Set the input's value.
+     */
     function setValue(self, value) {
         self.inputNode.value = value;
     },
 
+
+    /**
+     * Get the input's value.
+     */
     function getValue(self) {
         return self.inputNode.value;
     },
 
+
+    /**
+     * Handler for the "onchange" DOM event.
+     *
+     * Inform the containing form that our value has changed.
+     */
     function onChange(self, node) {
         self.getForm().valueChanged(self);
         return true;
     },
 
+
+    /**
+     * Essential validator.
+     *
+     * The base validator is always attached to the form's collection of
+     * validators. This validator should be treated as specific to the input,
+     * any other validation should be left up to validators attached directly
+     * to the form. For example, an integer-only input's base validator should
+     * ensure that only integer values are valid.
+     *
+     * @param value: The input data to be validated
+     *
+     * @rtype:  C{String}
+     * @return: An error message if validation was unsuccessful or C{undefined}
+     *     if there were no validation errors
+     */
     function baseValidator(self, value) {
     });
 
 
-Methanal.View.TextAreaInput = Methanal.View.FormInput.subclass('Methanal.View.TextAreaInput');
-Methanal.View.TextAreaInput.methods(
+
+/**
+ * Multi-line text input.
+ */
+Methanal.View.FormInput.subclass(Methanal.View, 'TextAreaInput').methods(
     function setValue(self, value) {
         self.inputNode.value = value === null ? '' : value;
     },
+
 
     function getInputNode(self) {
         return self.node.getElementsByTagName('textarea')[0];
     });
 
 
-Methanal.View.TextInput = Methanal.View.FormInput.subclass('Methanal.View.TextInput');
-Methanal.View.TextInput.methods(
+
+/**
+ * Text input.
+ *
+ * @type embeddedLabel: C{boolean}
+ * @ivar embeddedLabel: Should L{label} be embedded in an empty input? As well
+ *     as embedding the label in an empty input, a tooltip (containing the
+ *     label) will be shown regardless of whether it is empty or not
+ */
+Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
+    /**
+     * Initialise the input.
+     *
+     * @param args.embeddedLabel: See L{embeddedLabel}
+     */
     function __init__(self, node, args) {
         Methanal.View.TextInput.upcall(self, '__init__', node, args);
         self.embeddedLabel = args.embeddedLabel;
+        self._tooltipNode = null;
+        self._useDisplayValue = false;
     },
 
-    function valueNeedsLabel(self, value) {
-        return self.embeddedLabel && (value === null || value.length === 0);
+
+    /**
+     * Does the input need an embedded label?
+     */
+    function _needsLabel(self, value) {
+        return self.embeddedLabel && !value;
     },
 
-    function setValue(self, value) {
-        if (self.valueNeedsLabel(value)) {
-            self.setLabel(self.inputNode);
-        } else {
-            self.unsetLabel(self.inputNode);
-            self.inputNode.value = value === null ? '' : value;
+
+    /**
+     * Set the embedded label.
+     */
+    function _setLabel(self, node) {
+        node.value = self.label;
+        Methanal.Util.addElementClass(node, 'embedded-label');
+        self._labelled = true;
+    },
+
+
+    /**
+     * Remove the embedded label.
+     */
+    function _removeLabel(self, node) {
+        Methanal.Util.removeElementClass(node, 'embedded-label');
+        self._labelled = false;
+    },
+
+
+    /**
+     * Create a DOM node for the tooltip.
+     */
+    function _createTooltip(self) {
+        if (!self._tooltipNode) {
+            var doc = self.node.ownerDocument;
+            var div = doc.createElement('div');
+            Methanal.Util.replaceNodeText(div, self.label);
+            Methanal.Util.addElementClass(div, 'tooltip');
+            self.node.appendChild(div);
+            self._tooltipNode = div;
         }
     },
 
-    function getValue(self) {
-        if (self.labelled)
-            return '';
 
+    /**
+     * Destroy the tooltip DOM node.
+     */
+    function _destroyTooltip(self) {
+        if (self._tooltipNode) {
+            self.node.removeChild(self._tooltipNode);
+            self._tooltipNode = null;
+        }
+    },
+
+
+    /**
+     * Enable the human-readable "display value" representation.
+     */
+    function enableDisplayValue(self) {
+        self._displayValueNode.style.display = 'block';
+        self._useDisplayValue = true;
+    },
+
+
+    /**
+     * Disable the human-readable "display value" representation.
+     */
+    function disableDisplayValue(self) {
+        self._displayValueNode.style.display = 'none';
+        self._useDisplayValue = false;
+    },
+
+
+    /**
+     * Create a "display value" from an input's value.
+     *
+     * @param value: The value as returned from C{getValue}
+     *
+     * @rtype:  C{String}
+     */
+    function makeDisplayValue(self, value) {
+        throw new Error('Not implemented');
+    },
+
+
+    /**
+     * Update the human-readable "display value" representation.
+     *
+     * L{Methanal.View.TextInput.makeDisplayValue} is called to determine the
+     * new "display value."
+     */
+    function _updateDisplayValue(self) {
+        if (!self._useDisplayValue) {
+            return;
+        }
+
+        var value = self.getValue();
+        var displayValue = '';
+        if (value && self.baseValidator(value) === undefined) {
+            displayValue = self.makeDisplayValue(value);
+        }
+        Methanal.Util.replaceNodeText(self._displayValueNode, displayValue);
+    },
+
+
+    function nodeInserted(self) {
+        Methanal.View.TextInput.upcall(self, 'nodeInserted');
+        self._displayValueNode = self.nodeById('displayValue');
+    },
+
+
+    function setValue(self, value) {
+        if (self._needsLabel(value)) {
+            self._setLabel(self.inputNode);
+        } else {
+            self._removeLabel(self.inputNode);
+            self.inputNode.value = value === null ? '' : value;
+        }
+        self._updateDisplayValue();
+    },
+
+
+    function getValue(self) {
+        if (self._labelled) {
+            return '';
+        }
         return Methanal.View.TextInput.upcall(self, 'getValue');
     },
 
-    function setLabel(self, node) {
-        node.value = self.label;
-        Methanal.Util.addElementClass(node, 'embedded-label');
-        self.labelled = true;
-    },
 
-    function unsetLabel(self, node) {
-        Methanal.Util.removeElementClass(node, 'embedded-label');
-        self.labelled = false;
-    },
-
+    /**
+     * Handle "onblur" DOM event.
+     */
     function onBlur(self, node) {
-        var value = node.value;
         if (self.embeddedLabel) {
-            self.destroyTooltip();
-            if (self.valueNeedsLabel(value)) {
-                self.setLabel(node);
+            self._destroyTooltip();
+            if (self._needsLabel(node.value)) {
+                self._setLabel(node);
+                // XXX: It's possible that nothing actually changed and there
+                // may be no reason to call onChange.
                 self.onChange(node);
             } else {
-                self.unsetLabel(node);
+                self._removeLabel(node);
             }
         }
     },
 
-    function createTooltip(self) {
-        var nodes = self.nodesByAttribute('className', 'tooltip');
-        if (nodes.length == 0) {
-            var doc = self.node.ownerDocument;
-            var div = doc.createElement('div');
-            var input = self.getInputNode();
-            Methanal.Util.replaceNodeText(div, self.label);
-            Methanal.Util.addElementClass(div, 'tooltip');
-            self.node.appendChild(div);
-            self.tooltipNode = div;
-        }
-    },
 
-    function destroyTooltip(self) {
-        if (self.tooltipNode) {
-            self.node.removeChild(self.tooltipNode);
-            self.tooltipNode = null;
-        }
-    },
-
+    /**
+     * Handle "onfocus" DOM event.
+     */
     function onFocus(self, node) {
-        if (self.embeddedLabel)
-            self.createTooltip();
-
-        if (self.labelled) {
-            self.unsetLabel(node);
+        if (self._labelled) {
+            self._removeLabel(node);
             node.value = '';
         }
+        if (self.embeddedLabel) {
+            self._createTooltip();
+        }
+    },
+
+
+    /**
+     * Handle "onkeyup" DOM event.
+     */
+    function onKeyUp(self, node) {
+        self._updateDisplayValue();
     });
 
 
-Methanal.View.MultiCheckboxInput = Methanal.View.FormInput.subclass('Methanal.View.MultiCheckboxInput');
-Methanal.View.MultiCheckboxInput.methods(
+
+/**
+ * Checkbox input.
+ */
+Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
+    function getValue(self) {
+        return self.inputNode.checked;
+    });
+
+
+
+/**
+ * Multi-checkbox input.
+ */
+Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
     function getInputNode(self) {
         var inputs = {};
         var nodes = self.node.getElementsByTagName('input');
@@ -669,24 +1217,13 @@ Methanal.View.MultiCheckboxInput.methods(
         return inputs;
     },
 
-    function setValue(self, values) {
-        // First we turn them all off...
-        for (var name in self.inputNode) {
-            var node = self.inputNode[name];
-            node.checked = false;
-        }
 
-        // ...then we turn the selected ones back on
-        if (values) {
-            for (var i = 0; i < values.length; ++i) {
-                var value = values[i];
-                var node = self.inputNode[value]
-                if (node) {
-                    node.checked = true;
-                }
-            }
-        }
+    function setValue(self, values) {
+        values = Methanal.Util.StringSet(values);
+        for (var name in self.inputNode)
+            self.inputNode[name].checked = values.contains(name);
     },
+
 
     function getValue(self) {
         var values = [];
@@ -700,162 +1237,197 @@ Methanal.View.MultiCheckboxInput.methods(
     });
 
 
-Methanal.View.SelectInput = Methanal.View.FormInput.subclass('Methanal.View.SelectInput');
-Methanal.View.SelectInput.methods(
-    function insertEmbeddedLabel(self, node, labelNode) {
-        node.insertBefore(labelNode, node.options[0]);
+
+/**
+ * A dropdown input.
+ */
+Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
+    /**
+     * Create an C{option} DOM node.
+     *
+     * @type  value: C{String}
+     *
+     * @type  desc: C{String}
+     * @param desc: User-facing textual description of the value
+     */
+    function _createOption(self, value, desc) {
+        var optionNode = self.inputNode.ownerDocument.createElement('option');
+        optionNode.value = value;
+        optionNode.appendChild(doc.createTextNode(desc));
+        return optionNode
     },
 
-    function add(self, value, label, before) {
-        var node = self.inputNode;
-        var doc = node.ownerDocument;
-        var optionNode = doc.createElement('option');
-        optionNode.value = value;
-        optionNode.appendChild(doc.createTextNode(label));
 
-        // If "before" is null then we don't add the node, if it's undefined
-        // then we'll append the node otherwise it'll be inserted before
-        // "before".
-        if (before !== null) {
-            before = before === undefined ? null : before;
-            node.add(optionNode, before);
-        }
+    /**
+     * Insert a placeholder C{option} node.
+     */
+    function _insertPlaceholder(self) {
+        var optionNode = self.insert('', self.label, node.firstChild);
+        Methanal.Util.addElementClass(optionNode, 'embedded-label');
+    },
+
+
+    /**
+     * Insert a new option.
+     *
+     * @type  value: C{String}
+     *
+     * @type  desc: C{String}
+     * @param desc: User-facing textual description of the value
+     *
+     * @param before: A DOM node to insert the option before, or C{null} to
+     *     append the option
+     *
+     * @return: The newly inserted C{option} DOM node
+     */
+    function insert(self, value, desc, before) {
+        var optionNode = self._createOption(value, desc);
+        node.add(optionNode, before);
         return optionNode;
     },
 
-    function addDummyOption(self) {
-        var node = self.inputNode;
-        var optionNode = self.add('', self.label, null);
-        Methanal.Util.addElementClass(optionNode, 'embedded-label');
-        Methanal.Util.addElementClass(node, 'embedded-label');
-        self.insertEmbeddedLabel(node, optionNode)
+
+    /**
+     * Append a new option.
+     *
+     * @type  value: C{String}
+     *
+     * @type  desc: C{String}
+     * @param desc: User-facing textual description of the value
+     */
+    function append(self, value, desc) {
+        return self.insert(value, desc, null);
     },
+
+
+    function getInputNode(self) {
+        return self.node.getElementsByTagName('select')[0];
+    },
+
 
     function setValue(self, value) {
         Methanal.View.SelectInput.upcall(self, 'setValue', value);
         if (value === null) {
-            self.addDummyOption();
+            self._insertPlaceholder();
             self.inputNode.value = '';
         }
     },
 
+
     function getValue(self) {
         var value = Methanal.View.SelectInput.upcall(self, 'getValue');
-        if (value.length == 0)
+        if (!value) {
             return null;
-
+        }
         return value;
     },
 
+
+    /**
+     * Handle "onblur" DOM event.
+     */
     function onBlur(self, node) {
-        if (node.value === '')
-            Methanal.Util.addElementClass(node, 'embedded-label');
         self.onChange(node);
     },
 
+
+    /**
+     * Handle "onfocus" DOM event.
+     */
     function onFocus(self, node) {
-        if (node.value === '')
-            Methanal.Util.removeElementClass(node, 'embedded-label');
         self.onChange(node);
-    },
-
-    function getInputNode(self) {
-        return self.node.getElementsByTagName('select')[0];
     });
 
 
-Methanal.View.IntegerSelectInput = Methanal.View.SelectInput.subclass('Methanal.View.IntegerSelectInput');
-Methanal.View.IntegerSelectInput.methods(
+
+/**
+ * A dropdown input whose options' values are integers.
+ */
+Methanal.View.SelectInput.subclass(Methanal.View, 'IntegerSelectInput').methods(
     function getValue(self) {
         var value = Methanal.View.IntegerSelectInput.upcall(self, 'getValue');
-        if (value === null || value.length == 0)
+        if (value === null) {
             return null;
-
+        }
         return Methanal.Util.strToInt(value);
     });
 
 
-Methanal.View.MultiSelectInput = Methanal.View.SelectInput.subclass('Methanal.View.MultiSelectInput');
-Methanal.View.MultiSelectInput.methods(
-    function clearSelection(self, node) {
-        var node = self.getInputNode();
-        node.selectedIndex = -1;
-        self.onChange(node);
-        return false;
-    },
 
-    function foreachSelected(self, func) {
-        var node = self.getInputNode();
-        if (node.selectedIndex === -1)
+Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
+    /**
+     * Get all selected C{option}'s values.
+     *
+     * @rtype:  C{Array} of C{String}
+     * @return: A sequence of values for all selected C{option}s, or C{null} if
+     *     there is no selection
+     */
+    function _getSelectedValues(self) {
+        if (self.inputNode.selectedIndex === -1) {
             return null;
+        }
 
         var values = [];
-        var options = node.options;
+        var options = self.inputNode.options;
         for (var i = 0; i < options.length; ++i) {
             var item = options.item(i);
-            if (item.selected)
-                values.push(func(item));
+            if (item.selected) {
+                values.push(item.value);
+            }
         }
 
         return values;
     },
 
-    function getSelectedText(self) {
-        return self.foreachSelected(function (item) {
-            return item.text;
-        });
+
+    /**
+     * Clear the selection.
+     */
+    function clear(self) {
+        self.inputNode.selectedIndex = -1;
+        self.onChange(self.inputNode);
+        return false;
     },
 
-    function getSelectedValues(self) {
-        return self.foreachSelected(function (item) {
-            return item.value;
-        });
-    },
-
-    function onChange(self, node) {
-        var values = self.getSelectedText();
-        var selnode = self.nodeById('selection');
-        if (values === null) {
-            selnode.style.display = 'none';
-        } else {
-            selnode.style.display = 'block';
-            Methanal.Util.replaceNodeText(selnode, 'Selected ' + values.length.toString() + ' item(s).');
-        }
-
-        Methanal.View.MultiSelectInput.upcall(self, 'onChange', node);
-    },
 
     function setValue(self, values) {
-        if (values === null)
+        if (values === null) {
+            self.clear();
             return;
+        }
 
-        var options = self.getInputNode().options;
+        var options = self.inputNode.options;
         for (var i = 0; i < options.length; ++i) {
             var option = options[i];
             for (var j = 0; j < values.length; ++j) {
-                if (option.value === values[j])
+                if (option.value === values[j]) {
                     option.selected = true;
+                }
             }
         }
     },
 
+
     function getValue(self) {
-        return self.getSelectedValues();
+        return self._getSelectedValues();
+    },
+
+    
+    /**
+     * Handle "onchange" DOM event.
+     */
+    function onChange(self, node) {
+        var values = self._getSelectedValues();
+        var selnode = self.nodeById('selection');
+        if (values !== null) {
+            Methanal.Util.replaceNodeText(selnode, 'Selected ' + values.length.toString() + ' item(s).');
+            selnode.style.display = 'block';
+        } else {
+            selnode.style.display = 'none';
+        }
+        return Methanal.View.MultiSelectInput.upcall(self, 'onChange', node);
     });
 
-
-Methanal.View.GroupedSelectInput = Methanal.View.SelectInput.subclass('Methanal.View.GroupedSelectInput');
-Methanal.View.GroupedSelectInput.methods(
-    function insertEmbeddedLabel(self, node, labelNode) {
-        node.insertBefore(labelNode, node.getElementsByTagName('optgroup')[0]);
-    });
-
-
-Methanal.View.CheckboxInput = Methanal.View.TextInput.subclass('Methanal.View.CheckboxInput');
-Methanal.View.CheckboxInput.methods(
-    function getValue(self) {
-        return self.inputNode.checked;
-    });
 
 
 
@@ -875,27 +1447,33 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
      * @return: Parsed time or C{null} if L{value} is empty
      */
     function _parse(self, value) {
-        if (value.length == 0)
+        if (!value) {
             return null;
+        }
         return Methanal.Util.Time.guess(value).oneDay();
     },
 
 
-    /**
-     * Update the friendly representation of the date value.
-     */
-    function _updateRepr(self, value) {
+    function nodeInserted(self) {
+        Methanal.View.DateInput.upcall(self, 'nodeInserted');
+        self.enableDisplayValue();
+    },
+
+
+    function makeDisplayValue(self, value) {
         var msg = '';
         try {
             var time = self._parse(value);
-            if (time)
+            if (time) {
                 msg = d.asHumanly();
+            }
         } catch (e) {
-            if (!(e instanceof Methanal.Util.TimeParseError))
+            if (!(e instanceof Methanal.Util.TimeParseError)) {
                 msg = e.toString();
+            }
             msg = 'Unknown date';
         }
-        Methanal.Util.replaceNodeText(self.nodeById('repr'), msg);
+        return msg;
     },
 
 
@@ -909,8 +1487,9 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
         var value = Methanal.View.DateInput.upcall(self, 'getValue');
         try {
             var time = self._parse(value);
-            if (time !== null)
+            if (time !== null) {
                 return time.asTimestamp();
+            }
             return null;
         } catch (e) {
             return undefined;
@@ -919,8 +1498,9 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
 
 
     function baseValidator(self, value) {
-        if (value === undefined)
+        if (value === undefined) {
             return 'Invalid date value';
+        }
     },
 
 
@@ -932,139 +1512,150 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
     });
 
 
-Methanal.View.DecimalInput = Methanal.View.TextInput.subclass('Methanal.View.DecimalInput');
-Methanal.View.DecimalInput.methods(
-    function __init__(self, node, args) {
-        self.decimalPlaces = args.decimalPlaces;
-        self.showRepr = args.showRepr;
-        self.minValue = args.minValue;
-        self.maxValue = args.maxValue;
-        self._regex = '^\\d*(\\.\\d{0,' + self.decimalPlaces.toString() + '})?$';
 
-        Methanal.View.DecimalInput.upcall(self, '__init__', node, args);
+/**
+ * Base class for numeric inputs.
+ *
+ * @type _validInput: C{RegExp}
+ * @ivar _validInput: A regular expression used to test an input's value
+ *     for validity
+ */
+Methanal.View.TextInput.subclass(Methanal.View, 'NumericInput').methods(
+    function getValue(self) {
+        var value = Methanal.View.NumericInput.upcall(self, 'getValue');
+        if (!value) {
+            return null;
+        } else if (!self._validInput.test(value)) {
+            return undefined;
+        }
+
+        return value;
     },
+
+
+    function baseValidator(self, value) {
+        if (value === undefined || isNaN(value)) {
+            return 'Numerical value only';
+        }
+    });
+
+
+
+/**
+ * Integer input.
+ */
+Methanal.View.NumericInput.subclass(Methanal.View, 'IntegerInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.IntegerInput.upcall(self, '__init__', node, args);
+        self._validInput = /^[-+]?\d+$/;
+    },
+
+
+    function getValue(self) {
+        var value = Methanal.View.IntegerInput.upcall(self, 'getValue');
+        if (value) {
+            value = Methanal.Util.strToInt(value);
+        }
+        return value;
+    });
+
+
+
+/**
+ * Decimal number input.
+ *
+ * @type decimalPlaces: C{Integer}
+ * @ivar decimalPlaces: Number of decimal places
+ */
+Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.DecimalInput.upcall(self, '__init__', node, args);
+        self.decimalPlaces = args.decimalPlaces;
+        self._validInput = new RegExp(
+            '^[-+]?\\d*(\\.\\d{0,' + self.decimalPlaces.toString() + '})?$');
+    },
+
 
     function nodeInserted(self) {
-        self.reprNode = self.nodeById('representation');
-
         Methanal.View.DecimalInput.upcall(self, 'nodeInserted');
-        if (!self.showRepr)
-            self.reprNode.style.display = 'none';
+        self.enableDisplayValue();
     },
 
-    function getRepr(self, value) {
+
+    function makeDisplayValue(self, value) {
         return Methanal.Util.formatDecimal(value.toFixed(self.decimalPlaces));
     },
 
-    function updateRepr(self, node) {
-        if (self.showRepr) {
-            var reprNode = self.reprNode;
-            var v = self.getValue();
-            if (v !== null && self.baseValidator(v) === undefined) {
-                var repr = self.getRepr(v);
-                if (repr !== null && repr !== undefined) {
-                    Methanal.Util.replaceNodeText(reprNode, repr);
-                    return;
-                }
-            }
-
-            Methanal.Util.replaceNodeText(reprNode, '');
-        }
-    },
-
-    function valueChanged(self, node) {
-        self.updateRepr(node);
-    },
 
     function setValue(self, value) {
-        if (value !== '')
+        if (value) {
             value = value.toFixed(self.decimalPlaces);
+        }
         Methanal.View.DecimalInput.upcall(self, 'setValue', value);
-        self.updateRepr(self.inputNode);
     },
+
 
     function getValue(self) {
         var value = Methanal.View.DecimalInput.upcall(self, 'getValue');
-        if (value === '')
-            return null;
-
-        if (value.match(self._regex) === null)
-            return undefined;
-
-        return parseFloat(value);
+        if (value) {
+            return parseFloat(value);
+        }
+        return value;
     },
 
-    function validateBounds(self, value) {
-        if (self.minValue === null && self.maxValue === null)
-            return undefined;
-        if (self.minValue !== null && value < self.minValue)
-            return 'Value must be greater than or equal to ' + Methanal.Util.formatDecimal(self.minValue)
-        else if (self.maxValue !== null && value > self.maxValue)
-            return 'Value must be less than or equal to ' + Methanal.Util.formatDecimal(self.maxValue)
-    },
-
-    function _validate(self, value) {
-        return self.validateBounds(value)
-    },
 
     function baseValidator(self, value) {
-        if (value === undefined || isNaN(value))
-            return 'Numerical value, to a maximum of ' + self.decimalPlaces.toString() + ' decimal places only';
-
-        var error = self._validate(value);
-        if (error !== undefined)
-            return error;
+        var rv = Methanal.View.DecimalInput.baseValidator(value);
+        if (rv) {
+            return 'Numerical value, to a maximum of ' +
+                self.decimalPlaces.toString() + ' decimal places only';
+        }
     });
 
 
-Methanal.View.PercentInput = Methanal.View.DecimalInput.subclass('Methanal.View.PercentInput');
-Methanal.View.PercentInput.methods(
+
+/**
+ * Decimal input whose values are interpreted as percentages.
+ */
+Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
     function __init__(self, node, args) {
-        // The value is represented as fractional percentage, but is displayed (and inputted) as
-        // though it were an integer percentage. We don't want two places of non-existant precision.
+        // The value is represented as fractional percentage, but is displayed
+        // (and input) as though it were an integer percentage. We don't
+        // want two decimal places of non-existant precision.
         args.decimalPlaces = args.decimalPlaces - 2;
         Methanal.View.PercentInput.upcall(self, '__init__', node, args);
-        self._regex = '^\\d*(\\.\\d{0,' + self.decimalPlaces.toString() + '})?%?$';
+        self._validInput = new RegExp(
+            '^\\d*(\\.\\d{0,' + self.decimalPlaces.toString() + '})?%?$');
     },
 
-    function getRepr(self, value) {
+
+    function makeDisplayValue(self, value) {
         return (value * 100).toFixed(self.decimalPlaces) + '%';
     },
 
+
     function getValue(self) {
         var value = Methanal.View.PercentInput.upcall(self, 'getValue');
-        if (value === undefined || value === null)
-            return value;
-
-        return value / 100;
+        if (value) {
+            value = value / 100;
+        }
+        return value;
     },
 
+
     function setValue(self, value) {
-        if (value !== undefined && value !== null)
-            value *= 100;
+        if (value) {
+            value = value * 100;
+        }
         Methanal.View.PercentInput.upcall(self, 'setValue', value);
     },
 
-    function validateBounds(self, value) {
-        if (self.minValue === null && self.maxValue === null)
-            return undefined;
-        if (self.minValue !== null && value < self.minValue)
-            return 'Value must be greater than or equal to ' + (self.minValue * 100) + '%';
-        else if (self.maxValue !== null && value > self.maxValue)
-            return 'Value must be less than or equal to ' + (self.maxValue * 100) + '%'
-    });
-
-
-Methanal.View.IntegerInput = Methanal.View.DecimalInput.subclass('Methanal.View.IntegerInput');
-Methanal.View.IntegerInput.methods(
-    function __init__(self, node, args) {
-        args.decimalPlaces = 0;
-        args.showRepr = false;
-        Methanal.View.IntegerInput.upcall(self, '__init__', node, args);
-        self._regex = '^\\d*$';
-    },
 
     function baseValidator(self, value) {
-        if (value === undefined || isNaN(value))
-            return 'Numerical value only';
+        var rv = Methanal.View.PercentInput.upcall(self, 'baseValidator', value);
+        if (rv !== undefined) {
+            return rv;
+        } else if (value < 0 || value > 100) {
+            return 'Percentage values must be between 0% and 100%'
+        }
     });

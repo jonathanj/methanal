@@ -15,7 +15,7 @@
 Methanal.Validators.hasLength = function hasLength(value) {
     if (value === null || value.length == 0)
         return 'Value is mandatory';
-}
+};
 
 
 
@@ -25,7 +25,7 @@ Methanal.Validators.hasLength = function hasLength(value) {
 Methanal.Validators.digitsOnly = function digitsOnly(value) {
     if (!/^\d*$/.test(value))
         return 'Value must be digits only';
-}
+};
 
 
 
@@ -39,7 +39,7 @@ Methanal.Validators.validEmail = function validEmail(email) {
     var regex = /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
     if (!regex.test(email))
         return 'Must be blank, or a valid e-mail address'
-}
+};
 
 
 
@@ -49,7 +49,7 @@ Methanal.Validators.validEmail = function validEmail(email) {
 Methanal.Validators.notNull = function notNull(value) {
     if (value === null)
         return 'Value is mandatory';
-}
+};
 
 
 
