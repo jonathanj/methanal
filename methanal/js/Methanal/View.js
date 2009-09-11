@@ -129,8 +129,9 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
         for (var i = 0; i < names.length; ++i) {
             var name = names[i];
             var handlers = mapping[name];
-            if (handlers === undefined)
+            if (handlers === undefined) {
                 handlers = mapping[name] = {};
+            }
             handlers[self._handlerID] = 1;
         }
     },
@@ -150,9 +151,10 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      * @param outputs: Sequence of control names of output controls
      */
     function addHandler(self, fn, inputs, outputs) {
-        if (fn === undefined)
+        if (fn === undefined) {
             throw Methanal.View.HandlerError(
                 'Specified handler function is not defined');
+        }
 
         var handler = Methanal.View._Handler(
             self._handlerID, self, fn, inputs, outputs);
@@ -495,8 +497,9 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * This does nothing if the form is "view only."
      */
     function _enableSubmit(self) {
-        if (self.viewOnly)
+        if (self.viewOnly) {
             return;
+        }
         self._submitNode.disabled = false;
         Methanal.Util.removeElementClass(self._submitNode, 'methanal-submit-disabled');
     },
@@ -508,8 +511,9 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * This does nothing if the form is "view only."
      */
     function _disableSubmit(self) {
-        if (self.viewOnly)
+        if (self.viewOnly) {
             return;
+        }
         self._submitNode.disabled = true;
         Methanal.Util.addElementClass(self._submitNode, 'methanal-submit-disabled');
     },
@@ -582,8 +586,9 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * If the form is "view only", no form submission takes place.
      */
     function handleSubmit(self) {
-        if (self.viewOnly)
+        if (self.viewOnly) {
             return false;
+        }
         self.submit();
         return false;
     },
@@ -764,8 +769,9 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'GroupInput').methods(
 
     function setWidgetParent(self, widgetParent) {
         Methanal.View.GroupInput.upcall(self, 'setWidgetParent', widgetParent);
-        if (self.widgetParent)
+        if (self.widgetParent) {
             self.widgetParent.getForm().subforms[self.name] = self;
+        }
     },
 
 
@@ -1110,13 +1116,15 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * new "display value."
      */
     function _updateDisplayValue(self) {
-        if (!self._useDisplayValue)
+        if (!self._useDisplayValue) {
             return;
+        }
 
         var value = self.getValue();
         var displayValue = '';
-        if (value && self.baseValidator(value) === undefined)
+        if (value && self.baseValidator(value) === undefined) {
             displayValue = self.makeDisplayValue(value);
+        }
         Methanal.Util.replaceNodeText(self._displayValueNode, displayValue);
     },
 
@@ -1139,8 +1147,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
 
 
     function getValue(self) {
-        if (self._labelled)
+        if (self._labelled) {
             return '';
+        }
         return Methanal.View.TextInput.upcall(self, 'getValue');
     },
 
@@ -1170,8 +1179,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
             self._removeLabel(node);
             node.value = '';
         }
-        if (self.embeddedLabel)
+        if (self.embeddedLabel) {
             self._createTooltip();
+        }
     },
 
 
@@ -1220,8 +1230,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
         var values = [];
         for (var name in self.inputNode) {
             var node = self.inputNode[name];
-            if (node.checked)
+            if (node.checked) {
                 values.push(name);
+            }
         }
         return values;
     });
@@ -1306,8 +1317,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
 
     function getValue(self) {
         var value = Methanal.View.SelectInput.upcall(self, 'getValue');
-        if (value.length == 0)
+        if (!value) {
             return null;
+        }
         return value;
     },
 
@@ -1341,8 +1353,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
 Methanal.View.SelectInput.subclass(Methanal.View, 'IntegerSelectInput').methods(
     function getValue(self) {
         var value = Methanal.View.IntegerSelectInput.upcall(self, 'getValue');
-        if (value === null)
+        if (value === null) {
             return null;
+        }
         return Methanal.Util.strToInt(value);
     });
 
@@ -1357,15 +1370,17 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
      *     there is no selection
      */
     function _getSelectedValues(self) {
-        if (self.inputNode.selectedIndex === -1)
+        if (self.inputNode.selectedIndex === -1) {
             return null;
+        }
 
         var values = [];
         var options = self.inputNode.options;
         for (var i = 0; i < options.length; ++i) {
             var item = options.item(i);
-            if (item.selected)
+            if (item.selected) {
                 values.push(item.value);
+            }
         }
 
         return values;
@@ -1383,16 +1398,18 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
 
 
     function setValue(self, values) {
-        if (values === null)
+        if (values === null) {
             self.clear();
             return;
+        }
 
         var options = self.inputNode.options;
         for (var i = 0; i < options.length; ++i) {
             var option = options[i];
             for (var j = 0; j < values.length; ++j) {
-                if (option.value === values[j])
+                if (option.value === values[j]) {
                     option.selected = true;
+                }
             }
         }
     },
@@ -1437,8 +1454,9 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
      * @return: Parsed time or C{null} if L{value} is empty
      */
     function _parse(self, value) {
-        if (value.length == 0)
+        if (!value) {
             return null;
+        }
         return Methanal.Util.Time.guess(value).oneDay();
     },
 
@@ -1453,11 +1471,13 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
         var msg = '';
         try {
             var time = self._parse(value);
-            if (time)
+            if (time) {
                 msg = d.asHumanly();
+            }
         } catch (e) {
-            if (!(e instanceof Methanal.Util.TimeParseError))
+            if (!(e instanceof Methanal.Util.TimeParseError)) {
                 msg = e.toString();
+            }
             msg = 'Unknown date';
         }
         return msg;
@@ -1474,8 +1494,9 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
         var value = Methanal.View.DateInput.upcall(self, 'getValue');
         try {
             var time = self._parse(value);
-            if (time !== null)
+            if (time !== null) {
                 return time.asTimestamp();
+            }
             return null;
         } catch (e) {
             return undefined;
@@ -1484,8 +1505,9 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
 
 
     function baseValidator(self, value) {
-        if (value === undefined)
+        if (value === undefined) {
             return 'Invalid date value';
+        }
     },
 
 
@@ -1508,19 +1530,20 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
 Methanal.View.TextInput.subclass(Methanal.View, 'NumericInput').methods(
     function getValue(self) {
         var value = Methanal.View.NumericInput.upcall(self, 'getValue');
-        if (value.length == 0)
+        if (!value) {
             return null;
-
-        if (!self._validInput.test(value))
+        } else if (!self._validInput.test(value)) {
             return undefined;
+        }
 
         return value;
     },
 
 
     function baseValidator(self, value) {
-        if (value === undefined || isNaN(value))
+        if (value === undefined || isNaN(value)) {
             return 'Numerical value only';
+        }
     });
 
 
@@ -1537,8 +1560,9 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'IntegerInput').methods(
 
     function getValue(self) {
         var value = Methanal.View.IntegerInput.upcall(self, 'getValue');
-        if (value)
+        if (value) {
             value = Methanal.Util.strToInt(value);
+        }
         return value;
     });
 
@@ -1604,38 +1628,41 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
     function __init__(self, node, args) {
         // The value is represented as fractional percentage, but is displayed
         // (and input) as though it were an integer percentage. We don't
-        // want two places of non-existant precision.
-        args.precision = args.precision - 2;
+        // want two decimal places of non-existant precision.
+        args.decimalPlaces = args.decimalPlaces - 2;
         Methanal.View.PercentInput.upcall(self, '__init__', node, args);
         self._validInput = new RegExp(
-            '^\\d*(\\.\\d{0,' + self.precision.toString() + '})?%?$');
+            '^\\d*(\\.\\d{0,' + self.decimalPlaces.toString() + '})?%?$');
     },
 
 
     function makeDisplayValue(self, value) {
-        return (value * 100).toFixed(self.precision) + '%';
+        return (value * 100).toFixed(self.decimalPlaces) + '%';
     },
 
 
     function getValue(self) {
         var value = Methanal.View.PercentInput.upcall(self, 'getValue');
-        if (value)
+        if (value) {
             value = value / 100;
+        }
         return value;
     },
 
 
     function setValue(self, value) {
-        if (value)
+        if (value) {
             value = value * 100;
+        }
         Methanal.View.PercentInput.upcall(self, 'setValue', value);
     },
 
 
     function baseValidator(self, value) {
         var rv = Methanal.View.PercentInput.upcall(self, 'baseValidator', value);
-        if (rv !== undefined)
-            return rv
-        if (value < 0 || value > 100)
+        if (rv !== undefined) {
+            return rv;
+        } else if (value < 0 || value > 100) {
             return 'Percentage values must be between 0% and 100%'
+        }
     });
