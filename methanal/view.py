@@ -456,22 +456,22 @@ class DecimalInput(TextInput):
     jsClass = u'Methanal.View.DecimalInput'
 
 
-    def __init__(self, precision=None, **kw):
+    def __init__(self, decimalPlaces=None, **kw):
         """
         Initialise the input.
 
-        @type precision: C{int}
-        @param precision: The number of digits of precision to allow, or
-            C{None} to use the model parameter's value
+        @type decimalPlaces: C{int}
+        @param decimalPlaces: The number of decimal places to allow, or C{None}
+            to use the model parameter's value
         """
         super(DecimalInput, self).__init__(**kw)
-        if precision is None:
-            precision = self.param.decimalPlaces
-        self.precision = precision
+        if decimalPlaces is None:
+            decimalPlaces = self.param.decimalPlaces
+        self.decimalPlaces = decimalPlaces
 
 
     def getArgs(self):
-        return {u'precision': self.precision}
+        return {u'decimalPlaces': self.decimalPlaces}
 
 
     def getValue(self):

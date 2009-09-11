@@ -1547,15 +1547,15 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'IntegerInput').methods(
 /**
  * Decimal number input.
  *
- * @type precision: C{Integer}
- * @ivar precision: Number of digits of precision
+ * @type decimalPlaces: C{Integer}
+ * @ivar decimalPlaces: Number of decimal places
  */
 Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
     function __init__(self, node, args) {
         Methanal.View.DecimalInput.upcall(self, '__init__', node, args);
-        self.precision = args.precision;
+        self.decimalPlaces = args.decimalPlaces;
         self._validInput = new RegExp(
-            '^[-+]?\\d*(\\.\\d{0,' + self.precision.toString() + '})?$');
+            '^[-+]?\\d*(\\.\\d{0,' + self.decimalPlaces.toString() + '})?$');
     },
 
 
@@ -1566,34 +1566,33 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
 
 
     function makeDisplayValue(self, value) {
-        return Methanal.Util.formatDecimal(value.toFixed(self.precision));
+        return Methanal.Util.formatDecimal(value.toFixed(self.decimalPlaces));
     },
 
 
     function setValue(self, value) {
-        if (value)
-            value = value.toFixed(self.precision);
+        if (value) {
+            value = value.toFixed(self.decimalPlaces);
+        }
         Methanal.View.DecimalInput.upcall(self, 'setValue', value);
     },
 
 
     function getValue(self) {
         var value = Methanal.View.DecimalInput.upcall(self, 'getValue');
-        if (value.length == 0)
-            return null;
-
-        if (self._validInput.test(value))
-            return undefined;
-
-        return parseFloat(value);
+        if (value) {
+            return parseFloat(value);
+        }
+        return value;
     },
 
 
     function baseValidator(self, value) {
         var rv = Methanal.View.DecimalInput.baseValidator(value);
-        if (rv)
+        if (rv) {
             return 'Numerical value, to a maximum of ' +
-                self.precision.toString() + ' decimal places only';
+                self.decimalPlaces.toString() + ' decimal places only';
+        }
     });
 
 
