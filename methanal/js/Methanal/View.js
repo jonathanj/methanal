@@ -901,8 +901,6 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      * @param error: Error message
      */
     function setError(self, error) {
-        // XXX: InputContainer.setError already does this. Do we really
-        // need to do it again?
         Methanal.Util.addElementClass(self.node, 'methanal-control-error');
         var node = self._errorNode;
         Methanal.Util.replaceNodeText(node, '\xa0');
@@ -1162,7 +1160,8 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
             self._destroyTooltip();
             if (self._needsLabel(node.value)) {
                 self._setLabel(node);
-                // XXX: We might actually not need to call onChange.
+                // XXX: It's possible that nothing actually changed and there
+                // may be no reason to call onChange.
                 self.onChange(node);
             } else {
                 self._removeLabel(node);
@@ -1328,9 +1327,6 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      * Handle "onblur" DOM event.
      */
     function onBlur(self, node) {
-        // XXX: do we need this? we're not setting the class on the input itself
-        if (node.value === '')
-            Methanal.Util.addElementClass(node, 'embedded-label');
         self.onChange(node);
     },
 
@@ -1339,9 +1335,6 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      * Handle "onfocus" DOM event.
      */
     function onFocus(self, node) {
-        // XXX: do we need this? we're not setting the class on the input itself
-        if (node.value === '')
-            Methanal.Util.removeElementClass(node, 'embedded-label');
         self.onChange(node);
     });
 
