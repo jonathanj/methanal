@@ -363,3 +363,7 @@ button.roll-up {
     padding: 0.5ex;
     float: left;
 }
+
+.embedded-label {
+    color: #bbb !important;
+}

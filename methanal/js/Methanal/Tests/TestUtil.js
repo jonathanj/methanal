@@ -65,7 +65,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
 
 Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').methods(
     /**
-     * Supply no parameters creates an empty set.
+     * Supplying no parameters creates an empty set.
      */
     function test_empty(self) {
         var s = Methanal.Util.StringSet();

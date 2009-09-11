@@ -1028,7 +1028,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * Does the input need an embedded label?
      */
     function _needsLabel(self, value) {
-        return self.embeddedLabel && (value === null || value.length === 0);
+        return self.embeddedLabel && !value;
     },
 
 
