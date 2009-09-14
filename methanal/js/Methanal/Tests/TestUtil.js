@@ -1,5 +1,6 @@
 // import Divmod.UnitTest
 // import Methanal.Util
+// import Methanal.Tests.Util
 
 
 
@@ -310,4 +311,55 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
         var t = self._knownTime.offset(Methanal.Util.TimeDelta({'days': 1}));
         self.assertIdentical(t.asTimestamp(), 1252280183002);
         self.assertIdentical(t.oneDay().asHumanly(), 'Mon, 7 Sep 2009');
+    });
+
+
+
+/**
+ * Tests for L{Methanal.Util.Throbber}.
+ */
+Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestThrobber').methods(
+    function _createThrobber(self, toggleDisplay) {
+        var idNodes = {
+            'throbber': Methanal.Tests.Util.MockNode('foo')};
+        var widget = Methanal.Tests.Util.MockWidget(idNodes);
+        var throbber = Methanal.Util.Throbber(widget, toggleDisplay);
+        return throbber;
+    },
+
+
+    /**
+     * Creating a throbber finds a DOM node with the ID "throbber".
+     */
+    function test_create(self) {
+        var throbber = self._createThrobber();
+        self.assertIdentical(throbber._node.name, 'foo');
+    },
+    
+
+    /**
+     * Starting and stopping the throbber, under normal conditions, adjusts the
+     * throbber node's visibility style.
+     */
+    function test_startStop(self) {
+        var throbber = self._createThrobber();
+        throbber.start();
+        self.assertIdentical(throbber._node.style.visibility, 'visible');
+        throbber.stop();
+        self.assertIdentical(throbber._node.style.visibility, 'hidden');
+    },
+
+
+    /**
+     * Specifying the C{toggleDisplay} augments the behaviour of the C{stop}
+     * and C{start} methods.
+     */
+    function test_toggleDisplay(self) {
+        var throbber = self._createThrobber('foo');
+        throbber.start();
+        self.assertIdentical(throbber._node.style.visibility, 'visible');
+        self.assertIdentical(throbber._node.style.display, 'foo');
+        throbber.stop();
+        self.assertIdentical(throbber._node.style.visibility, 'hidden');
+        self.assertIdentical(throbber._node.style.display, 'none');
     });
