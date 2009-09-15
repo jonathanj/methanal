@@ -4,6 +4,8 @@ from decimal import Decimal
 
 from epsilon.extime import Time
 
+from twisted.python.components import registerAdapter
+
 from axiom.attributes import text, integer, timestamp
 
 from nevow.page import renderer
@@ -12,8 +14,10 @@ from nevow.athena import expose
 from xmantissa.ixmantissa import IWebTranslator
 from xmantissa.webtheme import ThemedElement
 
+from methanal.imethanal import IEnumeration
 from methanal.model import ItemModel, Model, paramFromAttribute
 from methanal.util import getArgsDict
+from methanal.enums import ListEnumeration
 
 
 
@@ -512,7 +516,12 @@ class ChoiceInput(FormInput):
             rendering various C{<option>}-based inputs
         """
         super(ChoiceInput, self).__init__(**kw)
-        self.values = tuple(values)
+        values = IEnumeration(values, None)
+        if values is None:
+            values = IEnumeration(list(values))
+            warn('ChoiceInput values should be an IEnumeration implementation',
+                 DeprecationWarning, 2)
+        self.values = values
 
 
     @renderer
@@ -521,11 +530,14 @@ class ChoiceInput(FormInput):
         Render all available options.
         """
         option = tag.patternGenerator('option')
-        for value, description in self.values:
+        for value, description in self.values.asPairs():
             o = option()
             o.fillSlots('value', value)
             o.fillSlots('description', description)
             yield o
+
+
+registerAdapter(ListEnumeration, list, IEnumeration)
 
 
 
