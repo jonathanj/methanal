@@ -342,7 +342,6 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      * @param widget: The widget containing the throbber node
      */
     function __init__(self, widget, toggleDisplay) {
-        Fusion.Util.Throbber.upcall(self, '__init__');
         self._node = widget.nodeById('throbber');
         self.toggleDisplay = toggleDisplay;
     },
