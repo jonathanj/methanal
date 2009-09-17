@@ -506,20 +506,16 @@ class PercentInput(DecimalInput):
 class ChoiceInput(FormInput):
     """
     Abstract input with multiple options.
+
+    @type values: L{IEnumeration}
+    @ivar values: An enumeration to be used for choice options
     """
     def __init__(self, values, **kw):
-        """
-        Initialise the input.
-
-        @type values: C{iterable} of C{(unicode, unicode)}
-        @param values: An iterable of C{(value, description)} pairs used for
-            rendering various C{<option>}-based inputs
-        """
         super(ChoiceInput, self).__init__(**kw)
         values = IEnumeration(values, None)
         if values is None:
             values = IEnumeration(list(values))
-            warn('ChoiceInput values should be an IEnumeration implementation',
+            warn('ChoiceInput: "values" should be adaptable to IEnumeration',
                  DeprecationWarning, 2)
         self.values = values
 
