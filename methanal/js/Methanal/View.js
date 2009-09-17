@@ -338,9 +338,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             node.title = 'Other fields depend on this field';
         }
 
-        self._depCache.refresh(self.controls);
-        self._validatorCache.refresh(self.controls);
-        self._refreshValidity();
+        self.refresh();
     },
 
 
@@ -418,10 +416,20 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
-     * Re-evaluate the validators for all form inputs.
+     * Update the validator cache for C{control} and refresh the form validity.
      */
     function validate(self, control) {
         self._validatorCache.changed(control.name);
+        self._refreshValidity();
+    },
+
+
+    /**
+     * Refresh caches and form validity for all inputs.
+     */
+    function refresh(self) {
+        self._depCache.refresh(self.controls);
+        self._validatorCache.refresh(self.controls);
         self._refreshValidity();
     },
 
@@ -524,6 +532,15 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      */
     function getForm(self) {
         return self;
+    },
+
+
+    /**
+     * Reset form inputs.
+     */
+    function reset(self) {
+        self.node.reset();
+        self.refresh();
     },
 
 
