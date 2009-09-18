@@ -512,12 +512,12 @@ class ChoiceInput(FormInput):
     """
     def __init__(self, values, **kw):
         super(ChoiceInput, self).__init__(**kw)
-        values = IEnumeration(values, None)
-        if values is None:
-            values = IEnumeration(list(values))
+        _values = IEnumeration(values, None)
+        if _values is None:
+            _values = IEnumeration(list(values))
             warn('ChoiceInput: "values" should be adaptable to IEnumeration',
                  DeprecationWarning, 2)
-        self.values = values
+        self.values = _values
 
 
     @renderer
