@@ -152,10 +152,12 @@ class EnumTests(unittest.TestCase):
         self.assertEquals(self.enum.get(u'foo').frob, u'world')
         self.assertEquals(self.enum.get(u'bar').quux, u'goodbye')
 
-        self.assertRaises(AttributeError,
-                          getattr, self.enum.get(u'bar'), 'boop')
-        self.assertRaises(AttributeError,
+        e = self.assertRaises(AttributeError,
+                              getattr, self.enum.get(u'bar'), 'boop')
+        self.assertIn('boop', e.message)
+        e = self.assertRaises(AttributeError,
                           getattr, self.enum.get(u'bar'), 'beep')
+        self.assertIn('beep', e.message)
 
 
     def test_hidden(self):
