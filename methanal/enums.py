@@ -180,7 +180,8 @@ class EnumItem(object):
         """
         if name in self._extra:
             return self.get(name)
-        return super(EnumItem, self).__getattr__(name)
+        raise AttributeError(
+            '%r object has no attribute %r' % (type(self).__name__, name))
 
 
     def get(self, name, default=None):
