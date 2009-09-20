@@ -2,7 +2,6 @@ from zope.interface import implements
 
 from methanal.errors import InvalidEnumItem
 from methanal.imethanal import IEnumeration
-from methanal.util import memoise
 
 
 
@@ -29,7 +28,7 @@ class Enum(object):
 
     @ivar doc: A brief description of the enumeration's intent
 
-    @ivar _order: A list of enumeration values used to preserve the original
+    @ivar _order: A list of enumeration items, used to preserve the original
         order of the enumeration
 
     @ivar _values: A mapping of enumeration values to L{EnumItem}s
@@ -53,7 +52,7 @@ class Enum(object):
             if value.value in _values:
                 raise ValueError(
                     '%r is already a value in the enumeration' % (value.value,))
-            _order.append(value.value)
+            _order.append(value)
             _values[value.value] = value
 
 
@@ -132,18 +131,15 @@ class Enum(object):
             raise ValueError('Only one query is allowed at a time')
 
         name, value = values[0]
-        for key in self._order:
-            item = self._values[key]
+        for item in self._order:
             if item.get(name) == value:
                 yield item
 
 
     # IEnumeration
-    @memoise('_valuePairs')
     def asPairs(self):
-        items = (self._values[key] for key in self._order)
         return [(i.value, i.desc)
-                for i in items
+                for i in self._order
                 if not i.hidden]
 
 

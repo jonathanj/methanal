@@ -145,23 +145,3 @@ def propertyMaker(func):
     @rtype: C{property} instance
     """
     return property(*func())
-
-
-
-def memoise(attrName):
-    """
-    Decorator for memoising a function's return value.
-
-    @type  attrName: C{str}
-    @param attrName: Attribute name to store the memoised value in
-    """
-    def _memoise(f):
-        def _memoised(self, *a, **kw):
-            try:
-                return getattr(self, attrName)
-            except AttributeError:
-                value = f(self, *a, **kw)
-                setattr(self, attrName, value)
-                return value
-        return mergeFunctionMetadata(f, _memoised)
-    return _memoise
