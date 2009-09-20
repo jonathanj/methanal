@@ -1307,7 +1307,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
 
     function setValue(self, value) {
         Methanal.View.SelectInput.upcall(self, 'setValue', value);
-        if (value === null) {
+        // Most browsers just automagically change the value to that of the
+        // first option if you set the value to a nonexistent option value. 
+        if (value === null || self.inputNode.value !== value) {
             self._insertPlaceholder();
             self.inputNode.value = '';
         }
