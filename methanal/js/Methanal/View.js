@@ -1251,7 +1251,8 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      * @param desc: User-facing textual description of the value
      */
     function _createOption(self, value, desc) {
-        var optionNode = self.inputNode.ownerDocument.createElement('option');
+        var doc = self.inputNode.ownerDocument;
+        var optionNode = doc.createElement('option');
         optionNode.value = value;
         optionNode.appendChild(doc.createTextNode(desc));
         return optionNode
@@ -1262,7 +1263,8 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      * Insert a placeholder C{option} node.
      */
     function _insertPlaceholder(self) {
-        var optionNode = self.insert('', self.label, node.firstChild);
+        var optionNode = self.insert(
+            '', self.label, self.inputNode.options[0] || null);
         Methanal.Util.addElementClass(optionNode, 'embedded-label');
     },
 
@@ -1282,7 +1284,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      */
     function insert(self, value, desc, before) {
         var optionNode = self._createOption(value, desc);
-        node.add(optionNode, before);
+        self.inputNode.add(optionNode, before);
         return optionNode;
     },
 

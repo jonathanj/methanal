@@ -17,3 +17,7 @@ class JSUnitTests(JavaScriptTestCase):
 
     def test_deps(self):
         return u'Methanal.Tests.TestDeps'
+
+
+    def test_view(self):
+        return u'Methanal.Tests.TestView'
