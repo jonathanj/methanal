@@ -93,8 +93,15 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCase').
 
         var control = self.createControl(args);
         var form = Methanal.Tests.TestView.MockLiveForm([args.name]);
-        control.setWidgetParent(form);
-        document.body.appendChild(control.node);
+        var row = Methanal.View.FormRow(
+            Nevow.Test.WidgetUtil.makeWidgetNode());
+        Methanal.Tests.TestView.makeWidgetChildNode(row, 'span', 'error-text')
+        row.setWidgetParent(form);
+        document.body.appendChild(row.node);
+        row.nodeInserted();
+
+        control.setWidgetParent(row);
+        row.node.appendChild(control.node);
         control.nodeInserted();
 
         try {
@@ -102,7 +109,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCase').
         } catch (e) {
             throw e;
         } finally {
-            document.body.removeChild(control.node);
+            document.body.removeChild(row.node);
         }
     });
 
