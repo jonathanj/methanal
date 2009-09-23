@@ -1651,7 +1651,7 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
         var rv = Methanal.View.PercentInput.upcall(self, 'baseValidator', value);
         if (rv !== undefined) {
             return rv;
-        } else if (value < 0 || value > 100) {
+        } else if (value < 0 || value > 1) {
             return 'Percentage values must be between 0% and 100%'
         }
     });
