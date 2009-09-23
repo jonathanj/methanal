@@ -113,6 +113,40 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
         } finally {
             document.body.removeChild(row.node);
         }
+    },
+    
+
+    /**
+     * Assert that C{value} is valid input for C{control}.
+     *
+     * Set the input node's value to C{value} and passes the result of
+     * C{control.getValue} to C{control.baseValidator}.
+     */
+    function assertValidInput(self, control, value) {
+        var oldValue = control.inputNode.value;
+        control.inputNode.value = value;
+        var msg = (Methanal.Util.repr(value) + ' is NOT valid input for ' +
+            Methanal.Util.repr(control));
+        self.assertIdentical(
+            control.baseValidator(control.getValue()), undefined, msg);
+        control.inputNode.value = oldValue;
+    },
+
+
+    /**
+     * Assert that C{value} is not valid input for C{control}.
+     *
+     * Set the input node's value to C{value} and passes the result of
+     * C{control.getValue} to C{control.baseValidator}.
+     */
+    function assertInvalidInput(self, control, value) {
+        var oldValue = control.inputNode.value;
+        control.inputNode.value = value;
+        var msg = (Methanal.Util.repr(value) + ' IS valid input for ' +
+            Methanal.Util.repr(control));
+        self.assertNotIdentical(
+            control.baseValidator(control.getValue()), undefined, msg);
+        control.inputNode.value = oldValue;
     });
 
 
@@ -240,6 +274,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Bas
     });
 
 
+
 /**
  * Tests for L{Methanal.View.TextInput}.
  */
@@ -337,6 +372,9 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 
 
 
+/**
+ * Tests for L{Methanal.View.DateInput}.
+ */
 Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestDateInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.DateInput;
@@ -391,22 +429,51 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
     
     
     /**
-     * L{Methanal.View.DateInput}'s base validator considers C{undefined} to
-     * be an illegal value.
+     * L{Methanal.View.DateInput} only accepts input that is a valid date, in a
+     * parseable format.
      */
-    function test_baseValidator(self) {
+    function test_inputValidation(self) {
         self.testControl({value: null},
             function (control) {
-                self.assertIdentical(control.baseValidator(null), undefined);
-                self.assertIdentical(control.baseValidator(1), undefined);
-                self.assertIdentical(control.baseValidator('a'), undefined);
-                self.assertNotIdentical(
-                    control.baseValidator(undefined), undefined);
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '2009-01-01');
+                self.assertInvalidInput(control, 'a');
+                self.assertInvalidInput(control, '1');
+                self.assertInvalidInput(control, '2009-02-29');
             });
     });
 
 
 
+/**
+ * Tests for L{Methanal.View.IntegerInput}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestIntegerInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.IntegerInput;
+    },
+
+
+    /**
+     * L{Methanal.View.IntegerInput} only accepts input that is a valid integer.
+     */
+    function test_inputValidation(self) {
+        self.testControl({value: null},
+            function (control) {
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '1');
+                self.assertInvalidInput(control, 'a');
+                self.assertInvalidInput(control, '1.2');
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.DecimalInput}.
+ */
 Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestDecimalInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.DecimalInput;
@@ -460,15 +527,101 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 
 
     /**
-     * L{Methanal.View.DecimalInput}'s base validator upcalls and modifies the
-     * validation message.
+     * L{Methanal.View.DecimalInput} only accepts input that is a valid decimal
+     * number with the correct number of decimal places.
      */
-    function test_baseValidator(self) {
+    function test_inputValidation(self) {
         self.testControl({value: null, decimalPlaces: 2},
             function (control) {
-                self.assertIdentical(control.baseValidator(null), undefined);
-                self.assertIdentical(control.baseValidator(undefined),
-                    'Numerical value, to a maximum of 2 decimal places only');
-                self.assertIdentical(control.baseValidator(1), undefined);
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '1');
+                self.assertValidInput(control, '1.');
+                self.assertValidInput(control, '1.2');
+                self.assertValidInput(control, '1.23');
+                self.assertInvalidInput(control, 'a');
+                self.assertInvalidInput(control, '1.234');
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.PercentInput}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestPercentInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.PercentInput;
+    },
+
+
+    /**
+     * L{Methanal.View.PercentInput.makeDisplayValue} creates a human-readable
+     * value for valid percentages.
+     */
+    function test_displayValue(self) {
+        self.testControl({value: null, decimalPlaces: 4},
+            function (control) {
+                var called = 0;
+                var displayValue = '';
+                control._originalMakeDisplayValue = control.makeDisplayValue;
+                control.makeDisplayValue = function (value) {
+                    called++;
+                    displayValue = control._originalMakeDisplayValue(value);
+                    return '';
+                };
+                control.setValue('INVALID');
+                self.assertIdentical(called, 0);
+                control.setValue(0.1234);
+                self.assertIdentical(called, 1);
+                self.assertIdentical(displayValue, '12.34%');
+                control.onKeyUp(control.inputNode);
+                self.assertIdentical(called, 2);
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.PercentInput.getValue} returns a C{Float} if the input
+     * node's value is a valid decimal number, C{null} if it is blank and
+     * C{undefined} if the value is not a valid percentage.
+     */
+    function test_getValue(self) {
+        self.testControl({value: null, decimalPlaces: 4},
+            function (control) {
+                control.setValue(null);
+                self.assertIdentical(control.getValue(), null);
+                control.setValue('');
+                self.assertIdentical(control.getValue(), null);
+                control.inputNode.value = 'INVALID';
+                self.assertIdentical(control.getValue(), undefined);
+                control.setValue(12.34);
+                self.assertIdentical(control.getValue(), 12.34);
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.PercentInput} only accepts input that is a valid decimal
+     * percentage between 0 and 100%, with the correct number of decimal places
+     * and optionally a C{%} symbol too.
+     */
+    function test_inputValidation(self) {
+        self.testControl({value: null, decimalPlaces: 4},
+            function (control) {
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '1');
+                self.assertValidInput(control, '1.');
+                self.assertValidInput(control, '1.2');
+                self.assertValidInput(control, '1.23');
+                self.assertValidInput(control, '0');
+                self.assertValidInput(control, '100');
+                self.assertValidInput(control, '100%');
+                self.assertInvalidInput(control, 'a');
+                self.assertInvalidInput(control, '1.234');
+                self.assertInvalidInput(control, '101');
+                self.assertInvalidInput(control, '101%');
+                self.assertInvalidInput(control, '-1');
             });
     });
