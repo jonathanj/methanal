@@ -250,6 +250,15 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
 
 
     /**
+     * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds.
+     */
+    function test_fromTimestamp(self) {
+        var t = Methanal.Util.Time.fromTimestamp(1251759723000);
+        self.assertIdentical(t.asHumanly(), 'Tue, 1 Sep 2009 01:02:03');
+    },
+
+
+    /**
      * L{Methanal.Util.Time.asDate} converts a Time into a C{Date} representing
      * the same time.
      */

@@ -405,7 +405,6 @@ class DateInput(TextInput):
     absolute date value as natural as possible. See the Javascript
     docstrings for more detail.
     """
-    fragmentName = 'methanal-date-input'
     jsClass = u'Methanal.View.DateInput'
 
 

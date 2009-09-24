@@ -1484,9 +1484,9 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
     function makeDisplayValue(self, value) {
         var msg = '';
         try {
-            var time = self._parse(value);
+            var time = Methanal.Util.Time.fromTimestamp(value).oneDay();
             if (time) {
-                msg = d.asHumanly();
+                msg = time.asHumanly();
             }
         } catch (e) {
             if (!(e instanceof Methanal.Util.TimeParseError)) {
@@ -1495,12 +1495,6 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
             msg = 'Unknown date';
         }
         return msg;
-    },
-
-
-    function setValue(self, value) {
-        Methanal.View.DateInput.upcall(self, 'setValue', value);
-        self._updateRepr(self.inputNode.value);
     },
 
 
@@ -1522,14 +1516,6 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
         if (value === undefined) {
             return 'Invalid date value';
         }
-    },
-
-
-    /**
-     * Handle "onkeyup" DOM event.
-     */
-    function onKeyUp(self, node) {
-        self._updateRepr(node.value);
     });
 
 
@@ -1604,13 +1590,18 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
 
 
     function makeDisplayValue(self, value) {
+        if (isNaN(value)) {
+            return '';
+        }
         return Methanal.Util.formatDecimal(value.toFixed(self.decimalPlaces));
     },
 
 
     function setValue(self, value) {
-        if (value) {
+        if (typeof value == 'number') {
             value = value.toFixed(self.decimalPlaces);
+        } else {
+            value = '';
         }
         Methanal.View.DecimalInput.upcall(self, 'setValue', value);
     },
@@ -1626,7 +1617,8 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
 
 
     function baseValidator(self, value) {
-        var rv = Methanal.View.DecimalInput.baseValidator(value);
+        var rv = Methanal.View.DecimalInput.upcall(
+            self, 'baseValidator', value);
         if (rv) {
             return 'Numerical value, to a maximum of ' +
                 self.decimalPlaces.toString() + ' decimal places only';
@@ -1676,7 +1668,7 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
         var rv = Methanal.View.PercentInput.upcall(self, 'baseValidator', value);
         if (rv !== undefined) {
             return rv;
-        } else if (value < 0 || value > 100) {
+        } else if (value < 0 || value > 1) {
             return 'Percentage values must be between 0% and 100%'
         }
     });
