@@ -646,6 +646,15 @@ Methanal.Util.Time.fromDate = function fromDate(dateObj) {
 
 
 /**
+ * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds.
+ */
+Methanal.Util.Time.fromTimestamp = function fromTimestamp(timestamp) {
+    return Methanal.Util.Time.fromDate(new Date(timestamp));
+};
+
+
+
+/**
  * Create a L{Methanal.Util.Time} instance from a relative date reference.
  *
  * @type  value: C{String}
