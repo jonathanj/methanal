@@ -1458,6 +1458,12 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
  * See L{Methanal.Util.Time.guess} for possible input values.
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.TextInput.upcall(self, '__init__', node, args);
+        self.twentyFourHours = args.twentyFourHours;
+    },
+
+
     /**
      * Parse input.
      *
@@ -1486,7 +1492,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
         try {
             var time = self._parse(value);
             if (time) {
-                msg = d.asHumanly();
+                msg = d.asHumanly(self.twentyFourHours);
             }
         } catch (e) {
             if (!(e instanceof Methanal.Util.TimeParseError)) {

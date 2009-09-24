@@ -60,6 +60,61 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
         var repr = Methanal.Util._reprString(s);
         var expected = "\"\\r\\n\\f\\b\\t\"";
         self.assertIdentical(repr, expected);
+    },
+    
+
+    /**
+     * Right justifying a string pads it with the first character of the fill
+     * character parameter to the specified length.
+     */
+    function test_rjust(self) {
+        var rjust = Methanal.Util.rjust;
+        self.assertIdentical(rjust('a', 0), 'a');
+        self.assertIdentical(rjust('a', 1), 'a');
+        self.assertIdentical(rjust('a', 2), ' a');
+        self.assertIdentical(rjust('a', 2, 'b'), 'ba');
+        self.assertIdentical(rjust('a', 3, 'b'), 'bba');
+        self.assertIdentical(rjust('a', 3, 'b'), 'bba');
+        self.assertIdentical(rjust('a', 3, 'xy'), 'xxa');
+        var s = 'a'
+        self.assertIdentical(rjust(s, 2), ' a');
+        self.assertIdentical(s, 'a');
+    },
+
+
+    /**
+     * Applying a function over a sequence. Passing a non-function argument
+     * throws an error.
+     */
+    function test_map(self) {
+        var seq = [1, 2, 3];
+        function square(n) {
+            return n * n;
+        }
+        var result = Methanal.Util.map(square, seq);
+        self.assertArraysEqual(result, [1, 4, 9]);
+
+        self.assertThrows(Error,
+            function () { Methanal.Util.map(null, seq); });
+    },
+    
+    
+    /**
+     * Find the quotient and remainder of two numbers.
+     */
+    function test_divmod(self) {
+        self.assertArraysEqual(
+            Methanal.Util.divmod(12, 12),
+            [1, 0]);
+        self.assertArraysEqual(
+            Methanal.Util.divmod(0, 12),
+            [0, 0]);
+        self.assertArraysEqual(
+            Methanal.Util.divmod(1, 12),
+            [0, 1]);
+        self.assertArraysEqual(
+            Methanal.Util.divmod(23, 12),
+            [1, 11]);
     });
 
 
@@ -276,9 +331,31 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      */
     function test_asHumanly(self) {
         self.assertIdentical(
-            self._knownTime.asHumanly(), 'Sun, 6 Sep 2009 01:36:23');
+            self._knownTime.asHumanly(), 'Sun, 6 Sep 2009 01:36:23 am');
+        self.assertIdentical(
+            self._knownTime.asHumanly(true), 'Sun, 6 Sep 2009 01:36:23');
         self.assertIdentical(
             self._knownTime.oneDay().asHumanly(), 'Sun, 6 Sep 2009');
+
+        var t;
+
+        t = Methanal.Util.Time.fromDate(new Date(2000, 0, 1, 0, 1, 2));
+        self.assertIdentical(
+            t.asHumanly(), 'Sat, 1 Jan 2000 12:01:02 am');
+        self.assertIdentical(
+            t.asHumanly(true), 'Sat, 1 Jan 2000 00:01:02');
+
+        t = Methanal.Util.Time.fromDate(new Date(2000, 0, 1, 12, 13, 14));
+        self.assertIdentical(
+            t.asHumanly(), 'Sat, 1 Jan 2000 12:13:14 pm');
+        self.assertIdentical(
+            t.asHumanly(true), 'Sat, 1 Jan 2000 12:13:14');
+
+        t = Methanal.Util.Time.fromDate(new Date(2000, 0, 1, 22, 23, 24));
+        self.assertIdentical(
+            t.asHumanly(), 'Sat, 1 Jan 2000 10:23:24 pm');
+        self.assertIdentical(
+            t.asHumanly(true), 'Sat, 1 Jan 2000 22:23:24');
     },
 
 
