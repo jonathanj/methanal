@@ -170,7 +170,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
     function assertOption(self, optionNode, value, description) {
         self.assertIdentical(optionNode.tagName, 'OPTION');
         self.assertIdentical(optionNode.value, value);
-        self.assertIdentical(optionNode.childNodes[0].nodeValue, description);
+        self.assertIdentical(optionNode.text, description);
     },
 
 
@@ -239,6 +239,20 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.getValue(), 'v1');
             });
     },
+
+
+    /**
+     * Appending and inserting values into a select.
+     */
+    function _testAppendInsert(self, control) {
+        control.append('v1', 'd1');
+        self.assertIdentical(control.inputNode.options.length, 1);
+        self.assertOption(control.inputNode.options[0], 'v1', 'd1');
+        // Insert it as the first option.
+        control.insert('v2', 'd2', control.inputNode.options[0])
+        self.assertIdentical(control.inputNode.options.length, 2);
+        self.assertOption(control.inputNode.options[0], 'v2', 'd2');
+    },
     
 
     /**
@@ -249,13 +263,49 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
     function test_appendInsert(self) {
         self.testControl({value: ''},
             function (control) {
-                control.append('v1', 'd1');
-                self.assertIdentical(control.inputNode.options.length, 1);
-                self.assertOption(control.inputNode.options[0], 'v1', 'd1');
-                control.insert('v2', 'd2', control.inputNode.options[0])
-                self.assertIdentical(control.inputNode.options.length, 2);
-                self.assertOption(control.inputNode.options[0], 'v2', 'd2');
+                self._testAppendInsert(control);
             });
+    },
+    
+    
+    /**
+     * L{Methanal.View.SelectInput.insert} still works even when faced with
+     * a broken implementation like Internet Explorer's.
+     */
+    function test_appendInsertInIE(self) {
+        self.testControl({value: ''},
+            function (control) {
+                var originalType = document.registerElementTag(
+                    'select', Methanal.Tests.TestView.MockIEHTMLSelectElement);
+                try {
+                    control.inputNode = document.createElement('select');
+                    self.assertIsInstanceOf(control.inputNode,
+                        Methanal.Tests.TestView.MockIEHTMLSelectElement);
+                    self._testAppendInsert(control);
+                } finally {
+                    document.registerElementTag('select', originalType);
+                }
+            });
+    });
+
+
+    
+/**
+ * Mimic Internet Explorer's broken C{HTMLSelectElement.add} behaviour.
+ */
+Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(Methanal.Tests.TestView, 'MockIEHTMLSelectElement').methods(
+    function add(self, element, before) {
+        if (before === null) {
+            throw new Error('Guess again, before cannot be null.');
+        } else if (before !== undefined) {
+            if (typeof before !== 'number') {
+                throw new Error('Guess again, before must be an integer.');
+            }
+            // Fish the correct element out of the array.
+            before = self.options[before];
+        }
+        Methanal.Tests.TestView.MockIEHTMLSelectElement.upcall(
+            self, 'add', element, before);
     });
 
 
