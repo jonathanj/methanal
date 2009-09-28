@@ -322,6 +322,54 @@ Methanal.Util.repr = function repr(o) {
 
 
 /**
+ * Right justify a string to a given length with padding.
+ *
+ * @type  s: C{String}
+ * 
+ * @type  width: C{Integer}
+ * @param width: Justification width
+ *
+ * @type  padding: C{String}
+ * @param padding: Padding character, defaults to a space
+ *
+ * @rtype: C{String}
+ */
+Methanal.Util.rjust = function rjust(s, width, padding/*= " "*/) {
+    padding = padding || ' ';
+    for (var i = s.length; i < width; ++i) {
+        s = padding[0] + s;
+    }
+    return s;
+};
+
+
+
+/**
+ * Apply C{f} over each value in C{seq} and gather the results.
+ */
+Methanal.Util.map = function map(f, seq) {
+    if (typeof f !== 'function') {
+        throw new Error('"f" must be a function');
+    }
+    var results = [];
+    for (var i = 0; i < seq.length; ++i) {
+        results.push(f(seq[i]));
+    }
+    return results;
+};
+
+
+
+/**
+ * Find the quotient and remainder of two numbers.
+ */
+Methanal.Util.divmod = function divmod(x, y) {
+    return [(x - x % y) / y, x % y];
+};
+
+
+
+/**
  * Throbber helper.
  *
  * Finds a node with the ID "throbber" and provides convenience functions
@@ -476,21 +524,39 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
     /**
      * A human-readable string representation.
      */
-    function asHumanly(self) {
+    function asHumanly(self, twentyFourHours) {
         var _date = self._date;
         var r = [];
         r.push(self.getDayName(true) + ',');
         r.push(_date.getDate().toString());
         r.push(self.getMonthName(true));
         r.push(_date.getFullYear().toString());
+
         if (!self._oneDay) {
-            function _pad(s) {
-                return (s.length < 2 ? '0' : '') + s;
+            function _humanlyTime(dateWithTime, twentyFourHours) {
+                var prefix = '';
+                var hours = dateWithTime.getHours();
+                if (!twentyFourHours) {
+                    var dm = Methanal.Util.divmod(hours, 12);
+                    prefix = dm[0] > 0 ? ' pm' : ' am';
+                    hours = dm[1] == 0 ? 12 : dm[1];
+                }
+
+                function pad(v) {
+                    return Methanal.Util.rjust(v.toString(), 2, '0');
+                };
+
+                var r = [];
+                r.push(hours);
+                r.push(dateWithTime.getMinutes());
+                r.push(dateWithTime.getSeconds());
+                r = Methanal.Util.map(pad, r);
+                return r.join(':') + prefix;
             }
-            r.push(_pad(_date.getHours().toString()) + ':' +
-                   _pad(_date.getMinutes().toString()) + ':' +
-                   _pad(_date.getSeconds().toString()));
+
+            r.push(_humanlyTime(_date, twentyFourHours));
         }
+
         return r.join(' ');
     },
 

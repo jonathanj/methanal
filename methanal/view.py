@@ -404,20 +404,26 @@ class DateInput(TextInput):
     A variety of date formats is supported, in order make entering an
     absolute date value as natural as possible. See the Javascript
     docstrings for more detail.
+
+    @type timezone: C{datetime.tzinfo}
+    @ivar timezone: A C{tzinfo} implementation, representing the timezone
+        this date input is relative to
+
+    @type twentyFourHours: C{bool}
+    @ivar twentyFourHours: Display human readable time in 24-hour
+        format?
     """
     jsClass = u'Methanal.View.DateInput'
 
 
-    def __init__(self, timezone, **kw):
-        """
-        Initialise the input.
-
-        @type timezone: C{datetime.tzinfo}
-        @param timezone: A C{tzinfo} implementation, representing the timezone
-            this date input is relative to
-        """
+    def __init__(self, timezone, twentyFourHours=False, **kw):
         super(DateInput, self).__init__(**kw)
         self.timezone = timezone
+        self.twentyFourHours = twentyFourHours
+
+
+    def getArgs(self):
+        return {u'twentyFourHours': self.twentyFourHours}
 
 
     def getValue(self):
