@@ -208,6 +208,9 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
  *
  * @type _depCache: L{Methanal.View._HandlerCache}
  *
+ * @type _frozen: C{Integer}
+ * @ivar _frozen: Freeze counter
+ *
  * @type controls: C{object} mapping C{String} to L{Methanal.View.FormInput}
  * @ivar controls: Mapping of form input names to form inputs; each form input
  *     adds itself to this mapping when it is loaded
@@ -254,7 +257,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         var control = self.getControl(name);
         result = Methanal.Util.reduce(_and, values, true);
+        self.freeze();
         control.setActive(result);
+        self.thaw();
     },
 
 
@@ -266,6 +271,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * attributes.
      */
     function formInit(self) {
+        self._frozen = 0;
         self.controls = {};
         self.subforms = {};
 
@@ -286,11 +292,39 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
+     * Freeze validity refreshing.
+     *
+     * L{Methanal.View.FormBehaviour.thaw} should be called for every call to
+     * C{freeze}.
+     */
+    function freeze(self) {
+        self._frozen++;
+    },
+
+
+    /**
+     * Thaw validity refreshing.
+     *
+     * This should be called the same number of times as
+     * L{Methanal.View.FormBehaviour.freeze}.
+     */
+    function thaw(self) {
+        self._frozen--;
+        if (self._frozen <= 0) {
+            self._frozen = 0;
+            self._refreshValidity();
+        }
+    },
+
+
+    /**
      * Refresh the validity of the form, based on the states of form inputs and
      * sub-forms.
      */
     function _refreshValidity(self) {
-        self.setValid();
+        if (self._frozen > 0) {
+            return;
+        }
 
         for (var controlName in self.controls) {
             var control = self.getControl(controlName);
@@ -306,6 +340,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
                 return;
             }
         }
+
+        self.setValid();
     },
 
 
