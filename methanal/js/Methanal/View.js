@@ -689,6 +689,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
     function setActive(self, active) {
         self.node.style.display = active ? 'block' : 'none';
         Methanal.Util.addElementClass(self.node, 'dependancy-child');
+        if (self.widgetParent.setActive) {
+            self.widgetParent.setActive(active);
+        }
     },
 
 
