@@ -944,6 +944,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         self.widgetParent.checkForErrors();
     },
 
+
     /**
      * Set the input as active.
      *
@@ -1357,22 +1358,6 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
             return null;
         }
         return value;
-    },
-
-
-    /**
-     * Handle "onblur" DOM event.
-     */
-    function onBlur(self, node) {
-        self.onChange(node);
-    },
-
-
-    /**
-     * Handle "onfocus" DOM event.
-     */
-    function onFocus(self, node) {
-        self.onChange(node);
     });
 
 
