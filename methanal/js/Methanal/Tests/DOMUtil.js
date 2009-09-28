@@ -18,10 +18,12 @@ Divmod.MockBrowser.Element.subclass(Methanal.Tests.DOMUtil, 'MockHTMLSelectEleme
     function add(self, element, before) {
         var index = Methanal.Util.arrayIndexOf(self.options, before);
         if (index == -1) {
+            index = self.options.length;
             self.options.push(element);
         } else {
             self.options.splice(index, 0, element);
         }
+        element.index = index;
     });
 
 
@@ -40,7 +42,9 @@ Divmod.MockBrowser.Document.subclass(Methanal.Tests.DOMUtil, 'Document').methods
      * Register a new type for a tag name.
      */
     function registerElementTag(self, tagName, type) {
+        var old = self._elementTags[tagName];
         self._elementTags[tagName] = type;
+        return old;
     },
 
 

@@ -10,6 +10,13 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.Util, 'TestCase').methods(
     function assertNotIdentical(self, a, b, /* optional */ message) {
         self.compare(function (x, y) { return x !== y; },
                      '!==', a, b, message);
+    },
+    
+    
+    function assertIsInstanceOf(self, instance, type) {
+        var repr = Methanal.Util.repr;
+        self.assertIdentical(true, instance instanceof type,
+            repr(instance) + ' is not an instance of ' + repr(type));
     });
 
 

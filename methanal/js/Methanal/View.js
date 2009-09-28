@@ -1271,7 +1271,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
         var doc = self.inputNode.ownerDocument;
         var optionNode = doc.createElement('option');
         optionNode.value = value;
-        optionNode.appendChild(doc.createTextNode(desc));
+        // Setting the "text" attribute is the only way to do this that works
+        // in IE and everything else.
+        optionNode.text = desc;
         return optionNode
     },
 
@@ -1301,7 +1303,18 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      */
     function insert(self, value, desc, before) {
         var optionNode = self._createOption(value, desc);
-        self.inputNode.add(optionNode, before);
+        try {
+            self.inputNode.add(optionNode, before);
+        } catch (e) {
+            // Every version of IE is null-intolerant.
+            var index = undefined;
+            if (before !== null) {
+                // In browsers before IE8, the second argument to "add" is an
+                // *index*. Great, thanks IE!
+                index = before.index;
+            }
+            self.inputNode.add(optionNode, index);
+        }
         return optionNode;
     },
 
