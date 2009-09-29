@@ -47,8 +47,6 @@ Methanal.View.LiveForm.subclass(Methanal.Tests.TestView, 'MockLiveForm').methods
         makeWidgetChildNode(self, 'img', 'throbber');
 
         document.body.appendChild(node);
-
-        self.nodeInserted();
     });
 
 
@@ -113,8 +111,7 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
         var container = self.createContainer(control);
         form.addChildWidget(container);
         document.body.appendChild(container.node);
-        container.nodeInserted();
-        control.nodeInserted();
+        Methanal.Util.nodeInserted(form);
 
         try {
             testingFunc(control);
@@ -703,9 +700,6 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 
         var group = Methanal.View.InputContainer(
             Nevow.Test.WidgetUtil.makeWidgetNode());
-        group.nodeInserted = function () {
-            row.nodeInserted();
-        };
         group.addChildWidget(row);
         group.node.appendChild(row.node);
         return group;
