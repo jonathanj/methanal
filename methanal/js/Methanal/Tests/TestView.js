@@ -71,6 +71,21 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
 
 
     /**
+     * Create the control container.
+     */
+    function createContainer(self, child) {
+        var row = Methanal.View.FormRow(
+            Nevow.Test.WidgetUtil.makeWidgetNode());
+        Methanal.Tests.TestView.makeWidgetChildNode(row, 'span', 'error-text')
+
+        row.addChildWidget(child);
+        row.node.appendChild(child.node);
+
+        return row;
+    },
+
+
+    /**
      * Create a new control and perform some tests on it.
      *
      * Once the tests have completed (successfully or not) the control is
@@ -95,15 +110,10 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
 
         var control = self.createControl(args);
         var form = Methanal.Tests.TestView.MockLiveForm([args.name]);
-        var row = Methanal.View.FormRow(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
-        Methanal.Tests.TestView.makeWidgetChildNode(row, 'span', 'error-text')
-        row.setWidgetParent(form);
-        document.body.appendChild(row.node);
-        row.nodeInserted();
-
-        control.setWidgetParent(row);
-        row.node.appendChild(control.node);
+        var container = self.createContainer(control);
+        form.addChildWidget(container);
+        document.body.appendChild(container.node);
+        container.nodeInserted();
         control.nodeInserted();
 
         try {
@@ -111,7 +121,7 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
         } catch (e) {
             throw e;
         } finally {
-            document.body.removeChild(row.node);
+            document.body.removeChild(container.node);
         }
     },
     
@@ -673,5 +683,58 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertInvalidInput(control, '101');
                 self.assertInvalidInput(control, '101%');
                 self.assertInvalidInput(control, '-1');
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.InputContainer}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestFormGroup').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.TextInput;
+    },
+
+
+    function createContainer(self, child) {
+        var row = Methanal.Tests.TestView.TestFormGroup.upcall(
+            self, 'createContainer', child);
+
+        var group = Methanal.View.InputContainer(
+            Nevow.Test.WidgetUtil.makeWidgetNode());
+        group.nodeInserted = function () {
+            row.nodeInserted();
+        };
+        group.addChildWidget(row);
+        group.node.appendChild(row.node);
+        return group;
+    },
+
+
+    /**
+     * Any active children means the container is visible.
+     */
+    function test_activeChildren(self) {
+        self.testControl({value: null},
+            function (control) {
+                var group = control.widgetParent.widgetParent;
+                self.assertIsInstanceOf(group, Methanal.View.InputContainer);
+                control.setActive(true);
+                self.assertIdentical(group.node.style.display, 'block');
+            });
+    },
+
+
+    /**
+     * No active children means the container is not visible.
+     */
+    function test_noActiveChildren(self) {
+        self.testControl({value: null},
+            function (control) {
+                var group = control.widgetParent.widgetParent;
+                self.assertIsInstanceOf(group, Methanal.View.InputContainer);
+                control.setActive(false);
+                self.assertIdentical(group.node.style.display, 'none');
             });
     });
