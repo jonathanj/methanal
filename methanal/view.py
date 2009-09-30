@@ -584,7 +584,7 @@ class GroupedSelectInput(SelectInput):
         option = tag.patternGenerator('option')
         optgroup = tag.patternGenerator('optgroup')
 
-        for groupName, values in self.values:
+        for groupName, values in self.values.asPairs():
             g = optgroup().fillSlots('label', groupName)
             for value, description in values:
                 o = option()
