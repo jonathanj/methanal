@@ -4,6 +4,9 @@ from twisted.trial import unittest
 
 from epsilon.extime import FixedOffset, Time
 
+from nevow import athena, loaders
+from nevow.testutil import renderLivePage
+
 from methanal.imethanal import IEnumeration
 from methanal.model import Value
 from methanal import view
@@ -91,3 +94,33 @@ class ChoiceInputTests(unittest.TestCase):
             (u'bar', u'Bar')])
         self._createChoice(values)
         self.assertEquals(len(self.flushWarnings()), 1)
+
+
+
+class GroupedSelectInputTests(unittest.TestCase):
+    """
+    Tests for L{methanal.view.GroupedSelectInput}.
+    """
+    def test_renderOptions(self):
+        """
+        The options of a GroupedSelectInput render according to the given
+        values.
+        """
+        values = [(u'Group', [(u'foo', u'Foo'),
+                              (u'bar', u'Bar')])]
+
+        control = view.GroupedSelectInput(
+            parent=MockParent(Value('test')),
+            name='test',
+            values=values)
+
+        page = athena.LivePage(docFactory=loaders.stan(control))
+        control.setFragmentParent(page)
+
+        def verifyRendering(result):
+            for group, subvalues in values:
+                self.assertIn('<optgroup label="%s">' % (group,), result)
+                for value, desc in subvalues:
+                    self.assertIn('<option value="%s">%s</option>' % (value, desc), result)
+
+        return renderLivePage(page).addCallback(verifyRendering)
