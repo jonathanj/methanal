@@ -478,8 +478,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
  * @type viewOnly: C{boolean}
  * @ivar viewOnly: Should the submit button for this form be visible?
  *
- * @type controlNames: C{Array} of C{String}
- * @ivar controlNames: Names of form inputs
+ * @type controlNames: C{object} of C{String}
+ * @ivar controlNames: Names of form inputs as a mapping
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function __init__(self, node, viewOnly, controlNames) {

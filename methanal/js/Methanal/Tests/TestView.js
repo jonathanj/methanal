@@ -94,7 +94,9 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
             args.value = null;
 
         var control = self.createControl(args);
-        var form = Methanal.Tests.TestView.MockLiveForm([args.name]);
+        var controlNames = {};
+        controlNames[args.name] = 1;
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
         var row = Methanal.View.FormRow(
             Nevow.Test.WidgetUtil.makeWidgetNode());
         Methanal.Tests.TestView.makeWidgetChildNode(row, 'span', 'error-text')
