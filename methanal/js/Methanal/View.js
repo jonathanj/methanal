@@ -478,8 +478,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
  * @type viewOnly: C{boolean}
  * @ivar viewOnly: Should the submit button for this form be visible?
  *
- * @type controlNames: C{Array} of C{String}
- * @ivar controlNames: Names of form inputs
+ * @type controlNames: C{object} of C{String}
+ * @ivar controlNames: Names of form inputs as a mapping
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function __init__(self, node, viewOnly, controlNames) {
@@ -890,6 +890,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         form.controls[self.name] = self;
         form.addValidator([self.name], [_baseValidator]);
         form.loadedUp(self);
+    },
+
+
+    /**
+     * Has this input finished loading?
+     */
+    function isLoaded(self) {
+        return self.getForm().controlNames[self.name] === undefined;
     },
 
 
@@ -1419,7 +1427,9 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
      */
     function clear(self) {
         self.inputNode.selectedIndex = -1;
-        self.onChange(self.inputNode);
+        if (self.isLoaded()) {
+            self.onChange(self.inputNode);
+        }
         return false;
     },
 
