@@ -379,43 +379,6 @@ class TextAreaInput(FormInput):
 
 
 
-class VerifiedPasswordInput(FormInput):
-    """
-    Password input with confirmation.
-    """
-    fragmentName = 'methanal-verified-password-input'
-    jsClass = u'Methanal.View.VerifiedPasswordInput'
-
-
-
-class SlugInput(FormInput):
-    """
-    Enforced URL friendly text input.
-    """
-    fragmentName = u'methanal-slug-input'
-    jsClass = u'Methanal.View.SlugInput'
-
-
-
-class SlugifyingInput(FormInput):
-    """
-    Text input that auto-populates a given field with a
-    slugified copy of its own value.
-    """
-    fragmentName = 'methanal-slugifying-input'
-    jsClass = u'Methanal.View.SlugifyingInput'
-
-
-    def __init__(self, slugInputName, **kw):
-        super(SlugifyingInput, self).__init__(**kw)
-        self.slugInputName = slugInputName
-
-
-    def getArgs(self):
-        return {u'slugInputName': self.slugInputName}
-
-
-
 class TextInput(FormInput):
     """
     Text input.
@@ -431,6 +394,52 @@ class TextInput(FormInput):
 
     def getArgs(self):
         return {u'embeddedLabel': self.embeddedLabel}
+
+
+
+class FilteringTextInput(TextInput):
+    """
+    A L{TextInput} that only allows certain characters as valid input as
+    specified by the expression parameter, and that transforms the value
+    in real-time for each optional filter defined on the client-side
+    widget.  See the JavaScript docstrings for more detail.
+
+    @type expression: C{str}
+    @ivar expression: A regular expression that specifies what characters
+        are allowed to be part of the value of the input field.
+        Examples: C{'[a-zA-z0-9]'}, C{'cat|dog'}
+    """
+    jsClass = u'Methanal.View.FilteringTextInput'
+    
+    
+    def __init__(self, expression=None, **kw):
+        super(FilteringTextInput, self).__init__(**kw)
+        self.expression = expression
+
+
+    #TODO: check how Methanal handles a value of None here
+    def getArgs(self):
+        return {u'expression': self.expression}
+
+
+
+class PrePopulatingTextInput(TextInput):
+    """
+    Text input that updates another input's value with its own in real time.
+
+    @type otherInputName: C{str}
+    @ivar otherInputName: The name of the input to pre-populate
+    """
+    jsClass = u'Methanal.View.PrePopulatingTextInput'
+
+
+    def __init__(self, otherInputName, **kw):
+        super(PrePopulatingInput, self).__init__(**kw)
+        self.otherInputName = otherInputName
+
+
+    def getArgs(self):
+        return (u'otherInputName': self.otherInputName}
 
 
 

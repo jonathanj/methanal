@@ -1012,63 +1012,6 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
 
 
 
-Methanal.View.VerifiedPasswordInput = Methanal.View.FormInput.subclass('Methanal.View.VerifiedPasswordInput');
-Methanal.View.VerifiedPasswordInput.methods(
-    function nodeInserted(self) {
-        Methanal.View.VerifiedPasswordInput.upcall(self, 'nodeInserted');
-        self.confirmPasswordNode = self.nodeById('confirmPassword');
-    },
-
-    function passwordIsStrong(self, password) {
-        return password.length > 4;
-    },
-
-    function baseValidator(self, value) {
-        if (value !== self.confirmPasswordNode.value || value === null || self.confirmPasswordNode.value === null)
-            return 'Passwords do not match.';
-
-        if (!self.passwordIsStrong(value))
-            return 'Password is too weak.';
-    });
-
-
-Methanal.View.SlugInput = Methanal.View.FormInput.subclass('Methanal.View.SlugInput');
-Methanal.View.SlugInput.methods(
-        function baseValidator(self, value) {
-            var regex = /^[a-z0-9\-]*$/;
-            if (!regex.test(value))
-                return 'Must consist of lowercase letters, digits, and hyphens';
-        },
-
-        function onKeyUp(self, node) {
-            node.value = Methanal.Util.slugify(node.value);
-        });
-
-
-Methanal.View.SlugifyingInput = Methanal.View.FormInput.subclass('Methanal.View.SlugifyingInput');
-Methanal.View.SlugifyingInput.methods(
-        function __init__(self, node, args) {
-            Methanal.View.SlugifyingInput.upcall(self, '__init__', node, args);
-            self.slugInputName = args.slugInputName;
-        },
-
-        function getSlugInput(self) {
-            return self.getForm().getControl(self.slugInputName);
-        },
-        
-        function onKeyUp(self, node) {
-            self.getSlugInput().setValue(Methanal.Util.slugify(node.value));
-        },
-        
-        function onChange(self, node) {
-            Methanal.View.SlugifyingInput.upcall(self, 'onChange', node);
-            var slugInput = self.getSlugInput();
-            slugInput.setValue(Methanal.Util.slugify(node.value));
-            slugInput.onChange(slugInput.node);
-        });
-
-
-
 /**
  * Multi-line text input.
  */
@@ -1276,34 +1219,146 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
 
 
 /**
+ * Filtering text input.  As the user types a value, this input transforms
+ * the value based on a list of filters.  "Filters" are simply JavaScript
+ * functions that accept and return a C{String}.
+ *
+ * Typically, the FilteringTextInput widget should be subclassed and the
+ * filters added in the __init__ method after upcalling, like so:
+ * 
+ *     self.filters = [
+ *         function(value) { return value.toLowerCase(); },
+ *         function(value) { return value.replace(/[-\s]+/g, '-'); },
+ *         ]
+ *      
+ * Also, the server-side of the input, L{methanal.view.FilteringTextInput},
+ * accepts an optional parameter, expression.  If specified, the input will
+ * only validate if the current value exactly matches the regular expression
+ * one or more times.
+ *
+ * @type expression: C{String}
+ * @ivar expression: The regular expression that the value of this input
+ *     must match in order to validate.  Cannot contain the begin or end of
+ *     string regular expression special characters, as those will be added
+ *     automatically for you.
+ */
+Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.FilteringTextInput.subclass.upcall(self, '__init__',
+            node, args);
+        var expn = args.expression;
+        if (expn !== null) {
+            self.filterExpn = new RegExp('^' + expn + '+$');
+            self.extractExpn = new RegExp(expn, 'g');
+        }
+        self.filters = []
+    },
+
+    
+    /**
+     * Apply each filtering function to the input's current value.
+     */
+    function filter(self, node) {
+        var value = node.value;
+        for (filter in self.filters) {
+            value = filter(value);
+        }
+        self.setValue(value);
+    },
+
+
+    function onChange(self, node) {
+        Methanal.View.FilteringTextInput.subclass.upcall(self, 'onChange',
+            node);
+        self.filter(node);
+    },
+
+
+    function onKeyUp(self, node) {
+        Methanal.View.FilteringTextInput.subclass.upcall(self, 'onKeyUp',
+            node);
+        self.filter(node);
+    },
+    
+
+    /**
+     * If an expression was specified, this default baseValidator ensures
+     * that the input's current value matches the expression exactly one or
+     * more times.
+     */ 
+    function baseValidator(self, value) {
+        var rv = Methanal.View.FilteringTextInput.upcall(self, 'baseValidator',
+            value);
+        if (rv)
+            return rv;
+
+        if (self.filterExpn !== undefined && !self.filterExpn.test(value))
+            return 'Invalid characters: ' + value.replace(self.extractExpn, '');
+    });
+
+
+
+/**
+ * Text input that pre-populates another input with its own value in
+ * real time.  When used to pre-populate a FilteringTextInput, the value
+ * will be transformed according to any filters defined in that input.
+ *
+ * @type otherInputName: C{String}
+ * @ivar otherInputName: The name of the input that will be pre-populated.
+ */
+Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingInput').methods(
+        function __init__(self, node, args) {
+            Methanal.View.PrePopulatingTextInput.upcall(self, '__init__', node,
+                args);
+            self.otherInputName = args.otherInputName;
+        },
+
+
+        /**
+         * Retrieve a reference to the widget instance of the input specified
+         * by otherInputName
+         */
+        function getOtherInput(self) {
+            return self.getForm().getControl(self.otherInputName);
+        },
+       
+
+        /**
+         * Handler for the "onKeyUp" DOM event.
+         *
+         * Updates the value of the other input with this input's value
+         * and calls the other input's onKeyUp handler.
+         */
+        function onKeyUp(self, node) {
+            Methanal.View.PrePopulatingInput.upcall(self, 'onKeyUp', node);
+            var otherInput = self.getOtherInput();
+            otherInput.setValue(node.value);
+            otherInput.onKeyUp(otherInput.node);
+        },
+       
+
+        /**
+         * Handler for the "onChange" DOM event.
+         *
+         * Updates the value of the other input with this input's value
+         * and calls the other input's onChange handler.
+         */
+        function onChange(self, node) {
+            Methanal.View.PrePopulatingInput.upcall(self, 'onChange', node);
+            var otherInput = self.getOtherInput();
+            otherInput.setValue(node.value);
+            otherInput.onChange(otherInput.node);
+        });
+
+
+
+/**
  * Checkbox input.
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
     function getValue(self) {
         return self.inputNode.checked;
     });
-
-
-
-/**
- * Checkbox input that activates & deactivates other inputs on the form.
- *
-Methanal.View.CheckboxInput.subclass(Methanal.View,
-        'TogglingCheckboxInput').methods(
-    function __init__(self, node, args) {
-        Methanal.View.TogglingCheckboxInput.upcall(self, '__init__', node,
-                args);
-        self.inputNames = args.inputNames;
-    },
-
-
-    function onChange(self, node) {
-        var form = self.getForm();
-        for (var inputName in self.inputNames) {
-            form.getControl(inputName).setActive(self.getValue());
-        }
-    });
-*/
 
 
 
