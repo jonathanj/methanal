@@ -118,17 +118,6 @@ Methanal.Util.replaceNodeText = function replaceNodeText(node, text) {
 
 
 
-// XXX: what does this do that's special again?
-// XXX: i think maybe it exposes more information when called by IE
-Methanal.Util.formatFailure = function formatFailure(failure) {
-    var text = failure.error.description;
-    if (!text)
-        text = failure.toString();
-    return text;
-};
-
-
-
 /**
  * Convert a string to a base-10 integer.
  *

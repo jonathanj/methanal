@@ -566,7 +566,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             data[form.name] = form.getValue();
         }
 
-        Methanal.Util.replaceNodeText(self._formErrorNode, '');
+        self.clearError();
         self._disableSubmit();
         self.throbber.start();
 
@@ -583,6 +583,62 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     /**
+     * Clear submission errors.
+     */
+    function clearError(self) {
+        Methanal.Util.removeNodeContent(self._formErrorNode);
+        self._formErrorNode.style.display = 'none';
+    },
+
+
+    /**
+     * Set the submission error.
+     *
+     * @type failure: C{Divmod.Defer.Failure}
+     */
+    function setError(self, failure) {
+        var T = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+
+        var a = T('a', {'class': 'methanal-submit-error-action'}, [
+            T('img', {
+                'src':   '/static/Methanal/images/icons/page_white_error.png',
+                'title': 'Toggle traceback'})]);
+
+        function showTraceback() {
+            var traceback = T('pre', {}, [failure.toPrettyText()]);
+            this.parentNode.parentNode.appendChild(traceback);
+            this.onclick = hideTraceback;
+        };
+
+        function hideTraceback() {
+            var node = this.parentNode.parentNode;
+            node.removeChild(node.lastChild);
+            this.onclick = showTraceback;
+        };
+
+        a.onclick = showTraceback;
+
+        Methanal.Util.replaceNodeContent(self._formErrorNode, [
+            T('h1', {}, ['Submission error', a]),
+            T('div', {'class': 'methanal-submit-error-message'}, [
+                self.formatFailure(failure)])]);
+        self._formErrorNode.style.display = 'block';
+    },
+
+
+    /**
+     * Extract an error message from a C{Divmod.Defer.Failure} instance.
+     */
+    function formatFailure(self, failure) {
+        var text = failure.error.message;
+        if (!text) {
+            text = failure.toString();
+        }
+        return text;
+    },
+
+
+    /**
      * Callback for successful form submission.
      */
     function submitSuccess(self, value) {
@@ -592,8 +648,8 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     /**
      * Callback for a failure form submission.
      */
-    function submitFailure(self, value) {
-        Methanal.Util.replaceNodeText(self._formErrorNode, Methanal.Util.formatFailure(value));
+    function submitFailure(self, failure) {
+        self.setError(failure);
     },
 
 
