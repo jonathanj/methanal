@@ -894,6 +894,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
 
 
     /**
+     * Has this input finished loading?
+     */
+    function isLoaded(self) {
+        return self.getForm().controlNames[self.name] === undefined;
+    },
+
+
+    /**
      * Get the form associated with this input.
      */
     function getForm(self) {
@@ -1419,7 +1427,9 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
      */
     function clear(self) {
         self.inputNode.selectedIndex = -1;
-        self.onChange(self.inputNode);
+        if (self.isLoaded()) {
+            self.onChange(self.inputNode);
+        }
         return false;
     },
 
