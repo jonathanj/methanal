@@ -4,6 +4,8 @@ from decimal import Decimal
 
 from epsilon.extime import Time
 
+from twisted.python.components import registerAdapter
+
 from axiom.attributes import text, integer, timestamp
 
 from nevow.page import renderer
@@ -12,8 +14,10 @@ from nevow.athena import expose
 from xmantissa.ixmantissa import IWebTranslator
 from xmantissa.webtheme import ThemedElement
 
+from methanal.imethanal import IEnumeration
 from methanal.model import ItemModel, Model, paramFromAttribute
 from methanal.util import getArgsDict
+from methanal.enums import ListEnumeration
 
 
 
@@ -437,21 +441,26 @@ class DateInput(TextInput):
     A variety of date formats is supported, in order make entering an
     absolute date value as natural as possible. See the Javascript
     docstrings for more detail.
+
+    @type timezone: C{datetime.tzinfo}
+    @ivar timezone: A C{tzinfo} implementation, representing the timezone
+        this date input is relative to
+
+    @type twentyFourHours: C{bool}
+    @ivar twentyFourHours: Display human readable time in 24-hour
+        format?
     """
-    fragmentName = 'methanal-date-input'
     jsClass = u'Methanal.View.DateInput'
 
 
-    def __init__(self, timezone, **kw):
-        """
-        Initialise the input.
-
-        @type timezone: C{datetime.tzinfo}
-        @param timezone: A C{tzinfo} implementation, representing the timezone
-            this date input is relative to
-        """
+    def __init__(self, timezone, twentyFourHours=False, **kw):
         super(DateInput, self).__init__(**kw)
         self.timezone = timezone
+        self.twentyFourHours = twentyFourHours
+
+
+    def getArgs(self):
+        return {u'twentyFourHours': self.twentyFourHours}
 
 
     def getValue(self):
@@ -539,17 +548,18 @@ class PercentInput(DecimalInput):
 class ChoiceInput(FormInput):
     """
     Abstract input with multiple options.
+
+    @type values: L{IEnumeration}
+    @ivar values: An enumeration to be used for choice options
     """
     def __init__(self, values, **kw):
-        """
-        Initialise the input.
-
-        @type values: C{iterable} of C{(unicode, unicode)}
-        @param values: An iterable of C{(value, description)} pairs used for
-            rendering various C{<option>}-based inputs
-        """
         super(ChoiceInput, self).__init__(**kw)
-        self.values = tuple(values)
+        _values = IEnumeration(values, None)
+        if _values is None:
+            _values = IEnumeration(list(values))
+            warn('ChoiceInput: "values" should be adaptable to IEnumeration',
+                 DeprecationWarning, 2)
+        self.values = _values
 
 
     @renderer
@@ -558,11 +568,14 @@ class ChoiceInput(FormInput):
         Render all available options.
         """
         option = tag.patternGenerator('option')
-        for value, description in self.values:
+        for value, description in self.values.asPairs():
             o = option()
             o.fillSlots('value', value)
             o.fillSlots('description', description)
             yield o
+
+
+registerAdapter(ListEnumeration, list, IEnumeration)
 
 
 
@@ -608,7 +621,7 @@ class GroupedSelectInput(SelectInput):
         option = tag.patternGenerator('option')
         optgroup = tag.patternGenerator('optgroup')
 
-        for groupName, values in self.values:
+        for groupName, values in self.values.asPairs():
             g = optgroup().fillSlots('label', groupName)
             for value, description in values:
                 o = option()

@@ -338,9 +338,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             node.title = 'Other fields depend on this field';
         }
 
-        self._depCache.refresh(self.controls);
-        self._validatorCache.refresh(self.controls);
-        self._refreshValidity();
+        self.refresh();
     },
 
 
@@ -418,10 +416,20 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
-     * Re-evaluate the validators for all form inputs.
+     * Update the validator cache for C{control} and refresh the form validity.
      */
     function validate(self, control) {
         self._validatorCache.changed(control.name);
+        self._refreshValidity();
+    },
+
+
+    /**
+     * Refresh caches and form validity for all inputs.
+     */
+    function refresh(self) {
+        self._depCache.refresh(self.controls);
+        self._validatorCache.refresh(self.controls);
         self._refreshValidity();
     },
 
@@ -470,8 +478,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
  * @type viewOnly: C{boolean}
  * @ivar viewOnly: Should the submit button for this form be visible?
  *
- * @type controlNames: C{Array} of C{String}
- * @ivar controlNames: Names of form inputs
+ * @type controlNames: C{object} of C{String}
+ * @ivar controlNames: Names of form inputs as a mapping
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function __init__(self, node, viewOnly, controlNames) {
@@ -524,6 +532,15 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      */
     function getForm(self) {
         return self;
+    },
+
+
+    /**
+     * Reset form inputs.
+     */
+    function reset(self) {
+        self.node.reset();
+        self.refresh();
     },
 
 
@@ -873,6 +890,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         form.controls[self.name] = self;
         form.addValidator([self.name], [_baseValidator]);
         form.loadedUp(self);
+    },
+
+
+    /**
+     * Has this input finished loading?
+     */
+    function isLoaded(self) {
+        return self.getForm().controlNames[self.name] === undefined;
     },
 
 
@@ -1330,9 +1355,12 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      * @param desc: User-facing textual description of the value
      */
     function _createOption(self, value, desc) {
-        var optionNode = self.inputNode.ownerDocument.createElement('option');
+        var doc = self.inputNode.ownerDocument;
+        var optionNode = doc.createElement('option');
         optionNode.value = value;
-        optionNode.appendChild(doc.createTextNode(desc));
+        // Setting the "text" attribute is the only way to do this that works
+        // in IE and everything else.
+        optionNode.text = desc;
         return optionNode
     },
 
@@ -1341,7 +1369,8 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      * Insert a placeholder C{option} node.
      */
     function _insertPlaceholder(self) {
-        var optionNode = self.insert('', self.label, node.firstChild);
+        var optionNode = self.insert(
+            '', self.label, self.inputNode.options[0] || null);
         Methanal.Util.addElementClass(optionNode, 'embedded-label');
     },
 
@@ -1361,7 +1390,18 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      */
     function insert(self, value, desc, before) {
         var optionNode = self._createOption(value, desc);
-        node.add(optionNode, before);
+        try {
+            self.inputNode.add(optionNode, before);
+        } catch (e) {
+            // Every version of IE is null-intolerant.
+            var index = undefined;
+            if (before !== null) {
+                // In browsers before IE8, the second argument to "add" is an
+                // *index*. Great, thanks IE!
+                index = before.index;
+            }
+            self.inputNode.add(optionNode, index);
+        }
         return optionNode;
     },
 
@@ -1386,7 +1426,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
 
     function setValue(self, value) {
         Methanal.View.SelectInput.upcall(self, 'setValue', value);
-        if (value === null) {
+        // Most browsers just automagically change the value to that of the
+        // first option if you set the value to a nonexistent option value. 
+        if (value === null || self.inputNode.value !== value) {
             self._insertPlaceholder();
             self.inputNode.value = '';
         }
@@ -1464,7 +1506,9 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
      */
     function clear(self) {
         self.inputNode.selectedIndex = -1;
-        self.onChange(self.inputNode);
+        if (self.isLoaded()) {
+            self.onChange(self.inputNode);
+        }
         return false;
     },
 
@@ -1516,6 +1560,12 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
  * See L{Methanal.Util.Time.guess} for possible input values.
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.TextInput.upcall(self, '__init__', node, args);
+        self.twentyFourHours = args.twentyFourHours;
+    },
+
+
     /**
      * Parse input.
      *
@@ -1542,9 +1592,9 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
     function makeDisplayValue(self, value) {
         var msg = '';
         try {
-            var time = self._parse(value);
+            var time = Methanal.Util.Time.fromTimestamp(value).oneDay();
             if (time) {
-                msg = d.asHumanly();
+                msg = time.asHumanly(self.twentyFourHours);
             }
         } catch (e) {
             if (!(e instanceof Methanal.Util.TimeParseError)) {
@@ -1553,12 +1603,6 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
             msg = 'Unknown date';
         }
         return msg;
-    },
-
-
-    function setValue(self, value) {
-        Methanal.View.DateInput.upcall(self, 'setValue', value);
-        self._updateRepr(self.inputNode.value);
     },
 
 
@@ -1580,14 +1624,6 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
         if (value === undefined) {
             return 'Invalid date value';
         }
-    },
-
-
-    /**
-     * Handle "onkeyup" DOM event.
-     */
-    function onKeyUp(self, node) {
-        self._updateRepr(node.value);
     });
 
 
@@ -1662,13 +1698,18 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
 
 
     function makeDisplayValue(self, value) {
+        if (isNaN(value)) {
+            return '';
+        }
         return Methanal.Util.formatDecimal(value.toFixed(self.decimalPlaces));
     },
 
 
     function setValue(self, value) {
-        if (value) {
+        if (typeof value == 'number') {
             value = value.toFixed(self.decimalPlaces);
+        } else {
+            value = '';
         }
         Methanal.View.DecimalInput.upcall(self, 'setValue', value);
     },
@@ -1684,7 +1725,8 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
 
 
     function baseValidator(self, value) {
-        var rv = Methanal.View.DecimalInput.baseValidator(value);
+        var rv = Methanal.View.DecimalInput.upcall(
+            self, 'baseValidator', value);
         if (rv) {
             return 'Numerical value, to a maximum of ' +
                 self.decimalPlaces.toString() + ' decimal places only';
@@ -1734,7 +1776,7 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
         var rv = Methanal.View.PercentInput.upcall(self, 'baseValidator', value);
         if (rv !== undefined) {
             return rv;
-        } else if (value < 0 || value > 100) {
+        } else if (value < 0 || value > 1) {
             return 'Percentage values must be between 0% and 100%'
         }
     });

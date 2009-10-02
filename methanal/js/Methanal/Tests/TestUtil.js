@@ -1,5 +1,6 @@
 // import Divmod.UnitTest
 // import Methanal.Util
+// import Methanal.Tests.Util
 
 
 
@@ -59,6 +60,61 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
         var repr = Methanal.Util._reprString(s);
         var expected = "\"\\r\\n\\f\\b\\t\"";
         self.assertIdentical(repr, expected);
+    },
+    
+
+    /**
+     * Right justifying a string pads it with the first character of the fill
+     * character parameter to the specified length.
+     */
+    function test_rjust(self) {
+        var rjust = Methanal.Util.rjust;
+        self.assertIdentical(rjust('a', 0), 'a');
+        self.assertIdentical(rjust('a', 1), 'a');
+        self.assertIdentical(rjust('a', 2), ' a');
+        self.assertIdentical(rjust('a', 2, 'b'), 'ba');
+        self.assertIdentical(rjust('a', 3, 'b'), 'bba');
+        self.assertIdentical(rjust('a', 3, 'b'), 'bba');
+        self.assertIdentical(rjust('a', 3, 'xy'), 'xxa');
+        var s = 'a'
+        self.assertIdentical(rjust(s, 2), ' a');
+        self.assertIdentical(s, 'a');
+    },
+
+
+    /**
+     * Applying a function over a sequence. Passing a non-function argument
+     * throws an error.
+     */
+    function test_map(self) {
+        var seq = [1, 2, 3];
+        function square(n) {
+            return n * n;
+        }
+        var result = Methanal.Util.map(square, seq);
+        self.assertArraysEqual(result, [1, 4, 9]);
+
+        self.assertThrows(Error,
+            function () { Methanal.Util.map(null, seq); });
+    },
+    
+    
+    /**
+     * Find the quotient and remainder of two numbers.
+     */
+    function test_divmod(self) {
+        self.assertArraysEqual(
+            Methanal.Util.divmod(12, 12),
+            [1, 0]);
+        self.assertArraysEqual(
+            Methanal.Util.divmod(0, 12),
+            [0, 0]);
+        self.assertArraysEqual(
+            Methanal.Util.divmod(1, 12),
+            [0, 1]);
+        self.assertArraysEqual(
+            Methanal.Util.divmod(23, 12),
+            [1, 11]);
     });
 
 
@@ -249,6 +305,15 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
 
 
     /**
+     * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds.
+     */
+    function test_fromTimestamp(self) {
+        var t = Methanal.Util.Time.fromTimestamp(1251759723000);
+        self.assertIdentical(t.asHumanly(), 'Tue, 1 Sep 2009 01:02:03 am');
+    },
+
+
+    /**
      * L{Methanal.Util.Time.asDate} converts a Time into a C{Date} representing
      * the same time.
      */
@@ -275,9 +340,31 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      */
     function test_asHumanly(self) {
         self.assertIdentical(
-            self._knownTime.asHumanly(), 'Sun, 6 Sep 2009 01:36:23');
+            self._knownTime.asHumanly(), 'Sun, 6 Sep 2009 01:36:23 am');
+        self.assertIdentical(
+            self._knownTime.asHumanly(true), 'Sun, 6 Sep 2009 01:36:23');
         self.assertIdentical(
             self._knownTime.oneDay().asHumanly(), 'Sun, 6 Sep 2009');
+
+        var t;
+
+        t = Methanal.Util.Time.fromDate(new Date(2000, 0, 1, 0, 1, 2));
+        self.assertIdentical(
+            t.asHumanly(), 'Sat, 1 Jan 2000 12:01:02 am');
+        self.assertIdentical(
+            t.asHumanly(true), 'Sat, 1 Jan 2000 00:01:02');
+
+        t = Methanal.Util.Time.fromDate(new Date(2000, 0, 1, 12, 13, 14));
+        self.assertIdentical(
+            t.asHumanly(), 'Sat, 1 Jan 2000 12:13:14 pm');
+        self.assertIdentical(
+            t.asHumanly(true), 'Sat, 1 Jan 2000 12:13:14');
+
+        t = Methanal.Util.Time.fromDate(new Date(2000, 0, 1, 22, 23, 24));
+        self.assertIdentical(
+            t.asHumanly(), 'Sat, 1 Jan 2000 10:23:24 pm');
+        self.assertIdentical(
+            t.asHumanly(true), 'Sat, 1 Jan 2000 22:23:24');
     },
 
 
@@ -310,4 +397,55 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
         var t = self._knownTime.offset(Methanal.Util.TimeDelta({'days': 1}));
         self.assertIdentical(t.asTimestamp(), 1252280183002);
         self.assertIdentical(t.oneDay().asHumanly(), 'Mon, 7 Sep 2009');
+    });
+
+
+
+/**
+ * Tests for L{Methanal.Util.Throbber}.
+ */
+Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestThrobber').methods(
+    function _createThrobber(self, toggleDisplay) {
+        var idNodes = {
+            'throbber': Methanal.Tests.Util.MockNode('foo')};
+        var widget = Methanal.Tests.Util.MockWidget(idNodes);
+        var throbber = Methanal.Util.Throbber(widget, toggleDisplay);
+        return throbber;
+    },
+
+
+    /**
+     * Creating a throbber finds a DOM node with the ID "throbber".
+     */
+    function test_create(self) {
+        var throbber = self._createThrobber();
+        self.assertIdentical(throbber._node.name, 'foo');
+    },
+    
+
+    /**
+     * Starting and stopping the throbber, under normal conditions, adjusts the
+     * throbber node's visibility style.
+     */
+    function test_startStop(self) {
+        var throbber = self._createThrobber();
+        throbber.start();
+        self.assertIdentical(throbber._node.style.visibility, 'visible');
+        throbber.stop();
+        self.assertIdentical(throbber._node.style.visibility, 'hidden');
+    },
+
+
+    /**
+     * Specifying the C{toggleDisplay} augments the behaviour of the C{stop}
+     * and C{start} methods.
+     */
+    function test_toggleDisplay(self) {
+        var throbber = self._createThrobber('foo');
+        throbber.start();
+        self.assertIdentical(throbber._node.style.visibility, 'visible');
+        self.assertIdentical(throbber._node.style.display, 'foo');
+        throbber.stop();
+        self.assertIdentical(throbber._node.style.visibility, 'hidden');
+        self.assertIdentical(throbber._node.style.display, 'none');
     });

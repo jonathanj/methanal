@@ -92,19 +92,30 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
 
 
     /**
-     * Empty the table and show a placeholder.
+     * Get the DOM node of a particular row.
+     *
+     * @type  rowIndex: C{Integer}
      */
-    function empty(self) {
-        var table = self.table;
-        var tr = table.insertRow(-1);
-        Methanal.Util.addElementClass(tr, 'methanal-query-list-empty-row');
+    function getRowNode(self, rowIndex) {
+        return self.getRows()[rowIndex];
+    },
 
-        var td = tr.insertCell(-1);
-        td.colSpan = table.tHead.rows[0].cells.length;
-        Methanal.Util.replaceNodeText(td, 'No items to display');
 
-        Methanal.Util.replaceNodeContent(self.getBody(), [tr]);
-        self.rowInserted(null, null, null);
+    /**
+     * Get the DOM node of a particular cell in a row.
+     *
+     * @type  rowIndex: C{Integer}
+     *
+     * @type  columnID: C{String}
+     * @param columnID: Column identifier
+     */
+    function getCellNode(self, rowIndex, columnID) {
+        for (var i = 0; i < self._columnIDs.length; ++i) {
+            if (self._columnIDs[i] == columnID) {
+                return self.getRowNode(rowIndex).cells[i];
+            }
+        }
+        throw new Error('No such column ID: ' + columnID);
     },
 
 
@@ -125,6 +136,16 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
     function rowInserted(self, index, node, rowData) {
         if (node !== null)
             Methanal.Util.addElementClass(node, self._cycler());
+    },
+
+
+    /**
+     * Event callback called after a row is removed from the QueryList.
+     *
+     * @type  index: C{Integer}
+     * @param index: Index of the row in the table
+     */
+    function rowRemoved(self, index) {
     },
 
 
@@ -184,7 +205,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
      *
      * @rtype: DOM node
      */
-    function makeCellElement(self, columnID, rowData) {
+    function createCellElement(self, columnID, rowData) {
         var doc = self.node.ownerDocument;
         var td = doc.createElement('td');
         var link = rowData['__link__'];
@@ -207,6 +228,42 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
     },
 
 
+    function makeCellElement(self, columnID, rowData) {
+        Divmod.msg('WARNING: QueryList.makeCellElement is deprecated. ' +
+                   'Use QueryListcreateCellElement instead.');
+        return self.createCellElement(columnID, rowData);
+    },
+
+
+    /**
+     * Create a row, and all contained cells, for the given row data.
+     *
+     * @type  rowData: C{object} mapping C{String} to C{String}
+     * @param rowData: Mapping of column identifiers to values; if the
+     *     C{__link__} key is defined a clickable node is created
+     *
+     * @rtype: DOM node
+     */
+    function createRowNode(self, rowData) {
+        var tr = self.node.ownerDocument.createElement('tr');
+
+        for (var i = 0; i < self._columnIDs.length; ++i) {
+            var cid = self._columnIDs[i];
+            var cell = self.createCellElement(cid, rowData);
+            if (i == 0) {
+                // Thank you IE6 for failing at life.
+                Methanal.Util.addElementClass(cell, 'first-child');
+            }
+            tr.appendChild(cell);
+        }
+
+        if (self._hasActions)
+            tr.appendChild(self._makeActionsCell(rowData));
+
+        return tr;
+    },
+
+
     /**
      * Insert a row.
      *
@@ -218,20 +275,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
      */
     function insertRow(self, index, rowData) {
         var doc = self.node.ownerDocument;
-        var tr = self.getBody().insertRow(index);
-        for (var i = 0; i < self._columnIDs.length; ++i) {
-            var cid = self._columnIDs[i];
-            var cell = self.makeCellElement(cid, rowData);
-            if (i == 0) {
-                // Thank you IE6 for failing at life.
-                Methanal.Util.addElementClass(cell, 'first-child');
-            }
-            tr.appendChild(cell);
-        }
-
-        if (self._hasActions)
-            tr.appendChild(self._makeActionsCell(rowData));
-
+        var tr = self.createRowNode(rowData);
+        var before = index >= 0 ? self.getBody().rows[index] : null;
+        self.getBody().insertBefore(tr, before);
         self.rowInserted(index, tr, rowData);
     },
 
@@ -244,6 +290,35 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
      */
     function appendRow(self, rowData) {
         self.insertRow(-1, rowData);
+    },
+
+
+    /**
+     * Remove a row.
+     *
+     * @type  rowIndex: C{Integer}
+     * @param rowIndex: Index of the row to remove
+     */
+    function removeRow(self, rowIndex) {
+        self.getBody().deleteRow(rowIndex);
+        self.rowRemoved(rowIndex);
+    },
+
+
+    /**
+     * Empty the table and show a placeholder.
+     */
+    function empty(self) {
+        var table = self.table;
+        var tr = table.insertRow(-1);
+        Methanal.Util.addElementClass(tr, 'methanal-query-list-empty-row');
+
+        var td = tr.insertCell(-1);
+        td.colSpan = table.tHead.rows[0].cells.length;
+        Methanal.Util.replaceNodeText(td, 'No items to display');
+
+        Methanal.Util.replaceNodeContent(self.getBody(), [tr]);
+        self.rowInserted(null, null, null);
     },
 
 

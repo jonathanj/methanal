@@ -24,3 +24,17 @@ class IColumn(Interface):
 
         @return: The underlying value for this column
         """
+
+
+
+class IEnumeration(Interface):
+    """
+    An enumeration.
+    """
+    def asPairs():
+        """
+        Represent the enumeration as a sequence of pairs.
+
+        @rtype: C{list} of 2-C{tuple}s
+        @return: A sequence of C{(value, description)}
+        """

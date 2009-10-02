@@ -285,20 +285,6 @@ Methanal.Util.reduce = function reduce(f, xs, z) {
 
 
 /**
- * Return a URL friendly version of the specified string.
- *
- * @param value: The value to slugify.
- **/
-Methanal.Util.slugify = function (value) {
-    value = value.toLowerCase();
-    value = value.replace(/[^a-z0-9-\s]/g, '');
-    value = value.replace(/[-\s]+/g, '-');
-    return value;
-}
-
-
-
-/**
  * Quote quote characters in a string.
  */
 Methanal.Util._reprString = function _reprString(o) {
@@ -331,6 +317,54 @@ Methanal.Util.repr = function repr(o) {
         return o.toSource();
     }
     return o.toString();
+};
+
+
+
+/**
+ * Right justify a string to a given length with padding.
+ *
+ * @type  s: C{String}
+ * 
+ * @type  width: C{Integer}
+ * @param width: Justification width
+ *
+ * @type  padding: C{String}
+ * @param padding: Padding character, defaults to a space
+ *
+ * @rtype: C{String}
+ */
+Methanal.Util.rjust = function rjust(s, width, padding/*= " "*/) {
+    padding = padding || ' ';
+    for (var i = s.length; i < width; ++i) {
+        s = padding[0] + s;
+    }
+    return s;
+};
+
+
+
+/**
+ * Apply C{f} over each value in C{seq} and gather the results.
+ */
+Methanal.Util.map = function map(f, seq) {
+    if (typeof f !== 'function') {
+        throw new Error('"f" must be a function');
+    }
+    var results = [];
+    for (var i = 0; i < seq.length; ++i) {
+        results.push(f(seq[i]));
+    }
+    return results;
+};
+
+
+
+/**
+ * Find the quotient and remainder of two numbers.
+ */
+Methanal.Util.divmod = function divmod(x, y) {
+    return [(x - x % y) / y, x % y];
 };
 
 
@@ -490,28 +524,39 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
     /**
      * A human-readable string representation.
      */
-    function asHumanly(self) {
+    function asHumanly(self, twentyFourHours) {
         var _date = self._date;
         var r = [];
         r.push(self.getDayName(true) + ',');
         r.push(_date.getDate().toString());
         r.push(self.getMonthName(true));
         r.push(_date.getFullYear().toString());
+
         if (!self._oneDay) {
-            var hours = _date.getHours().toString();
-            var suffix = (hours < 12) ? 'am' : 'pm';
-            if (hours > 12) {
-                hours = hours - 12;
-            } else if (hours == 0) {
-                hours = 12;
+            function _humanlyTime(dateWithTime, twentyFourHours) {
+                var prefix = '';
+                var hours = dateWithTime.getHours();
+                if (!twentyFourHours) {
+                    var dm = Methanal.Util.divmod(hours, 12);
+                    prefix = dm[0] > 0 ? ' pm' : ' am';
+                    hours = dm[1] == 0 ? 12 : dm[1];
+                }
+
+                function pad(v) {
+                    return Methanal.Util.rjust(v.toString(), 2, '0');
+                };
+
+                var r = [];
+                r.push(hours);
+                r.push(dateWithTime.getMinutes());
+                r.push(dateWithTime.getSeconds());
+                r = Methanal.Util.map(pad, r);
+                return r.join(':') + prefix;
             }
-            function _pad(s) {
-                return (s.length < 2 ? '0' : '') + s;
-            }
-            r.push(_pad(hours) + ':' +
-                   _pad(_date.getMinutes().toString()) + ':' +
-                   _pad(_date.getSeconds().toString()) + ' ' + suffix);
+
+            r.push(_humanlyTime(_date, twentyFourHours));
         }
+
         return r.join(' ');
     },
 
@@ -596,6 +641,15 @@ Methanal.Util.Time.fromDate = function fromDate(dateObj) {
     var t = Methanal.Util.Time();
     t._date = dateObj;
     return t;
+};
+
+
+
+/**
+ * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds.
+ */
+Methanal.Util.Time.fromTimestamp = function fromTimestamp(timestamp) {
+    return Methanal.Util.Time.fromDate(new Date(timestamp));
 };
 
 
@@ -725,4 +779,3 @@ Methanal.Util.Time.guess = function guess(value) {
     throw new Methanal.Util.TimeParseError(
         'Unguessable value: ' + Methanal.Util._reprString(value));
 };
-
