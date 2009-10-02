@@ -4,14 +4,53 @@
 // import Methanal.Validators
 
 
-Methanal.Widgets.QueryList = Nevow.Athena.Widget.subclass('Methanal.Widgets.QueryList');
-Methanal.Widgets.QueryList.methods(
+
+/**
+ * A widget that displays data tabulated according to a set of columns.
+ *
+ * @type _columnIDs: C{Array}
+ * @ivar _columnIDs: Identifiers to match row data to the relevant columns
+ *
+ * @type _rows: C{Array} of C{object} mapping C{String} to C{String}
+ * @ivar _rows: Sequence of row data objects that map column identifiers
+ *     to values; of specific interest is the C{__link__} key, which is
+ *     the URL to use for anchor hrefs for rows
+ *
+ * @type _cycler: C{function}
+ * @ivar _cycler: Generate alternating class names for the row style
+ *
+ * @type columnAliases: C{object} mapping C{String} to C{String}
+ * @ivar columnAliases: Mapping of column identifiers to human readable column
+ *     names
+ *
+ * @type actions: C{Array} of L{Mantissa.ScrollTable.Action}
+ * @ivar actions: Performable actions on table rows, listed in a new column
+ *     with the identifier "actions"
+ *
+ * @type defaultAction: L{Mantissa.ScrollTable.Action}
+ * @ivar defaultAction: The action to perform when clicking on a table row
+ *
+ * @type defaultActionNavigates: C{boolean}
+ * @ivar defaultActionNavigates: Flag indicating whether navigation should
+ *     continue or not when L{defaultAction} is invoked, the default is
+ *     C{false}
+ */
+Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
+    /**
+     * Create a QueryList.
+     *
+     * @param args.columnIDs: See L{_columnIDs}
+     *
+     * @param args.columnAliases: See L{columnAliases}
+     *
+     * @param args.rows: See L{_rows}
+     */
     function __init__(self, node, args) {
         Methanal.Widgets.QueryList.upcall(self, '__init__', node);
 
-        self.hasActions = self.actions !== undefined && self.actions.length > 0;
+        self._hasActions = self.actions !== undefined && self.actions.length > 0;
 
-        self.columnIDs = args.columnIDs;
+        self._columnIDs = args.columnIDs;
         if (self.columnAliases === undefined)
             self.columnAliases = args.columnAliases;
 
@@ -20,9 +59,10 @@ Methanal.Widgets.QueryList.methods(
         else
             self._rows = null;
 
-        self.cycler = Methanal.Util.cycle('odd', 'even');
+        self._cycler = Methanal.Util.cycle('odd', 'even');
         self.defaultActionNavigates = false;
     },
+
 
     function nodeInserted(self) {
         self.table = self.node.getElementsByTagName('table')[0];
@@ -34,14 +74,26 @@ Methanal.Widgets.QueryList.methods(
             self.empty();
     },
 
+
+    /**
+     * Get the DOM node for the body of the QueryList.
+     */
     function getBody(self) {
         return self.table.tBodies[0];
     },
 
+
+    /**
+     * Get the DOM collection that represents the QueryList's rows.
+     */
     function getRows(self) {
         return self.getBody().rows;
     },
 
+
+    /**
+     * Empty the table and show a placeholder.
+     */
     function empty(self) {
         var table = self.table;
         var tr = table.insertRow(-1);
@@ -55,11 +107,30 @@ Methanal.Widgets.QueryList.methods(
         self.rowInserted(null, null, null);
     },
 
+
+    /**
+     * Event callback called after a row is inserted into the QueryList.
+     *
+     * The base implementation performs row color alternating.
+     *
+     * @type  index: C{Integer}
+     * @param index: Index of the row in the table
+     *
+     * @type  node: DOM node
+     * @param node: Row element node
+     *
+     * @type  rowData: C{object} mapping C{String} to C{String}
+     * @param rowData: Mapping of column identifiers to values
+     */
     function rowInserted(self, index, node, rowData) {
         if (node !== null)
-            Methanal.Util.addElementClass(node, self.cycler());
+            Methanal.Util.addElementClass(node, self._cycler());
     },
 
+
+    /**
+     * Create the actions column cell.
+     */
     function _makeActionsCell(self, rowData) {
         var doc = self.node.ownerDocument;
         var td = doc.createElement('td');
@@ -71,10 +142,24 @@ Methanal.Widgets.QueryList.methods(
         return td;
     },
 
+
+    /**
+     * Event callback called when a cell is clicked.
+     *
+     * If L{defaultAction} is defined then this is only called if
+     * L{defaultActionNavigates} is C{false}.
+     *
+     * @rtype:  C{boolean}
+     * @return: Determine whether or not navigation should proceed
+     */
     function onCellClick(self, url) {
         return true;
     },
 
+
+    /**
+     * Event handler for cell "onclick" event.
+     */
     function _cellClickDispatch(url, evt) {
         var _self = Nevow.Athena.Widget.get(this);
         if (_self.defaultAction) {
@@ -86,7 +171,20 @@ Methanal.Widgets.QueryList.methods(
         return _self.onCellClick(url);
     },
 
-    function makeCellElement(self, colName, rowData) {
+
+    /**
+     * Create a QueryList cell node for the given column.
+     *
+     * @type  columnID: C{String}
+     * @param columnID: Column identifier
+     *
+     * @type  rowData: C{object} mapping C{String} to C{String}
+     * @param rowData: Mapping of column identifiers to values; if the
+     *     C{__link__} key is defined a clickable node is created
+     *
+     * @rtype: DOM node
+     */
+    function makeCellElement(self, columnID, rowData) {
         var doc = self.node.ownerDocument;
         var td = doc.createElement('td');
         var link = rowData['__link__'];
@@ -103,16 +201,26 @@ Methanal.Widgets.QueryList.methods(
         } else {
             a = doc.createElement('span');
         }
-        Methanal.Util.replaceNodeText(a, rowData[colName]);
+        Methanal.Util.replaceNodeText(a, rowData[columnID]);
         td.appendChild(a);
         return td;
     },
 
+
+    /**
+     * Insert a row.
+     *
+     * @type  index: C{Integer}
+     * @param index: Index to insert the row before, C{-1} will append the row
+     *
+     * @type  rowData: C{object} mapping C{String} to C{String}
+     * @param rowData: Mapping of column identifiers to values
+     */
     function insertRow(self, index, rowData) {
         var doc = self.node.ownerDocument;
         var tr = self.getBody().insertRow(index);
-        for (var i = 0; i < self.columnIDs.length; ++i) {
-            var cid = self.columnIDs[i];
+        for (var i = 0; i < self._columnIDs.length; ++i) {
+            var cid = self._columnIDs[i];
             var cell = self.makeCellElement(cid, rowData);
             if (i == 0) {
                 // Thank you IE6 for failing at life.
@@ -121,37 +229,66 @@ Methanal.Widgets.QueryList.methods(
             tr.appendChild(cell);
         }
 
-        if (self.hasActions)
+        if (self._hasActions)
             tr.appendChild(self._makeActionsCell(rowData));
 
         self.rowInserted(index, tr, rowData);
     },
 
+
+    /**
+     * Append a row.
+     *
+     * @type  rowData: C{object} mapping C{String} to C{String}
+     * @param rowData: Mapping of column identifiers to values
+     */
     function appendRow(self, rowData) {
         self.insertRow(-1, rowData);
     },
 
+
+    /**
+     * Populate the QueryList.
+     *
+     * @type  rows: C{Array} of C{object} mapping C{String} to C{String}
+     * @param rows: Sequence of row data objects that map column identifiers
+     *     to values
+     */
     function populate(self, rows) {
         for (var i = 0; i < rows.length; ++i)
             self.appendRow(rows[i]);
     },
 
+
+    /**
+     * Determine a column alias from a column identifier.
+     */
     function _getColumnAlias(self, id) {
         var alias = self.columnAliases[id];
         return alias ? alias : id;
     },
 
+
+    /**
+     * Determine the column identifiers for the QueryList header.
+     *
+     * @rtype:  C{Array} of C{String}
+     */
     function _createHeaderData(self) {
         var headerData = [];
-        for (var i = 0; i < self.columnIDs.length; ++i)
-            headerData.push(self.columnIDs[i]);
+        for (var i = 0; i < self._columnIDs.length; ++i)
+            headerData.push(self._columnIDs[i]);
 
-        if (self.hasActions)
+        if (self._hasActions)
             headerData.push('actions');
 
         return headerData;
     },
 
+
+    /**
+     * Create the QueryList header element.
+     */
     function rebuildHeaders(self) {
         self.table.deleteTHead();
 
@@ -168,76 +305,155 @@ Methanal.Widgets.QueryList.methods(
         }
         thead.appendChild(tr);
         self.table.appendChild(thead)
+    },
+
+
+    /**
+    * Retrieve the DOM node for the specified column at the specified row.
+    */
+    function getCellNode(self, rowIndex, columnID) {
+        for (var i = 0; i < self._columnIDs.length; ++i) {
+            if (self._columnIDs[i] == columnID) {
+                return self.getBody().rows[rowIndex].cells[i];
+            }
+        }
+        return null;
+    },
+
+
+    /**
+     * Replace a QueryList cell node at the given column with the column's
+     * value in the given rowData object.
+     *
+     * @type  columnID: C{String}
+     * @param columnID: Column identifier
+     *
+     * @type  rowData: C{object} mapping C{String} to C{String}
+     * @param rowData: Mapping of column identifiers to values; if the
+     *     C{__link__} key is defined a clickable node is created
+     */
+    function updateCell(self, columnID, rowData) {
+        var newNode = self.makeCellElement(columnID, rowData);
+        var oldNode = self.getCellNode(rowData.__id__, columnID);
+        var rowNode = self.getBody().rows[rowData.__id__];
+        rowNode.replaceChild(newNode, oldNode);
     });
 
 
-Methanal.Widgets.FilterList = Nevow.Athena.Widget.subclass('Methanal.Widgets.FilterList');
-Methanal.Widgets.FilterList.methods(
+
+/**
+ * A filtering search widget.
+ *
+ * Essentially just a form that results in a server-side call, on submission,
+ * and a result widget.
+ *
+ * @type _currentResultWidget: L{Nevow.Athena.Widget}
+ * @ivar _currentResultWidget: Current result widget; everytime a new result
+ *     is generated, the old widget is detached
+ */
+Nevow.Athena.Widget.subclass(Methanal.Widgets, 'FilterList').methods(
     function __init__(self, node) {
         Methanal.Widgets.FilterList.upcall(self, '__init__', node);
-
-        self.currentResultWidget = null;
+        self._currentResultWidget = null;
     },
 
+
+    /**
+     * Set the result widget.
+     *
+     * If a result widget was previously set, it is detached and removed
+     * from the DOM.
+     *
+     * @param widgetInfo: Athena widget information to create a new child widget
+     *     from
+     *
+     * @rtype:  C{Deferred}
+     * @return: Deferred that fires when the result widget has been set
+     */
     function setResultWidget(self, widgetInfo) {
         var resultsNode = self.nodeById('results');
 
         var d = self.widgetParent.addChildWidgetFromWidgetInfo(widgetInfo);
         d.addCallback(function (widget) {
-            if (self.currentResultWidget !== null) {
-                Methanal.Util.detachWidget(self.currentResultWidget);
-                resultsNode.removeChild(self.currentResultWidget.node);
+            if (self._currentResultWidget !== null) {
+                self._currentResultWidget.detach();
+                resultsNode.removeChild(self._currentResultWidget.node);
             } else {
                 resultsNode.style.display = 'block';
             }
 
             resultsNode.appendChild(widget.node);
             Methanal.Util.nodeInserted(widget);
-            self.currentResultWidget = widget;
+            self._currentResultWidget = widget;
         });
         return d;
     });
 
 
-Methanal.Widgets.FilterListForm = Methanal.View.LiveForm.subclass('Methanal.Widgets.FilterListForm');
-Methanal.Widgets.FilterListForm.methods(
+
+/**
+ * L{Methanal.View.LiveForm} subclass for L{Methanal.Widgets.FilterList}.
+ *
+ * Set the result widget on successful form submission.
+ *
+ * Widgets derived from L{Methanal.Widgets.FilterList} should use a form
+ * that inherits from this.
+ */
+Methanal.View.LiveForm.subclass(Methanal.Widgets, 'FilterListForm').methods(
     function submitSuccess(self, widgetInfo) {
         return self.widgetParent.setResultWidget(widgetInfo);
     });
 
 
-Methanal.Widgets.Rollup = Nevow.Athena.Widget.subclass('Methanal.Widgets.Rollup');
-Methanal.Widgets.Rollup.methods(
+
+/**
+ * A collapsable container widget.
+ *
+ * @type _params: C{object} mapping C{String} to values
+ * @ivar _params: Mapping of names to values, used specifically for
+ *     L{Methanal.Widgets.Rollup.update}
+ *
+ * @type expanded: C{boolean}
+ * @ivar expanded: Flag indicating whether the container is expanded or not
+ *
+ * @type throbber: L{Methanal.Util.Throbber}
+ * @ivar throbber: Throbber controller
+ */
+Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Rollup').methods(
+    /**
+     * Create the rollup widget.
+     *
+     * @type params: C{object} mapping C{String} to values
+     * @ivar params: Mapping of names to values, used specifically for
+     *     L{Methanal.Widgets.Rollup.update}
+     */
     function __init__(self, node, params) {
         Methanal.Widgets.Rollup.upcall(self, '__init__', node);
         self.expanded = false;
-        self.params = params;
+        self._params = params;
     },
+
 
     function nodeInserted(self) {
-        self.detailsNode = self.nodeById('content');
-        self.buttonNode = self.nodeById('roll-button');
-        self.totalNode = self.nodeById('summary-total');
-        self.summaryDescNode = self.nodeById('summary-description');
-        self.throbberNode = self.nodeById('throbber');
+        self._contentNode = self.nodeById('content');
+        self._buttonNode = self.nodeById('roll-button');
+        self._totalNode = self.nodeById('summary-total');
+        self._summaryDescNode = self.nodeById('summary-description');
+        self.throbber = Methanal.Util.Throbber(self)
 
-        self.update(self.params);
+        self.update(self._params);
     },
 
-    function enableThrobber(self) {
-        self.throbberNode.style.visibility = 'visible';
-    },
 
-    function disableThrobber(self) {
-        self.throbberNode.style.visibility = 'hidden';
-    },
-
+    /**
+     * Toggle the rollup's expanded state.
+     */
     function toggleExpand(self) {
         self.expanded = !self.expanded;
 
-        self.detailsNode.style.display = self.expanded ? 'block' : 'none';
+        self._contentNode.style.display = self.expanded ? 'block' : 'none';
 
-        var buttonNode = self.buttonNode;
+        var buttonNode = self._buttonNode;
         if (self.expanded) {
             Methanal.Util.addElementClass(buttonNode, 'roll-up');
             Methanal.Util.removeElementClass(buttonNode, 'roll-down');
@@ -248,29 +464,56 @@ Methanal.Widgets.Rollup.methods(
         return false;
     },
 
+
+    /**
+     * Update the rollup view.
+     *
+     * The base implementation updates the node, with ID "summary-description",
+     * with the value from the key "summary".
+     *
+     * @type params: C{object} mapping C{String} to values
+     * @ivar params: Mapping of names to values, used specifically for
+     *     L{Methanal.Widgets.Rollup.update}
+     */
     function update(self, params) {
         var summary = params['summary'];
         summary = summary === undefined ? '' : summary;
-        Methanal.Util.replaceNodeText(self.summaryDescNode, summary);
+        Methanal.Util.replaceNodeText(self._summaryDescNode, summary);
     });
 
 
-Methanal.Widgets.Lookup = Methanal.View.FormInput.subclass('Methanal.Widgets.Lookup');
+
+Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup');
 
 
-Methanal.Widgets.SimpleLookupForm = Methanal.View.SimpleForm.subclass('Methanal.Widgets.SimpleLookupForm');
-Methanal.Widgets.SimpleLookupForm.methods(
+
+/**
+ * Form for L{Methanal.Widgets.SimpleLookup}.
+ *
+ * When a value of any input (excluding the result selector) is changed,
+ * a remote call is made (passing the values of all the inputs) and the result
+ * selector populated from the result of that call.
+ */
+Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'SimpleLookupForm').methods(
     function __init__(self, node, controlNames) {
-        Methanal.Widgets.SimpleLookupForm.upcall(self, '__init__', node, controlNames);
+        Methanal.Widgets.SimpleLookupForm.upcall(
+            self, '__init__', node, controlNames);
 
         var V = Methanal.Validators;
         self.addValidators([
             [['__results'], [V.notNull]]]);
     },
 
+
+    /**
+     * Set the result values.
+     *
+     * @type  values: C{Array} of C{[String, object]} 
+     * @param values: Sequence of C{[value, description]} results
+     */
     function setOptions(self, values) {
         var resultsWidget = self.getControl('__results');
-        var resultsNode = resultWidgets.inputNode;
+        var resultsNode = resultsWidget.inputNode;
         while (resultsNode.options.length)
             resultsNode.remove(0);
 
@@ -283,22 +526,27 @@ Methanal.Widgets.SimpleLookupForm.methods(
         }
 
         var value = resultsNode.options.length > 0 ? resultsNode.options[0] : null;
-        resultWidgets.setValue(value);
-        resultWidgets.onChange();
+        resultsWidget.setValue(value);
+        resultsWidget.onChange();
     },
+
 
     function valueChanged(self, control) {
         Methanal.Widgets.SimpleLookupForm.upcall(self, 'valueChanged', control);
 
+        // Don't trigger when the result input is changed.
         if (control.name === '__results')
             return;
 
+        // Gather form values from all the filter attributes.
         var values = {};
         for (var controlName in self.controls) {
             var control = self.getControl(controlName);
             values[controlName] = control.getValue();
         }
 
+        // Pass the gathered values to the remote side, and populate the result
+        // input from the return value of that call.
         var d = self.widgetParent.callRemote('populate', values);
         d.addCallback(function (values) {
             self.setOptions(values);

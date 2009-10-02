@@ -1,9 +1,9 @@
-
 // import Divmod.UnitTest
 // import Methanal.View
 
-Methanal.Tests.TestMethanal.TestMethanal = Divmod.UnitTest.TestCase.subclass('Methanal.Test.TestMethanal.TestMethanal');
-Methanal.Tests.TestMethanal.TestMethanal.methods(
+
+
+Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestMethanal, 'TestMethanal').methods(
     function test_basic(self) {
         var getData = function getData(name) {
             return 10;

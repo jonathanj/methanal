@@ -356,3 +356,14 @@ button.roll-up {
     background: white;
     padding: 2px;
 }
+
+.friendly-representation {
+    font-weight: bold;
+    font-size: 85%;
+    padding: 0.5ex;
+    float: left;
+}
+
+.embedded-label {
+    color: #bbb !important;
+}
