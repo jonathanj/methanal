@@ -619,7 +619,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         a.onclick = showTraceback;
 
         Methanal.Util.replaceNodeContent(self._formErrorNode, [
-            T('h1', {}, ['Submission error', a]),
+            T('h1', {}, ['Error submitting form', a]),
             T('div', {'class': 'methanal-submit-error-message'}, [
                 self.formatFailure(failure)])]);
         self._formErrorNode.style.display = 'block';
