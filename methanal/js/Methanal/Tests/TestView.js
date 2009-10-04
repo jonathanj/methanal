@@ -52,6 +52,43 @@ Methanal.View.LiveForm.subclass(Methanal.Tests.TestView, 'MockLiveForm').methods
 
 
 /**
+ * Tests for L{Methanal.View.LiveForm}.
+ */
+Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'TestLiveForm').methods(
+    /**
+     * Create a C{Methanal.View.LiveForm}.
+     */
+    function createForm(self) {
+        var controlNames = {};
+        form = Methanal.Tests.TestView.MockLiveForm(controlNames);
+        Methanal.Util.nodeInserted(form);
+        return form;
+    },
+    
+    
+    /**
+     * Freezing and thawing the form increments and decrements the frozen
+     * counter. Attempting to thaw a form without a freeze call results in
+     * an exception.
+     */
+    function test_freezeThaw(self) {
+        var form = self.createForm();
+        form.freeze();
+        self.assertIdentical(form._frozen, 1);
+        form.freeze();
+        self.assertIdentical(form._frozen, 2);
+        form.thaw();
+        form.thaw();
+        self.assertIdentical(form._frozen, 0);
+        self.assertThrows(Methanal.View.FreezeThawMismatch,
+            function() {
+                form.thaw();
+            });
+    });
+
+
+
+/**
  * Base class for L{Methanal.View.FormInput} mock implementations.
  */
 Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCase').methods(

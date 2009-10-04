@@ -202,6 +202,14 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
 
 
 /**
+ * The number of calls to L{Methanal.View.FormBehaviour.thaw} did not match
+ * the number of calls to L{Methanal.View.FormBehaviour.freeze}.
+ */
+Divmod.Error.subclass(Methanal.View, 'FreezeThawMismatch');
+
+
+
+/**
  * Base class for things that behave like forms.
  *
  * @type _validatorCache: L{Methanal.View._HandlerCache}
@@ -307,12 +315,16 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      *
      * This should be called the same number of times as
      * L{Methanal.View.FormBehaviour.freeze}.
+     *
+     * @raise Methanal.View.FreezeThawMismatch: If the number of calls to
+     *     L{thaw} do not match the number of calls to C{freeze}
      */
     function thaw(self) {
         self._frozen--;
-        if (self._frozen <= 0) {
-            self._frozen = 0;
+        if (self._frozen === 0) {
             self._refreshValidity();
+        } else if (self._frozen < 0) {
+            throw Methanal.View.FreezeThawMismatch('Too many calls to "thaw".');
         }
     },
 
