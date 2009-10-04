@@ -367,3 +367,33 @@ button.roll-up {
 .embedded-label {
     color: #bbb !important;
 }
+
+.methanal-submit-error {
+    color: white;
+    background: #74010c;
+    border: 1px solid #f30219;
+    padding: 4px;
+    margin-top: 0.5em;
+}
+
+.methanal-submit-error h1 {
+    font-size: 130%;
+    /*font-family: "Georgia", "Times New Roman", serif;*/
+    font-weight: normal;
+    margin: 0 0 0.3em 0;
+}
+
+.methanal-submit-error > div {
+    background: url(/static/Methanal/images/error-icon.png) no-repeat center left;
+    padding: 2px;
+    padding-left: 24px;
+}
+
+.methanal-submit-error-action {
+    padding: 0 4px;
+    cursor: pointer;
+}
+
+.methanal-submit-error-action img {
+    vertical-align: middle;
+}
