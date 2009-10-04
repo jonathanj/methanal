@@ -107,7 +107,9 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
             args.value = null;
 
         var control = self.createControl(args);
-        var form = Methanal.Tests.TestView.MockLiveForm([args.name]);
+        var controlNames = {};
+        controlNames[control.name] = 1;
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
         var container = self.createContainer(control);
         form.addChildWidget(container);
         document.body.appendChild(container.node);
@@ -313,6 +315,35 @@ Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(Methanal.Tests.TestView, '
         }
         Methanal.Tests.TestView.MockIEHTMLSelectElement.upcall(
             self, 'add', element, before);
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.MultiSelectInput}.
+ */
+Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'TestMultiSelectInputOnChange').methods(
+    function createControl(self, args) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var control = Methanal.View.MultiSelectInput(node, args);
+        node.appendChild(document.createElement('select'));
+        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
+
+        // Monkey-patch the "onChange" handler to fail the test if it is
+        // called.
+        control.onChange = function () {
+            self.fail('This should not be called.');
+        };
+        return control;
+    },
+
+
+    function test_onChangeNotCalledEarly(self) {
+        self.testControl({value: null},
+            function (control) {
+                // Our monkey-patched "onChange" handler should not fire and
+                // things should just carry on all happy and shiny.
+            });
     });
 
 
