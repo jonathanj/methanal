@@ -118,17 +118,6 @@ Methanal.Util.replaceNodeText = function replaceNodeText(node, text) {
 
 
 
-// XXX: what does this do that's special again?
-// XXX: i think maybe it exposes more information when called by IE
-Methanal.Util.formatFailure = function formatFailure(failure) {
-    var text = failure.error.description;
-    if (!text)
-        text = failure.toString();
-    return text;
-};
-
-
-
 /**
  * Convert a string to a base-10 integer.
  *
@@ -778,4 +767,37 @@ Methanal.Util.Time.guess = function guess(value) {
 
     throw new Methanal.Util.TimeParseError(
         'Unguessable value: ' + Methanal.Util._reprString(value));
+};
+
+
+
+/**
+ * Create a DOM node factory for the given document object.
+ *
+ * @rtype:  C{function} that takes C{String}, C{object} mapping C{String}
+ *     to C{String}, C{Array} of C{String} or DOM nodes
+ * @return: A factory taking 3 arguments: C{tagName}, C{attrs} and
+ *     C{children}
+ */
+Methanal.Util.DOMBuilder = function DOMBuilder(doc) {
+    return function _nodeFactory(tagName, attrs, children) {
+        var node = doc.createElement(tagName);
+        if (attrs !== undefined) {
+            for (var key in attrs) {
+                Divmod.Runtime.theRuntime.setAttribute(node, key, attrs[key]);
+            }
+        }
+
+        if (children !== undefined) {
+            for (var i = 0; i < children.length; ++i) {
+                var child = children[i];
+                if (typeof child === 'string') {
+                    child = doc.createTextNode(child);
+                }
+                node.appendChild(child);
+            }
+        }
+
+        return node;
+    };
 };

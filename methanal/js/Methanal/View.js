@@ -202,11 +202,22 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
 
 
 /**
+ * The number of calls to L{Methanal.View.FormBehaviour.thaw} did not match
+ * the number of calls to L{Methanal.View.FormBehaviour.freeze}.
+ */
+Divmod.Error.subclass(Methanal.View, 'FreezeThawMismatch');
+
+
+
+/**
  * Base class for things that behave like forms.
  *
  * @type _validatorCache: L{Methanal.View._HandlerCache}
  *
  * @type _depCache: L{Methanal.View._HandlerCache}
+ *
+ * @type _frozen: C{Integer}
+ * @ivar _frozen: Freeze counter
  *
  * @type controls: C{object} mapping C{String} to L{Methanal.View.FormInput}
  * @ivar controls: Mapping of form input names to form inputs; each form input
@@ -254,7 +265,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         var control = self.getControl(name);
         result = Methanal.Util.reduce(_and, values, true);
+        self.freeze();
         control.setActive(result);
+        self.thaw();
     },
 
 
@@ -266,6 +279,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * attributes.
      */
     function formInit(self) {
+        self._frozen = 0;
         self.controls = {};
         self.subforms = {};
 
@@ -286,11 +300,43 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
+     * Freeze validity refreshing.
+     *
+     * L{Methanal.View.FormBehaviour.thaw} should be called for every call to
+     * C{freeze}.
+     */
+    function freeze(self) {
+        self._frozen++;
+    },
+
+
+    /**
+     * Thaw validity refreshing.
+     *
+     * This should be called the same number of times as
+     * L{Methanal.View.FormBehaviour.freeze}.
+     *
+     * @raise Methanal.View.FreezeThawMismatch: If the number of calls to
+     *     L{thaw} do not match the number of calls to C{freeze}
+     */
+    function thaw(self) {
+        self._frozen--;
+        if (self._frozen === 0) {
+            self._refreshValidity();
+        } else if (self._frozen < 0) {
+            throw Methanal.View.FreezeThawMismatch('Too many calls to "thaw".');
+        }
+    },
+
+
+    /**
      * Refresh the validity of the form, based on the states of form inputs and
      * sub-forms.
      */
     function _refreshValidity(self) {
-        self.setValid();
+        if (self._frozen > 0) {
+            return;
+        }
 
         for (var controlName in self.controls) {
             var control = self.getControl(controlName);
@@ -306,6 +352,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
                 return;
             }
         }
+
+        self.setValid();
     },
 
 
@@ -566,7 +614,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             data[form.name] = form.getValue();
         }
 
-        Methanal.Util.replaceNodeText(self._formErrorNode, '');
+        self.clearError();
         self._disableSubmit();
         self.throbber.start();
 
@@ -583,6 +631,62 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     /**
+     * Clear submission errors.
+     */
+    function clearError(self) {
+        Methanal.Util.removeNodeContent(self._formErrorNode);
+        self._formErrorNode.style.display = 'none';
+    },
+
+
+    /**
+     * Set the submission error.
+     *
+     * @type failure: C{Divmod.Defer.Failure}
+     */
+    function setError(self, failure) {
+        var T = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+
+        var a = T('a', {'class': 'methanal-submit-error-action'}, [
+            T('img', {
+                'src':   '/static/Methanal/images/icons/page_white_error.png',
+                'title': 'Toggle traceback'})]);
+
+        function showTraceback() {
+            var traceback = T('pre', {}, [failure.toPrettyText()]);
+            this.parentNode.parentNode.appendChild(traceback);
+            this.onclick = hideTraceback;
+        };
+
+        function hideTraceback() {
+            var node = this.parentNode.parentNode;
+            node.removeChild(node.lastChild);
+            this.onclick = showTraceback;
+        };
+
+        a.onclick = showTraceback;
+
+        Methanal.Util.replaceNodeContent(self._formErrorNode, [
+            T('h1', {}, ['Error submitting form', a]),
+            T('div', {'class': 'methanal-submit-error-message'}, [
+                self.formatFailure(failure)])]);
+        self._formErrorNode.style.display = 'block';
+    },
+
+
+    /**
+     * Extract an error message from a C{Divmod.Defer.Failure} instance.
+     */
+    function formatFailure(self, failure) {
+        var text = failure.error.message;
+        if (!text) {
+            text = failure.toString();
+        }
+        return text;
+    },
+
+
+    /**
      * Callback for successful form submission.
      */
     function submitSuccess(self, value) {
@@ -592,8 +696,8 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     /**
      * Callback for a failure form submission.
      */
-    function submitFailure(self, value) {
-        Methanal.Util.replaceNodeText(self._formErrorNode, Methanal.Util.formatFailure(value));
+    function submitFailure(self, failure) {
+        self.setError(failure);
     },
 
 
@@ -689,6 +793,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
     function setActive(self, active) {
         self.node.style.display = active ? 'block' : 'none';
         Methanal.Util.addElementClass(self.node, 'dependancy-child');
+        if (self.widgetParent.setActive) {
+            self.widgetParent.setActive(active);
+        }
     },
 
 
@@ -948,6 +1055,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         self.error = null;
         self.widgetParent.checkForErrors();
     },
+
 
     /**
      * Set the input as active.
@@ -1496,22 +1604,6 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
             return null;
         }
         return value;
-    },
-
-
-    /**
-     * Handle "onblur" DOM event.
-     */
-    function onBlur(self, node) {
-        self.onChange(node);
-    },
-
-
-    /**
-     * Handle "onfocus" DOM event.
-     */
-    function onFocus(self, node) {
-        self.onChange(node);
     });
 
 

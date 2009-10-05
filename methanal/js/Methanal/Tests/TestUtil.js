@@ -1,4 +1,5 @@
 // import Divmod.UnitTest
+// import Divmod.MockBrowser
 // import Methanal.Util
 // import Methanal.Tests.Util
 
@@ -448,4 +449,59 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestThrobber').metho
         throbber.stop();
         self.assertIdentical(throbber._node.style.visibility, 'hidden');
         self.assertIdentical(throbber._node.style.display, 'none');
+    });
+
+
+
+/**
+ * Tests for L{Methanal.Util.DOMBuilder}.
+ */
+Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestDOMBuilder').methods(
+    /**
+     * Helper function for building a node using C{DOMBuilder}.
+     */
+    function _build(self/*, ...*/) {
+        var T = Methanal.Util.DOMBuilder(document);
+        var args = [];
+        for (var i = 1; i < arguments.length; ++i) {
+            args.push(arguments[i]);
+        }
+        return T.apply(null, args);
+    },
+
+
+    /**
+     * Building an element with a tag name.
+     */
+    function test_element(self) {
+        var node = self._build('foo');
+        self.assertIdentical(node.tagName, 'FOO');
+    },
+
+
+    /**
+     * Building an element with children that are strings results in text nodes.
+     */
+    function test_textChild(self) {
+        var node = self._build('foo', {}, ['hello']);
+        self.assertIdentical(node.childNodes.length, 1);
+        self.assertIdentical(node.childNodes[0].nodeType, node.TEXT_NODE);
+        self.assertIdentical(node.childNodes[0].nodeValue, 'hello');
+    },
+
+
+    /**
+     * Passing an attribute mapping results in an element with the specified
+     * attributes.
+     */
+    function test_attributes(self) {
+        var node = self._build('foo',
+            {'id':    'an_id',
+             'class': 'a_class',
+             'foo':   'bar'},
+            ['hello']);
+
+        self.assertIdentical(node.getAttribute('id'), 'an_id');
+        self.assertIdentical(node.getAttribute('class'), 'a_class');
+        self.assertIdentical(node.getAttribute('foo'), 'bar');
     });
