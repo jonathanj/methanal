@@ -47,8 +47,43 @@ Methanal.View.LiveForm.subclass(Methanal.Tests.TestView, 'MockLiveForm').methods
         makeWidgetChildNode(self, 'img', 'throbber');
 
         document.body.appendChild(node);
+    });
 
-        self.nodeInserted();
+
+
+/**
+ * Tests for L{Methanal.View.LiveForm}.
+ */
+Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'TestLiveForm').methods(
+    /**
+     * Create a C{Methanal.View.LiveForm}.
+     */
+    function createForm(self) {
+        var controlNames = {};
+        form = Methanal.Tests.TestView.MockLiveForm(controlNames);
+        Methanal.Util.nodeInserted(form);
+        return form;
+    },
+    
+    
+    /**
+     * Freezing and thawing the form increments and decrements the frozen
+     * counter. Attempting to thaw a form without a freeze call results in
+     * an exception.
+     */
+    function test_freezeThaw(self) {
+        var form = self.createForm();
+        form.freeze();
+        self.assertIdentical(form._frozen, 1);
+        form.freeze();
+        self.assertIdentical(form._frozen, 2);
+        form.thaw();
+        form.thaw();
+        self.assertIdentical(form._frozen, 0);
+        self.assertThrows(Methanal.View.FreezeThawMismatch,
+            function() {
+                form.thaw();
+            });
     });
 
 
@@ -67,6 +102,21 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
      */
     function createControl(self, args) {
         throw new Error('Subclasses must implement "createControl".')
+    },
+
+
+    /**
+     * Create the control container.
+     */
+    function createContainer(self, child) {
+        var row = Methanal.View.FormRow(
+            Nevow.Test.WidgetUtil.makeWidgetNode());
+        Methanal.Tests.TestView.makeWidgetChildNode(row, 'span', 'error-text')
+
+        row.addChildWidget(child);
+        row.node.appendChild(child.node);
+
+        return row;
     },
 
 
@@ -95,25 +145,19 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
 
         var control = self.createControl(args);
         var controlNames = {};
-        controlNames[args.name] = 1;
+        controlNames[control.name] = 1;
         var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
-        var row = Methanal.View.FormRow(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
-        Methanal.Tests.TestView.makeWidgetChildNode(row, 'span', 'error-text')
-        row.setWidgetParent(form);
-        document.body.appendChild(row.node);
-        row.nodeInserted();
-
-        control.setWidgetParent(row);
-        row.node.appendChild(control.node);
-        control.nodeInserted();
+        var container = self.createContainer(control);
+        form.addChildWidget(container);
+        document.body.appendChild(container.node);
+        Methanal.Util.nodeInserted(form);
 
         try {
             testingFunc(control);
         } catch (e) {
             throw e;
         } finally {
-            document.body.removeChild(row.node);
+            document.body.removeChild(container.node);
         }
     },
     
@@ -704,5 +748,55 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertInvalidInput(control, '101');
                 self.assertInvalidInput(control, '101%');
                 self.assertInvalidInput(control, '-1');
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.InputContainer}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestFormGroup').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.TextInput;
+    },
+
+
+    function createContainer(self, child) {
+        var row = Methanal.Tests.TestView.TestFormGroup.upcall(
+            self, 'createContainer', child);
+
+        var group = Methanal.View.InputContainer(
+            Nevow.Test.WidgetUtil.makeWidgetNode());
+        group.addChildWidget(row);
+        group.node.appendChild(row.node);
+        return group;
+    },
+
+
+    /**
+     * Any active children means the container is visible.
+     */
+    function test_activeChildren(self) {
+        self.testControl({value: null},
+            function (control) {
+                var group = control.widgetParent.widgetParent;
+                self.assertIsInstanceOf(group, Methanal.View.InputContainer);
+                control.setActive(true);
+                self.assertIdentical(group.node.style.display, 'block');
+            });
+    },
+
+
+    /**
+     * No active children means the container is not visible.
+     */
+    function test_noActiveChildren(self) {
+        self.testControl({value: null},
+            function (control) {
+                var group = control.widgetParent.widgetParent;
+                self.assertIsInstanceOf(group, Methanal.View.InputContainer);
+                control.setActive(false);
+                self.assertIdentical(group.node.style.display, 'none');
             });
     });

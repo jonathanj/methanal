@@ -237,6 +237,9 @@ class InputContainer(ThemedElement):
 class FormGroup(InputContainer):
     """
     Container for visually grouping inputs.
+
+    A C{FormGroup} will be set inactive (and thus hidden) if all of its
+    child controls are inactive too.
     """
     fragmentName = 'methanal-group'
 
