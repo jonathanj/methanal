@@ -498,6 +498,135 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 
 
 /**
+ * Tests for L{Methanal.View.FilteringTextInput}
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestFilteringTextInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.FilteringTextInput;
+    },
+
+
+    /**
+     * If L{Methanal.View.FilteringTextInput.expression} is set, then input
+     * that doesn't match the expression gets marked invalid.
+     */
+    function test_expression(self) {
+        self.testControl({value: null, expression: '[a-z0-9\-]'},
+            function (control) {
+                self.assertValidInput(control, 'valid-input');
+                self.assertInvalidInput(control, 'INvalid input!');
+            });
+    },
+
+    
+    /**
+     * L{Methanal.View.FilteringTextInput}'s onKeyUp and onChange event
+     * handlers transform the input being entered in real time according to all
+     * filtration functions specified in the control's filters attribute.
+     */
+    function test_filters(self) {
+        self.testControl({value: null, expression: '[a-z0-9]'},
+            function (control) {
+                control.filters = [
+                    function(value) { return value.toLowerCase(); },
+                    function(value) { return value.replace(/[^a-z0-9]/g, ''); },
+                    ];
+                control.setValue('A+');
+                control.onKeyUp(control.inputNode);
+                self.assertIdentical(control.getValue(), 'a');
+                control.setValue('ValId InpUt!');
+                control.onChange(control.inputNode);
+                self.assertIdentical(control.getValue(), 'validinput');
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.PrePopulatingTextInput}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestPrePopulatingTextInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.PrePopulatingTextInput;
+        self.otherInputName = 'aTextInput';
+    },
+
+
+    /**
+     * Create a text input to be pre-populated by the PrePopulatingTextInput.
+     */
+    function createATextInput(self, args) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var control = Methanal.View.TextInput(node, args);
+        node.appendChild(document.createElement('input'));
+        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'displayValue')
+        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
+        return control;
+    },
+    
+   
+    /**
+     * Overriding testControl() in order to create the widget to be
+     * pre-populated.
+     */ 
+    function testControl(self, args, testingFunc) {
+        if (args === undefined || args === null)
+            args = {};
+        if (args.name === undefined || args.name === null)
+            args.name = 'methanalControl';
+        if (args.label === undefined || args.label === null)
+            args.label = 'a_label';
+        if (args.value === undefined || args.value === null)
+            args.value = null;
+
+        var control = self.createControl(args);
+        var aTextInput = self.createATextInput({name: self.otherInputName});
+        var controlNames = {};
+        controlNames[control.name] = 1;
+        controlNames[aTextInput.name] = 1;
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
+
+        var container = self.createContainer(control);
+        form.addChildWidget(container);
+        document.body.appendChild(container.node);
+
+        var otherContainer = self.createContainer(aTextInput);
+        form.addChildWidget(otherContainer);
+        document.body.appendChild(otherContainer.node);
+
+        Methanal.Util.nodeInserted(form);
+
+        try {
+            testingFunc(control);
+        } catch (e) {
+            throw e;
+        } finally {
+            document.body.removeChild(container.node);
+            document.body.removeChild(otherContainer.node);
+        }
+    },
+
+
+    /**
+     * L{Methanal.View.PrePopulatingTextInput}'s onKeyUp and onChange event
+     * handlers send their input values to the control specified at creation.
+     */
+    function test_prePopulation(self) {
+        self.testControl({value: null, otherInputName: self.otherInputName},
+            function (control) {
+                aTextInput = control.getOtherInput();
+                control.setValue('hello');
+                control.onKeyUp(control.inputNode);
+                self.assertIdentical(aTextInput.getValue(), 'hello');
+                control.setValue('hello world');
+                control.onChange(control.inputNode);
+                self.assertIdentical(aTextInput.getValue(), 'hello world');
+            });
+    });
+
+
+
+/**
  * Tests for L{Methanal.View.DateInput}.
  */
 Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestDateInput').methods(

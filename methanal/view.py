@@ -404,7 +404,7 @@ class FilteringTextInput(TextInput):
     """
     A L{TextInput} that only allows certain characters as valid input as
     specified by the expression parameter, and that transforms the value
-    in real-time for each optional filter defined on the client-side
+    in real time for each optional filter defined on the client-side
     widget.  See the JavaScript docstrings for more detail.
 
     @type expression: C{str}
@@ -436,13 +436,13 @@ class PrePopulatingTextInput(TextInput):
     jsClass = u'Methanal.View.PrePopulatingTextInput'
 
 
-    def __init__(self, otherInputName, **kw):
+    def __init__(self, otherInputName=None, **kw):
         super(PrePopulatingInput, self).__init__(**kw)
         self.otherInputName = otherInputName
 
 
     def getArgs(self):
-        return (u'otherInputName': self.otherInputName}
+        return {u'otherInputName': self.otherInputName}
 
 
 

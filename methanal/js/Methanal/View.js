@@ -1352,14 +1352,13 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
     function __init__(self, node, args) {
-        Methanal.View.FilteringTextInput.subclass.upcall(self, '__init__',
-            node, args);
+        Methanal.View.FilteringTextInput.upcall(
+            self, '__init__', node, args);
         var expn = args.expression;
         if (expn !== null) {
             self.filterExpn = new RegExp('^' + expn + '+$');
             self.extractExpn = new RegExp(expn, 'g');
         }
-        self.filters = []
     },
 
     
@@ -1368,24 +1367,24 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
      */
     function filter(self, node) {
         var value = node.value;
-        for (filter in self.filters) {
-            value = filter(value);
+        for (var i = 0; i < self.filters.length; ++i) {
+            value = self.filters[i](value);
         }
         self.setValue(value);
     },
 
 
     function onChange(self, node) {
-        Methanal.View.FilteringTextInput.subclass.upcall(self, 'onChange',
-            node);
         self.filter(node);
+        Methanal.View.FilteringTextInput.upcall(self, 'onChange',
+            node);
     },
 
 
     function onKeyUp(self, node) {
-        Methanal.View.FilteringTextInput.subclass.upcall(self, 'onKeyUp',
-            node);
         self.filter(node);
+        Methanal.View.FilteringTextInput.upcall(self, 'onKeyUp',
+            node);
     },
     
 
@@ -1414,7 +1413,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
  * @type otherInputName: C{String}
  * @ivar otherInputName: The name of the input that will be pre-populated.
  */
-Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingInput').methods(
+Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingTextInput').methods(
         function __init__(self, node, args) {
             Methanal.View.PrePopulatingTextInput.upcall(self, '__init__', node,
                 args);
@@ -1438,7 +1437,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingInput').methods(
          * and calls the other input's onKeyUp handler.
          */
         function onKeyUp(self, node) {
-            Methanal.View.PrePopulatingInput.upcall(self, 'onKeyUp', node);
+            Methanal.View.PrePopulatingTextInput.upcall(self, 'onKeyUp', node);
             var otherInput = self.getOtherInput();
             otherInput.setValue(node.value);
             otherInput.onKeyUp(otherInput.node);
@@ -1452,7 +1451,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingInput').methods(
          * and calls the other input's onChange handler.
          */
         function onChange(self, node) {
-            Methanal.View.PrePopulatingInput.upcall(self, 'onChange', node);
+            Methanal.View.PrePopulatingTextInput.upcall(self, 'onChange', node);
             var otherInput = self.getOtherInput();
             otherInput.setValue(node.value);
             otherInput.onChange(otherInput.node);
