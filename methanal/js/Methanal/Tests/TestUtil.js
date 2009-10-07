@@ -173,7 +173,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').meth
 Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
     function setUp(self) {
         self._knownTime = Methanal.Util.Time.fromDate(
-            new Date(2009, 8, 6, 1, 36, 23, 2));
+            new Date(2009, 8, 6, 1, 36, 23, 2), true);
     },
 
 
@@ -220,17 +220,20 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
         function assertTimeParsed(data, timestamp) {
             var time = Methanal.Util.Time.guess(data);
             self.assertIdentical(time._oneDay, true);
-            self.assertIdentical(time.asTimestamp(), timestamp);
+            // User input is interpreted as local time, but the tests should
+            // pass regardless of the runner's local timezone, so we use UTC
+            // dates.
+            self.assertIdentical(time.asUTCDate().getTime(), timestamp);
         };
 
-        assertTimeParsed('2009/9/1',   1251756000000);
-        assertTimeParsed('2009.09.01', 1251756000000);
-        assertTimeParsed('2009-09-01', 1251756000000);
-        assertTimeParsed('1/9/2009',   1251756000000);
-        assertTimeParsed('01.09.2009', 1251756000000);
-        assertTimeParsed('01-09-2009', 1251756000000);
-        assertTimeParsed('1/9/2009',   1251756000000);
-        assertTimeParsed('29/2/2008',  1204236000000);
+        assertTimeParsed('2009/9/1',   1251763200000);
+        assertTimeParsed('2009.09.01', 1251763200000);
+        assertTimeParsed('2009-09-01', 1251763200000);
+        assertTimeParsed('1/9/2009',   1251763200000);
+        assertTimeParsed('01.09.2009', 1251763200000);
+        assertTimeParsed('01-09-2009', 1251763200000);
+        assertTimeParsed('1/9/2009',   1251763200000);
+        assertTimeParsed('29/2/2008',  1204243200000);
     },
 
     
@@ -264,9 +267,9 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      * Create a L{Methanal.Util.Time} instance from a C{Date}.
      */
     function test_fromDate(self) {
-        var d = new Date();
+        var d = new Date(2009, 8, 1, 12, 34, 56, 78);
         var t = Methanal.Util.Time.fromDate(d);
-        self.assertIdentical(t.asTimestamp(), d.getTime());
+        self.assertIdentical(t.asDate().getTime(), d.getTime());
     },
 
 
@@ -309,19 +312,32 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds.
      */
     function test_fromTimestamp(self) {
-        var t = Methanal.Util.Time.fromTimestamp(1251759723000);
-        self.assertIdentical(t.asHumanly(), 'Tue, 1 Sep 2009 01:02:03 am');
+        var t;
+        var timestamp;
+
+        timestamp = 1251766923000;
+        t = Methanal.Util.Time.fromTimestamp(timestamp);
+        self.assertIdentical(t.asUTCDate().getTime(), timestamp);
+        self.assertIdentical(t._timezoneOffset, 0);
+
+        var d = new Date();
+        timestamp = d.getTime();
+        t = Methanal.Util.Time.fromTimestamp(timestamp, d.getTimezoneOffset());
+        self.assertIdentical(t.asUTCDate().getTime(), timestamp);
+        self.assertIdentical(
+            t._timezoneOffset, d.getTimezoneOffset() * 60 * 1000);
     },
 
 
     /**
      * L{Methanal.Util.Time.asDate} converts a Time into a C{Date} representing
-     * the same time.
+     * the same I{local} time.
      */
     function test_asDate(self) {
         var t = Methanal.Util.Time();
         var d = t.asDate();
-        self.assertIdentical(t.asTimestamp(), d.getTime());
+        self.assertIdentical(
+            t.asTimestamp() + d.getTimezoneOffset() * 60 * 1000, d.getTime());
     },
 
 
@@ -330,7 +346,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      * milliseconds elapsed since the epoch.
      */
     function test_asTimestamp(self) {
-        self.assertIdentical(self._knownTime.asTimestamp(), 1252193783002);
+        self.assertIdentical(self._knownTime.asTimestamp(), 1252200983002);
     },
 
 
@@ -392,11 +408,11 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      */
     function test_offset(self) {
         var t = self._knownTime.offset(Methanal.Util.TimeDelta({'days': -1}));
-        self.assertIdentical(t.asTimestamp(), 1252107383002);
+        self.assertIdentical(t.asTimestamp(), 1252114583002);
         self.assertIdentical(t.oneDay().asHumanly(), 'Sat, 5 Sep 2009');
 
         var t = self._knownTime.offset(Methanal.Util.TimeDelta({'days': 1}));
-        self.assertIdentical(t.asTimestamp(), 1252280183002);
+        self.assertIdentical(t.asTimestamp(), 1252287383002);
         self.assertIdentical(t.oneDay().asHumanly(), 'Mon, 7 Sep 2009');
     });
 
