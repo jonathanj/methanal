@@ -479,26 +479,37 @@ Divmod.Error.subclass(Methanal.Util, 'TimeParseError');
 
 
 /**
- * A high-level object built on top of C{Date}.
+ * A high-level time and date object.
  *
- * @type _date: C{Date}
- * @ivar _date: Underlying Date instance
+ * @type _timestamp: C{Number}
+ * @ivar _timestamp: Number of milliseconds since the epoch:
+ *     January 1, 1970, 00:00:00 UTC
  *
  * @type _oneDay: C{boolean}
  * @ivar _oneDay: Is this a truncated Time instance?
  */
 Divmod.Class.subclass(Methanal.Util, 'Time').methods(
     function __init__(self) {
-        self._date = new Date();
+        var d = new Date();
+        self._timezoneOffset = d.getTimezoneOffset() * 60 * 1000;
+        self._timestamp = d.getTime() - self._timezoneOffset;
         self._oneDay = false;
     },
 
 
     /**
-     * C{Date} representation.
+     * Local time C{Date} representation.
      */
     function asDate(self) {
-        return self._date;
+        return new Date(self._timestamp + self._timezoneOffset);
+    },
+
+
+    /**
+     * UTC C{Date} representation.
+     */
+    function asUTCDate(self) {
+        return new Date(self._timestamp);
     },
 
 
@@ -506,7 +517,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * The number of milliseconds since the epoch.
      */
     function asTimestamp(self) {
-        return self._date.getTime();
+        return self._timestamp;
     },
 
 
@@ -514,7 +525,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * A human-readable string representation.
      */
     function asHumanly(self, twentyFourHours) {
-        var _date = self._date;
+        var _date = self.asDate();
         var r = [];
         r.push(self.getDayName(true) + ',');
         r.push(_date.getDate().toString());
@@ -522,28 +533,24 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
         r.push(_date.getFullYear().toString());
 
         if (!self._oneDay) {
-            function _humanlyTime(dateWithTime, twentyFourHours) {
-                var prefix = '';
-                var hours = dateWithTime.getHours();
-                if (!twentyFourHours) {
-                    var dm = Methanal.Util.divmod(hours, 12);
-                    prefix = dm[0] > 0 ? ' pm' : ' am';
-                    hours = dm[1] == 0 ? 12 : dm[1];
-                }
-
-                function pad(v) {
-                    return Methanal.Util.rjust(v.toString(), 2, '0');
-                };
-
-                var r = [];
-                r.push(hours);
-                r.push(dateWithTime.getMinutes());
-                r.push(dateWithTime.getSeconds());
-                r = Methanal.Util.map(pad, r);
-                return r.join(':') + prefix;
+            var prefix = '';
+            var hours = _date.getHours();
+            if (!twentyFourHours) {
+                var dm = Methanal.Util.divmod(hours, 12);
+                prefix = dm[0] > 0 ? ' pm' : ' am';
+                hours = dm[1] == 0 ? 12 : dm[1];
             }
 
-            r.push(_humanlyTime(_date, twentyFourHours));
+            function pad(v) {
+                return Methanal.Util.rjust(v.toString(), 2, '0');
+            };
+
+            var t = [];
+            t.push(hours);
+            t.push(_date.getMinutes());
+            t.push(_date.getSeconds());
+            t = Methanal.Util.map(pad, t);
+            r.push(t.join(':') + prefix);
         }
 
         return r.join(' ');
@@ -559,7 +566,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * @rtype: C{String}
      */
     function getDayName(self, shortened) {
-        var name = Methanal.Util.Time._dayNames[self._date.getDay()];
+        var name = Methanal.Util.Time._dayNames[self.asDate().getDay()];
         return shortened ? name.substr(0, 3) : name;
     },
 
@@ -573,7 +580,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * @rtype: C{String}
      */
     function getMonthName(self, shortened) {
-        var name = Methanal.Util.Time._monthNames[self._date.getMonth()];
+        var name = Methanal.Util.Time._monthNames[self.asDate().getMonth()];
         return shortened ? name.substr(0, 3) : name;
     },
 
@@ -585,11 +592,12 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * @return: A new instance representing the truncated date
      */
     function oneDay(self) {
-        var d = new Date(
-            self._date.getFullYear(),
-            self._date.getMonth(),
-            self._date.getDate());
-        var t = Methanal.Util.Time.fromDate(d);
+        var _date = self.asDate();
+        _date.setHours(0);
+        _date.setMinutes(0);
+        _date.setSeconds(0);
+        _date.setMilliseconds(0);
+        var t = Methanal.Util.Time.fromDate(_date);
         t._oneDay = true;
         return t;
     },
@@ -606,9 +614,9 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * @return: A new instance representing the newly offset time
      */
     function offset(self, delta) {
-        var d = new Date(self.asTimestamp() + delta);
-        var t = Methanal.Util.Time.fromDate(d);
+        var t = Methanal.Util.Time.fromTimestamp(self.asTimestamp() + delta);
         t._oneDay = self._oneDay;
+        t._timezoneOffset = self._timezoneOffset;
         return t;
     });
 
@@ -628,17 +636,35 @@ Methanal.Util.Time._monthNames = [
  */
 Methanal.Util.Time.fromDate = function fromDate(dateObj) {
     var t = Methanal.Util.Time();
-    t._date = dateObj;
+    t._timezoneOffset = dateObj.getTimezoneOffset() * 60 * 1000;
+    t._timestamp = dateObj.getTime() - t._timezoneOffset;
     return t;
 };
 
 
 
 /**
- * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds.
+ * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds,
+ * since January 1, 1970, 00:00:00 UTC.
+ *
+ * @type  timestamp: C{Number}
+ * @param timestamp: Number of milliseconds since the epoch
+ *
+ * @type  timezoneOffset: C{Number}
+ * @param timezoneOffset: Timezone offset in minutes
+ *
+ * @rtype: L{Methanal.Util.Time}
  */
-Methanal.Util.Time.fromTimestamp = function fromTimestamp(timestamp) {
-    return Methanal.Util.Time.fromDate(new Date(timestamp));
+Methanal.Util.Time.fromTimestamp = function fromTimestamp(timestamp, timezoneOffset) {
+    var t = Methanal.Util.Time();
+    t._timestamp = timestamp;
+    if (timezoneOffset) {
+        timezoneOffset *= 60 * 1000;
+    } else {
+        timezoneOffset = 0;
+    }
+    t._timezoneOffset = timezoneOffset;
+    return t;
 };
 
 
@@ -715,6 +741,9 @@ Methanal.Util.Time.getMonthLength = function getMonthLength(year, month) {
 /**
  * Create a L{Methanal.Util.Time} instance from a semi-structured string.
  *
+ * As this is primarily intended for textual date input by users, L{value} is
+ * interpreted in local time.
+ *
  * @type  value: C{String}
  * @param value: Either a numerical YYYYMMDD or DDMMYYY string (separated by
  *     C{/}, C{.} or C{-}) or a relative time reference, as supported by
@@ -759,10 +788,11 @@ Methanal.Util.Time.guess = function guess(value) {
             y = Methanal.Util.strToInt(parts[2]);
         }
 
-        if (_validDate(y, m, d))
+        if (_validDate(y, m, d)) {
             // TODO: In the future, "guess" should be able to guess times as
             // well as dates.
             return Methanal.Util.Time.fromDate(new Date(y, m, d)).oneDay();
+        }
     }
 
     throw new Methanal.Util.TimeParseError(

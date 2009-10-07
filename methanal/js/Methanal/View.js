@@ -1605,7 +1605,13 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
     function makeDisplayValue(self, value) {
         var msg = '';
         try {
-            var time = Methanal.Util.Time.fromTimestamp(value).oneDay();
+            // XXX: There is probably a potential bug here: If "value" (a UTC
+            // timestamp) falls before the switch-over for daylight savings
+            // before the timezone offset has been corrected for, the timezone
+            // offset given here will be the wrong one.
+            var d = new Date(value);
+            var time = Methanal.Util.Time.fromTimestamp(
+                value, d.getTimezoneOffset()).oneDay();
             if (time) {
                 msg = time.asHumanly(self.twentyFourHours);
             }
