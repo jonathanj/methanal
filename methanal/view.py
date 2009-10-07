@@ -513,7 +513,7 @@ class PercentInput(DecimalInput):
 
 class VerifiedPasswordInput(TextInput):
     """
-    Password input with confirmation.
+    Password input with verification and strength checking.
     """
     fragmentName = 'methanal-verified-password-input'
     jsClass = u'Methanal.View.VerifiedPasswordInput'

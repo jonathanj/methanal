@@ -1797,20 +1797,17 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
 
 
 /**
- * Password input with two fields that must match and contain a strong password
- * as defined by the public method,
- * L{Methanal.View.VerifiedPasswordInput.passwordIsStrong}.
+ * Password input with a verification field and strength checking.
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods(
     function nodeInserted(self) {
         Methanal.View.VerifiedPasswordInput.upcall(self, 'nodeInserted');
-        self.confirmPasswordNode = self.nodeById('confirmPassword');
+        self._confirmPasswordNode = self.nodeById('confirmPassword');
     },
 
 
     /**
-     * Override this method if desired to change the definition of a 'strong'
-     * password for validation.
+     * Override this method to change the definition of a 'strong' password.
      */
     function passwordIsStrong(self, password) {
         return password.length > 4;
@@ -1822,7 +1819,8 @@ Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods
      * the password given in both fields have length > 0 and match exactly.
      */
     function baseValidator(self, value) {
-        if (value !== self.confirmPasswordNode.value || value === null || self.confirmPasswordNode.value === null)
+        if (value !== self._confirmPasswordNode.value || value === null ||
+            self._confirmPasswordNode.value === null)
             return 'Passwords do not match.';
 
         if (!self.passwordIsStrong(value))

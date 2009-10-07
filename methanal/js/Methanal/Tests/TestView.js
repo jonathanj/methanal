@@ -757,9 +757,9 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
  * Tests for L{Methanal.View.VerifiedPasswordInput}.
  */
 Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestVerifiedPasswordInput').methods(
-    //function setUp(self) {
-    //    self.controlType = Methanal.View.VerifiedPasswordInput;
-    //},
+    function setUp(self) {
+        self.controlType = Methanal.View.VerifiedPasswordInput;
+    },
 
     
     function createControl(self, args) {
