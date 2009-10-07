@@ -511,6 +511,15 @@ class PercentInput(DecimalInput):
 
 
 
+class VerifiedPasswordInput(TextInput):
+    """
+    Password input with confirmation.
+    """
+    fragmentName = 'methanal-verified-password-input'
+    jsClass = u'Methanal.View.VerifiedPasswordInput'
+
+
+
 class ChoiceInput(FormInput):
     """
     Abstract input with multiple options.
