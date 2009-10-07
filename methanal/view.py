@@ -407,7 +407,7 @@ class FilteringTextInput(TextInput):
     in real time for each optional filter defined on the client-side
     widget.  See the JavaScript docstrings for more detail.
 
-    @type expression: C{str}
+    @type expression: C{Unicode} or C{None}
     @ivar expression: A regular expression that specifies what characters
         are allowed to be part of the value of the input field.
         Examples: C{'[a-zA-z0-9]'}, C{'cat|dog'}
@@ -420,7 +420,6 @@ class FilteringTextInput(TextInput):
         self.expression = expression
 
 
-    #TODO: check how Methanal handles a value of None here
     def getArgs(self):
         return {u'expression': self.expression}
 
@@ -430,19 +429,19 @@ class PrePopulatingTextInput(TextInput):
     """
     Text input that updates another input's value with its own in real time.
 
-    @type otherInputName: C{str}
-    @ivar otherInputName: The name of the input to pre-populate
+    @type targetControlName: C{Unicode}
+    @ivar targetControlName: The name of the input to pre-populate
     """
     jsClass = u'Methanal.View.PrePopulatingTextInput'
 
 
-    def __init__(self, otherInputName=None, **kw):
+    def __init__(self, targetControlName, **kw):
         super(PrePopulatingInput, self).__init__(**kw)
-        self.otherInputName = otherInputName
+        self.targetControlName = targetControlName
 
 
     def getArgs(self):
-        return {u'otherInputName': self.otherInputName}
+        return {u'targetControlName': self.targetControlName}
 
 
 

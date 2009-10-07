@@ -380,38 +380,6 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
         }
         thead.appendChild(tr);
         self.table.appendChild(thead)
-    },
-
-
-    /**
-    * Retrieve the DOM node for the specified column at the specified row.
-    */
-    function getCellNode(self, rowIndex, columnID) {
-        for (var i = 0; i < self._columnIDs.length; ++i) {
-            if (self._columnIDs[i] == columnID) {
-                return self.getBody().rows[rowIndex].cells[i];
-            }
-        }
-        return null;
-    },
-
-
-    /**
-     * Replace a QueryList cell node at the given column with the column's
-     * value in the given rowData object.
-     *
-     * @type  columnID: C{String}
-     * @param columnID: Column identifier
-     *
-     * @type  rowData: C{object} mapping C{String} to C{String}
-     * @param rowData: Mapping of column identifiers to values; if the
-     *     C{__link__} key is defined a clickable node is created
-     */
-    function updateCell(self, columnID, rowData) {
-        var newNode = self.makeCellElement(columnID, rowData);
-        var oldNode = self.getCellNode(rowData.__id__, columnID);
-        var rowNode = self.getBody().rows[rowData.__id__];
-        rowNode.replaceChild(newNode, oldNode);
     });
 
 

@@ -527,16 +527,42 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
     function test_filters(self) {
         self.testControl({value: null, expression: '[a-z0-9]'},
             function (control) {
-                control.filters = [
+                control.addFilters([
                     function(value) { return value.toLowerCase(); },
                     function(value) { return value.replace(/[^a-z0-9]/g, ''); },
-                    ];
+                    ]);
                 control.setValue('A+');
                 control.onKeyUp(control.inputNode);
                 self.assertIdentical(control.getValue(), 'a');
                 control.setValue('ValId InpUt!');
                 control.onChange(control.inputNode);
                 self.assertIdentical(control.getValue(), 'validinput');
+            });
+    },
+
+
+    /**
+     * When no expression is given, the control will validate any text input.
+     */
+    function test_noExpression(self) {
+        self.testControl({value: null, expression: null},
+            function (control) {
+                self.assertValidInput(control, 'VaL1d 1NPut!@#$');
+            });
+    },
+    
+   
+    /**
+     * If no filters are added to the control, the input will not be
+     * transformed, but the control will still function like a normal
+     * TextInput.
+     */
+    function test_noFilters(self) {
+        self.testControl({value: null, expression: '[a-z0-9]'},
+            function (control) {
+                control.setValue('INvalid input!');
+                control.onChange(control.inputNode);
+                self.assertIdentical(control.getValue(), 'INvalid input!');
             });
     });
 
@@ -548,18 +574,19 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestPrePopulatingTextInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.PrePopulatingTextInput;
-        self.otherInputName = 'aTextInput';
+        self.targetControlName = 'targetControl';
     },
 
 
     /**
-     * Create a text input to be pre-populated by the PrePopulatingTextInput.
+     * Create a target control to be pre-populated.
      */
-    function createATextInput(self, args) {
+    function createTargetControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
-        var control = Methanal.View.TextInput(node, args);
+        var control = args.type(node, args);
         node.appendChild(document.createElement('input'));
-        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'displayValue')
+        Methanal.Tests.TestView.makeWidgetChildNode(
+            control, 'span', 'displayValue')
         Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
         return control;
     },
@@ -580,19 +607,19 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
             args.value = null;
 
         var control = self.createControl(args);
-        var aTextInput = self.createATextInput({name: self.otherInputName});
+        var targetControl = self.createTargetControl(args.targetControlArgs);
         var controlNames = {};
         controlNames[control.name] = 1;
-        controlNames[aTextInput.name] = 1;
+        controlNames[targetControl.name] = 1;
         var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
 
         var container = self.createContainer(control);
         form.addChildWidget(container);
         document.body.appendChild(container.node);
 
-        var otherContainer = self.createContainer(aTextInput);
-        form.addChildWidget(otherContainer);
-        document.body.appendChild(otherContainer.node);
+        var targetContainer = self.createContainer(targetControl);
+        form.addChildWidget(targetContainer);
+        document.body.appendChild(targetContainer.node);
 
         Methanal.Util.nodeInserted(form);
 
@@ -602,7 +629,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
             throw e;
         } finally {
             document.body.removeChild(container.node);
-            document.body.removeChild(otherContainer.node);
+            document.body.removeChild(targetContainer.node);
         }
     },
 
@@ -612,15 +639,51 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
      * handlers send their input values to the control specified at creation.
      */
     function test_prePopulation(self) {
-        self.testControl({value: null, otherInputName: self.otherInputName},
+        self.testControl(
+            {value: null,
+             targetControlName: self.targetControlName,
+             targetControlArgs: {
+                type: Methanal.View.TextInput,
+                name: self.targetControlName,
+                value: null
+                }
+            },
             function (control) {
-                aTextInput = control.getOtherInput();
+                var targetControl = control.getTargetControl();
                 control.setValue('hello');
                 control.onKeyUp(control.inputNode);
-                self.assertIdentical(aTextInput.getValue(), 'hello');
+                self.assertIdentical(targetControl.getValue(), 'hello');
                 control.setValue('hello world');
                 control.onChange(control.inputNode);
-                self.assertIdentical(aTextInput.getValue(), 'hello world');
+                self.assertIdentical(targetControl.getValue(), 'hello world');
+            });
+    },
+    
+   
+    /**
+     * When the target control is a L{Methanal.View.FilteringTextInput},
+     * the target's filters, if any, will be applied after pre-population.
+     */
+    function test_filteringTextInputCompatibility(self) {
+        self.testControl(
+            {value: null,
+             targetControlName: self.targetControlName,
+             targetControlArgs: {
+                type: Methanal.View.FilteringTextInput,
+                name: self.targetControlName,
+                value: null,
+                expression: '[a-z]'
+                }
+            },
+            function (control) {
+                var targetControl = control.getTargetControl();
+                targetControl.addFilters([
+                    function(value) { return value.toLowerCase(); },
+                    function(value) { return value.replace(/[^a-z]/g, '*'); },
+                    ]);
+                control.setValue('Hello World.');
+                control.onChange(control.inputNode);
+                self.assertIdentical(targetControl.getValue(), 'hello*world*');
             });
     });
 
