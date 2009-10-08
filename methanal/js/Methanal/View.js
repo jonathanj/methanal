@@ -1801,8 +1801,8 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods(
     function nodeInserted(self) {
-        Methanal.View.VerifiedPasswordInput.upcall(self, 'nodeInserted');
         self._confirmPasswordNode = self.nodeById('confirmPassword');
+        Methanal.View.VerifiedPasswordInput.upcall(self, 'nodeInserted');
     },
 
 

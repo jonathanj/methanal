@@ -781,11 +781,11 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
         self.testControl({value: null},
             function (control) {
                 control._confirmPasswordNode.value = 'no match';
-                control.assertInvalidInput(control, 'match');
+                self.assertInvalidInput(control, 'match');
                 control._confirmPasswordNode.value = 'match';
-                control.assertValidInput(control, 'match');
+                self.assertValidInput(control, 'match');
                 control._confirmPasswordNode.value = '';
-                control.assertInvalidInput(control, '');
+                self.assertInvalidInput(control, '');
                 self.assertInvalidInput(control, '123');
             });
     });
