@@ -402,10 +402,10 @@ class TextInput(FormInput):
 
 class FilteringTextInput(TextInput):
     """
-    A L{TextInput} that only allows certain characters as valid input as
-    specified by the expression parameter, and that transforms the value
-    in real time for each optional filter defined on the client-side
-    widget.  See the JavaScript docstrings for more detail.
+    A L{TextInput} that allows real time filtering on the input and provides
+    customizable default validation.
+
+    See the JavaScript docstrings for more detail.
 
     @type expression: C{Unicode} or C{None}
     @ivar expression: A regular expression that specifies what characters

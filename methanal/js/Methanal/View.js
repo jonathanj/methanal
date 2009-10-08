@@ -1390,8 +1390,8 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
     /**
      * Apply each filtering function to the input's current value.
      */
-    function filter(self, node) {
-        var value = node.value;
+    function filter(self) {
+        var value = self.inputNode.value;
         for (var i = 0; i < self._filters.length; ++i) {
             value = self._filters[i](value);
         }
@@ -1400,13 +1400,13 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
 
 
     function onChange(self, node) {
-        self.filter(node);
+        self.filter();
         Methanal.View.FilteringTextInput.upcall(self, 'onChange', node);
     },
 
 
     function onKeyUp(self, node) {
-        self.filter(node);
+        self.filter();
         Methanal.View.FilteringTextInput.upcall(self, 'onKeyUp', node);
     },
     
@@ -1459,7 +1459,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingTextInput').method
             Methanal.View.PrePopulatingTextInput.upcall(self, 'onKeyUp', node);
             var targetControl = self.getTargetControl();
             targetControl.setValue(node.value);
-            targetControl.onKeyUp(targetControl.node);
+            targetControl.onKeyUp(targetControl.inputNode);
         },
        
 
@@ -1467,7 +1467,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingTextInput').method
             Methanal.View.PrePopulatingTextInput.upcall(self, 'onChange', node);
             var targetControl = self.getTargetControl();
             targetControl.setValue(node.value);
-            targetControl.onChange(targetControl.node);
+            targetControl.onChange(targetControl.inputNode);
         });
 
 
