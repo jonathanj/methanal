@@ -1825,10 +1825,10 @@ Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods
     function setStrengthCriteria(self, criteria) {
         var fns = Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA;
         for (var i = 0; i < criteria.length; ++i) {
-            var c = criteria[i];
-            if (fns[c] === undefined) {
-                c = Methanal.Util.repr(c);
-                throw new Error('Unknown strength criterion: ' + c);
+            var criterion = criteria[i];
+            if (fns[criterion] === undefined) {
+                criterion = Methanal.Util.repr(criterion);
+                throw new Error('Unknown strength criterion: ' + criterion);
             }
         }
         self._strengthCriteria = criteria;
