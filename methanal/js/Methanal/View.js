@@ -1800,6 +1800,14 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
  * Password input with a verification field and strength checking.
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.VerifiedPasswordInput.upcall(
+            self, '__init__', node, args);
+        self._minPasswordLength = args.minPasswordLength || 5;
+        self.setStrengthCriteria(args.strengthCriteria || []);
+    },
+
+
     function nodeInserted(self) {
         self._confirmPasswordNode = self.nodeById('confirmPassword');
         Methanal.View.VerifiedPasswordInput.upcall(self, 'nodeInserted');
@@ -1807,10 +1815,42 @@ Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods
 
 
     /**
+     * Set the password strength criteria.
+     *
+     * @type  criteria: C{Array} of C{String}
+     * @param criteria: An array of names, matching those found in
+     *     L{Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA}, indicating
+     *     the password strength criteria
+     */
+    function setStrengthCriteria(self, criteria) {
+        var fns = Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA;
+        for (var i = 0; i < criteria.length; ++i) {
+            var c = criteria[i];
+            if (fns[c] === undefined) {
+                c = Methanal.Util.repr(c);
+                throw new Error('Unknown strength criterion: ' + c);
+            }
+        }
+        self._strengthCriteria = criteria;
+    },
+
+
+    /**
      * Override this method to change the definition of a 'strong' password.
      */
     function passwordIsStrong(self, password) {
-        return password.length > 4;
+        if (password.length < self._minPasswordLength) {
+            return false;
+        }
+
+        var fns = Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA;
+        for (var i = 0; i < self._strengthCriteria.length; ++i) {
+            var fn = fns[self._strengthCriteria[i]];
+            if (!fn(password)) {
+                return false;
+            }
+        }
+        return true;
     },
 
 
@@ -1828,3 +1868,12 @@ Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods
             return 'Password is too weak.';
         }
     });
+
+
+
+Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA = {
+    'ALPHA':     function (value) { return /[a-zA-Z]/.test(value); },
+    'NUMERIC':   function (value) { return /[0-9]/.test(value); },
+    'MIXEDCASE': function (value) {
+        return /[a-z]/.test(value) && /[A-Z]/.test(value); },
+    'SYMBOLS':   function (value) { return /[^A-Za-z0-9\s]/.test(value); }};
