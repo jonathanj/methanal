@@ -407,10 +407,15 @@ class FilteringTextInput(TextInput):
 
     See the JavaScript docstrings for more detail.
 
-    @type expression: C{Unicode} or C{None}
+    @type expression: C{unicode}
     @ivar expression: A regular expression that specifies what characters
-        are allowed to be part of the value of the input field.
-        Examples: C{'[a-zA-z0-9]'}, C{'cat|dog'}
+        are allowed to be part of the value of the input field, or C{None}
+        for no validation
+
+        For example::
+        
+            - Allow alphanumerics: [a-zA-z0-9]
+            - Allow either the string "cat" or "dog": cat|dog
     """
     jsClass = u'Methanal.View.FilteringTextInput'
     
@@ -429,7 +434,7 @@ class PrePopulatingTextInput(TextInput):
     """
     Text input that updates another input's value with its own in real time.
 
-    @type targetControlName: C{Unicode}
+    @type targetControlName: C{unicode}
     @ivar targetControlName: The name of the input to pre-populate
     """
     jsClass = u'Methanal.View.PrePopulatingTextInput'

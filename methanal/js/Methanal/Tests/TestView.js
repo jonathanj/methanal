@@ -507,8 +507,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 
 
     /**
-     * If L{Methanal.View.FilteringTextInput.expression} is set, then input
-     * that doesn't match the expression gets marked invalid.
+     * If C{expression} is given then input that doesn't match the expression
+     * is treated as being invalid.
      */
     function test_expression(self) {
         self.testControl({value: null, expression: '[a-z0-9\-]'},
@@ -553,16 +553,18 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 
 
     /**
-     * If no filters are added to the control, the input will not be
-     * transformed, but the control will still function like a normal
-     * TextInput.
+     * If an expression is given and no filters are added to the control, input
+     * will not be transformed but validation will occur, and otherwise will
+     * act like a regular TextInput.
      */
     function test_noFilters(self) {
         self.testControl({value: null, expression: '[a-z0-9]'},
             function (control) {
-                control.setValue('INvalid input!');
+                var value = 'INvalid input!';
+                control.setValue(value);
                 control.onChange(control.inputNode);
-                self.assertIdentical(control.getValue(), 'INvalid input!');
+                self.assertIdentical(control.getValue(), value);
+                self.assertInvalidInput(control, value);
             });
     });
 

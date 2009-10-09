@@ -1348,7 +1348,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
         self._filters = [];
         var expn = args.expression;
         if (expn !== null) {
-            self._filterExpn = new RegExp('^' + expn + '+$');
+            self._filterExpn = new RegExp('^(' + expn + ')+$');
             self._extractExpn = new RegExp(expn, 'g');
         }
     },
@@ -1383,7 +1383,9 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
      *     existing array of filters attached to the control.
      */
     function addFilters(self, filters) {
-        self._filters = self._filters.concat(filters);
+        for (var i = 0; i < filters.length; ++i) {
+            self.addFilter(filters[i]);
+        }
     },
 
 
@@ -1417,14 +1419,16 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
      * more times.
      */
     function baseValidator(self, value) {
-        var rv = Methanal.View.FilteringTextInput.upcall(self, 'baseValidator',
-            value);
-        if (rv)
+        var rv = Methanal.View.FilteringTextInput.upcall(
+            self, 'baseValidator', value);
+        if (rv) {
             return rv;
+        }
 
-        if (self._filterExpn !== undefined && !self._filterExpn.test(value))
+        if (self._filterExpn !== undefined && !self._filterExpn.test(value)) {
             return 'Invalid characters: ' + value.replace(
                 self._extractExpn, '');
+        }
     });
 
 
@@ -1441,8 +1445,8 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingTextInput').methods(
         function __init__(self, node, args) {
-            Methanal.View.PrePopulatingTextInput.upcall(self, '__init__', node,
-                args);
+            Methanal.View.PrePopulatingTextInput.upcall(
+                self, '__init__', node, args);
             self._targetControlName = args.targetControlName;
         },
 
