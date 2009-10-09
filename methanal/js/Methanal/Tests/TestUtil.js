@@ -62,7 +62,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
         var expected = "\"\\r\\n\\f\\b\\t\"";
         self.assertIdentical(repr, expected);
     },
-    
+
 
     /**
      * Right justifying a string pads it with the first character of the fill
@@ -98,8 +98,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
         self.assertThrows(Error,
             function () { Methanal.Util.map(null, seq); });
     },
-    
-    
+
+
     /**
      * Find the quotient and remainder of two numbers.
      */
@@ -130,7 +130,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').meth
             self.assert(false, 'Set is not empty');
         });
     },
-    
+
 
     /**
      * L{Methanal.Util.StringSet.each} applies a function over all elements
@@ -149,7 +149,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').meth
         self.assertIdentical(called, 2);
         self.assertIdentical(values.length, 0);
     },
-    
+
 
     /**
      * L{Methanal.Util.StringSet.contains} correctly reports the presence of
@@ -233,7 +233,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
         assertTimeParsed('29/2/2008',  1204236000000);
     },
 
-    
+
     /**
      * L{Methanal.Util.Time.guess} throws L{Methanal.Util.TimeParseError} when
      * the input is not in any recognisable format, and reraises the original
@@ -385,7 +385,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
         self.assertIdentical(od.getMilliseconds(), 0);
     },
 
-    
+
     /**
      * L{Methanal.Util.Time.offset} offsets a Time by the given number of
      * milliseconds.
@@ -422,7 +422,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestThrobber').metho
         var throbber = self._createThrobber();
         self.assertIdentical(throbber._node.name, 'foo');
     },
-    
+
 
     /**
      * Starting and stopping the throbber, under normal conditions, adjusts the

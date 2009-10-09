@@ -23,7 +23,7 @@
  *     to determine visible outputs
  *
  * @type outputs: C{Array} of C{String}
- * @ivar outputs: Names of form outputs 
+ * @ivar outputs: Names of form outputs
  */
 Divmod.Class.subclass(Methanal.View, '_Handler').methods(
     function __init__(self, handlerID, cache, fn, inputs, outputs) {
@@ -722,7 +722,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         self._enableSubmit();
     },
 
-    
+
     /**
      * Disable form submission.
      */
@@ -1345,7 +1345,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
 Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
     function __init__(self, node, args) {
         Methanal.View.FilteringTextInput.upcall(self, '__init__', node, args);
-        self._filters = []; 
+        self._filters = [];
         var expn = args.expression;
         if (expn !== null) {
             self._filterExpn = new RegExp('^' + expn + '+$');
@@ -1386,7 +1386,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
         self._filters = self._filters.concat(filters);
     },
 
-    
+
     /**
      * Apply each filtering function to the input's current value.
      */
@@ -1409,13 +1409,13 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
         self.filter();
         Methanal.View.FilteringTextInput.upcall(self, 'onKeyUp', node);
     },
-    
+
 
     /**
      * If an expression was specified, this default baseValidator ensures
      * that the input's current value matches the expression exactly one or
      * more times.
-     */ 
+     */
     function baseValidator(self, value) {
         var rv = Methanal.View.FilteringTextInput.upcall(self, 'baseValidator',
             value);
@@ -1453,7 +1453,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingTextInput').method
         function getTargetControl(self) {
             return self.getForm().getControl(self._targetControlName);
         },
-       
+
 
         function onKeyUp(self, node) {
             Methanal.View.PrePopulatingTextInput.upcall(self, 'onKeyUp', node);
@@ -1461,7 +1461,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingTextInput').method
             targetControl.setValue(node.value);
             targetControl.onKeyUp(targetControl.inputNode);
         },
-       
+
 
         function onChange(self, node) {
             Methanal.View.PrePopulatingTextInput.upcall(self, 'onChange', node);
@@ -1602,7 +1602,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
     function setValue(self, value) {
         Methanal.View.SelectInput.upcall(self, 'setValue', value);
         // Most browsers just automagically change the value to that of the
-        // first option if you set the value to a nonexistent option value. 
+        // first option if you set the value to a nonexistent option value.
         if (value === null || self.inputNode.value !== value) {
             self._insertPlaceholder();
             self.inputNode.value = '';
@@ -1694,7 +1694,7 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
         return self._getSelectedValues();
     },
 
-    
+
     /**
      * Handle "onchange" DOM event.
      */

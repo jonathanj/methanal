@@ -32,8 +32,8 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestValidators, 'TestValida
         self.assertInvalid(hasLength, '');
         self.assertInvalid(hasLength, null);
     },
-    
-    
+
+
     function test_digitsOnly(self) {
         var digitsOnly = Methanal.Validators.digitsOnly;
         self.assertValid(digitsOnly, '');

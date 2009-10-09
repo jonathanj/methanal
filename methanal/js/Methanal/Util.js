@@ -314,7 +314,7 @@ Methanal.Util.repr = function repr(o) {
  * Right justify a string to a given length with padding.
  *
  * @type  s: C{String}
- * 
+ *
  * @type  width: C{Integer}
  * @param width: Justification width
  *
@@ -593,7 +593,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
         t._oneDay = true;
         return t;
     },
-    
+
 
     /**
      * Offset the current instance by some amount of time.
@@ -652,7 +652,7 @@ Methanal.Util.Time.fromTimestamp = function fromTimestamp(timestamp) {
  *     be at least 3 letters long)
  *
  * @raise Methanal.Util.TimeParseError: If no information can be gleaned from
- *     L{value} 
+ *     L{value}
  *
  * @rtype: L{Methanal.Util.Time}
  */

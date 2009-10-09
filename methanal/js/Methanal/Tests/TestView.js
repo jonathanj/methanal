@@ -64,8 +64,8 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'TestLiveForm').m
         Methanal.Util.nodeInserted(form);
         return form;
     },
-    
-    
+
+
     /**
      * Freezing and thawing the form increments and decrements the frozen
      * counter. Attempting to thaw a form without a freeze call results in
@@ -160,7 +160,7 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
             document.body.removeChild(container.node);
         }
     },
-    
+
 
     /**
      * Assert that C{value} is valid input for C{control}.
@@ -299,7 +299,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
         self.assertIdentical(control.inputNode.options.length, 2);
         self.assertOption(control.inputNode.options[0], 'v2', 'd2');
     },
-    
+
 
     /**
      * L{Methanal.View.SelectInput.append} and
@@ -312,8 +312,8 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
                 self._testAppendInsert(control);
             });
     },
-    
-    
+
+
     /**
      * L{Methanal.View.SelectInput.insert} still works even when faced with
      * a broken implementation like Internet Explorer's.
@@ -335,7 +335,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
     });
 
 
-    
+
 /**
  * Mimic Internet Explorer's broken C{HTMLSelectElement.add} behaviour.
  */
@@ -425,8 +425,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.getValue(), 'hello');
             });
     },
-    
-    
+
+
     /**
      * When C{embeddedLabel} is C{true}, L{Methanal.View.TextInput.setValue}
      * sets the node value to a string when it is not empty, otherwise it sets
@@ -449,8 +449,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.getValue(), 'hello');
             });
     },
-    
-    
+
+
     /**
      * Focussing a L{Methanal.View.TextInput} removes any label it might have
      * and removing the focus applies a label, should it need one.
@@ -468,7 +468,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.inputNode.value, 'A label');
             });
     },
-    
+
 
     /**
      * Display value-enabled L{Methanal.View.TextInput}s call
@@ -518,7 +518,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
             });
     },
 
-    
+
     /**
      * L{Methanal.View.FilteringTextInput}'s onKeyUp and onChange event
      * handlers transform the input being entered in real time according to all
@@ -550,8 +550,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertValidInput(control, 'VaL1d 1NPut!@#$');
             });
     },
-    
-   
+
+
     /**
      * If no filters are added to the control, the input will not be
      * transformed, but the control will still function like a normal
@@ -590,12 +590,12 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
         Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
         return control;
     },
-    
-   
+
+
     /**
      * Overriding testControl() in order to create the widget to be
      * pre-populated.
-     */ 
+     */
     function testControl(self, args, testingFunc) {
         if (args === undefined || args === null)
             args = {};
@@ -658,8 +658,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(targetControl.getValue(), 'hello world');
             });
     },
-    
-   
+
+
     /**
      * When the target control is a L{Methanal.View.FilteringTextInput},
      * the target's filters, if any, will be applied after pre-population.
@@ -723,8 +723,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(called, 2);
             });
     },
-    
-    
+
+
     /**
      * L{Methanal.View.DateInput.getValue} returns a timestamp in milliseconds
      * if the input node's value is a valid date, C{null} if it is blank and
@@ -743,8 +743,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.getValue(), 1230760800000);
             });
     },
-    
-    
+
+
     /**
      * L{Methanal.View.DateInput} only accepts input that is a valid date, in a
      * parseable format.
