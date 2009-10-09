@@ -153,6 +153,7 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
             testingFunc(controls);
         } finally {
             map(function (container) {
+                form.removeChildWidget(container);
                 document.body.removeChild(container.node);
             }, containers);
         }
