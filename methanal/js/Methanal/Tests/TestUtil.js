@@ -173,7 +173,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').meth
 Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
     function setUp(self) {
         self._knownTime = Methanal.Util.Time.fromDate(
-            new Date(2009, 8, 6, 1, 36, 23, 2), true);
+            new Date(2009, 8, 6, 1, 36, 23, 2));
     },
 
 
