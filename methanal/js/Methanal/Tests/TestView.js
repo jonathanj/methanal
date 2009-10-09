@@ -831,7 +831,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
     
     
     /**
-     * Changing the password strength criteria results in different 
+     * Changing the password strength criteria results in different validation
+     * criteria for the control.
      */
     function test_strengthCriteria(self) {
         // Override the default criteria of 5 or more characters.
