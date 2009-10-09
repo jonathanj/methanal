@@ -121,6 +121,45 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
 
 
     /**
+     * Perform tests on an C{Array} of controls.
+     *
+     * Once the tests have completed (successfully or not) the controls are
+     * removed from the document and forgotten about.
+     *
+     * @type  controls: C{Array} of L{Methanal.View.FormInput}
+     *
+     * @type  testingFunc: C{function} taking an C{Array} of
+     *     L{Methana.View.FormInput}
+     */
+    function testControls(self, controls, testingFunc) {
+        var map = Methanal.Util.map;
+
+        var controlNames = {};
+        map(function (control) {
+            controlNames[control.name] = 1;
+        }, controls);
+
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
+        var containers = [];
+        map(function (control) {
+            var container = self.createContainer(control);
+            form.addChildWidget(container);
+            document.body.appendChild(container.node);
+            containers.push(container);
+        }, controls);
+        Methanal.Util.nodeInserted(form);
+
+        try {
+            testingFunc(controls);
+        } finally {
+            map(function (container) {
+                document.body.removeChild(container.node);
+            }, containers);
+        }
+    },
+
+
+    /**
      * Create a new control and perform some tests on it.
      *
      * Once the tests have completed (successfully or not) the control is
@@ -134,31 +173,21 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
      *     initialised and its node inserted
      */
     function testControl(self, args, testingFunc) {
-        if (args === undefined || args === null)
-            args = {};
-        if (args.name === undefined || args.name === null)
-            args.name = 'methanalControl';
-        if (args.label === undefined || args.label === null)
-            args.label = 'a_label';
-        if (args.value === undefined || args.value === null)
-            args.value = null;
+        function defaultArg(name, value) {
+            if (args[name] === undefined || args[name] == null) {
+                args[name] = value;
+            }
+        }
+
+        args = args || {};
+        defaultArg('name', 'methanalControl');
+        defaultArg('label', 'a_label');
+        defaultArg('value', null);
 
         var control = self.createControl(args);
-        var controlNames = {};
-        controlNames[control.name] = 1;
-        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
-        var container = self.createContainer(control);
-        form.addChildWidget(container);
-        document.body.appendChild(container.node);
-        Methanal.Util.nodeInserted(form);
-
-        try {
-            testingFunc(control);
-        } catch (e) {
-            throw e;
-        } finally {
-            document.body.removeChild(container.node);
-        }
+        self.testControls([control], function (controls) {
+            testingFunc(controls[0]);
+        });
     },
 
 
@@ -583,9 +612,9 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
     /**
      * Create a target control to be pre-populated.
      */
-    function createTargetControl(self, args) {
+    function createTargetControl(self, controlType, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
-        var control = args.type(node, args);
+        var control = controlType(node, args);
         node.appendChild(document.createElement('input'));
         Methanal.Tests.TestView.makeWidgetChildNode(
             control, 'span', 'displayValue')
@@ -595,63 +624,19 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 
 
     /**
-     * Overriding testControl() in order to create the widget to be
-     * pre-populated.
-     */
-    function testControl(self, args, testingFunc) {
-        if (args === undefined || args === null)
-            args = {};
-        if (args.name === undefined || args.name === null)
-            args.name = 'methanalControl';
-        if (args.label === undefined || args.label === null)
-            args.label = 'a_label';
-        if (args.value === undefined || args.value === null)
-            args.value = null;
-
-        var control = self.createControl(args);
-        var targetControl = self.createTargetControl(args.targetControlArgs);
-        var controlNames = {};
-        controlNames[control.name] = 1;
-        controlNames[targetControl.name] = 1;
-        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
-
-        var container = self.createContainer(control);
-        form.addChildWidget(container);
-        document.body.appendChild(container.node);
-
-        var targetContainer = self.createContainer(targetControl);
-        form.addChildWidget(targetContainer);
-        document.body.appendChild(targetContainer.node);
-
-        Methanal.Util.nodeInserted(form);
-
-        try {
-            testingFunc(control);
-        } catch (e) {
-            throw e;
-        } finally {
-            document.body.removeChild(container.node);
-            document.body.removeChild(targetContainer.node);
-        }
-    },
-
-
-    /**
      * L{Methanal.View.PrePopulatingTextInput}'s onKeyUp and onChange event
      * handlers send their input values to the control specified at creation.
      */
     function test_prePopulation(self) {
-        self.testControl(
-            {value: null,
-             targetControlName: self.targetControlName,
-             targetControlArgs: {
-                type: Methanal.View.TextInput,
+        var control = self.createControl({
+            value: null,
+            targetControlName: self.targetControlName});
+        var targetControl = self.createTargetControl(
+            Methanal.View.TextInput, {
                 name: self.targetControlName,
-                value: null
-                }
-            },
-            function (control) {
-                var targetControl = control.getTargetControl();
+                value: null});
+        self.testControls([control, targetControl],
+            function (controls) {
                 control.setValue('hello');
                 control.onKeyUp(control.inputNode);
                 self.assertIdentical(targetControl.getValue(), 'hello');
@@ -667,18 +652,16 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
      * the target's filters, if any, will be applied after pre-population.
      */
     function test_filteringTextInputCompatibility(self) {
-        self.testControl(
-            {value: null,
-             targetControlName: self.targetControlName,
-             targetControlArgs: {
-                type: Methanal.View.FilteringTextInput,
+        var control = self.createControl({
+            value: null,
+            targetControlName: self.targetControlName});
+        var targetControl = self.createTargetControl(
+            Methanal.View.FilteringTextInput, {
                 name: self.targetControlName,
                 value: null,
-                expression: '[a-z]'
-                }
-            },
-            function (control) {
-                var targetControl = control.getTargetControl();
+                expression: '[a-z]'});
+        self.testControls([control, targetControl],
+            function (controls) {
                 targetControl.addFilters([
                     function(value) { return value.toLowerCase(); },
                     function(value) { return value.replace(/[^a-z]/g, '*'); },
