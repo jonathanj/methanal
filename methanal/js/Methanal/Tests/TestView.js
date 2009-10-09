@@ -169,7 +169,6 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
      * C{control.getValue} to C{control.baseValidator}.
      */
     function assertValidInput(self, control, value, msg) {
-        var oldValue = control.inputNode.value;
         control.inputNode.value = value;
         if (msg === undefined) {
             msg = (Methanal.Util.repr(value) + ' is NOT valid input for ' +
@@ -177,7 +176,6 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
         }
         self.assertIdentical(
             control.baseValidator(control.getValue()), undefined, msg);
-        control.inputNode.value = oldValue;
     },
 
 
@@ -762,20 +760,6 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
     function setUp(self) {
         self.controlType = Methanal.View.VerifiedPasswordInput;
     },
-
-
-    /**
-     * Perform some setup tasks for password validation asserting.
-     */
-    function _assertPassword(self, fn, control, password, confirmPassword) {
-        if (confirmPassword === undefined) {
-            confirmPassword = password;
-        }
-        var oldPasswordValue = control._confirmPasswordNode.value;
-        control._confirmPasswordNode.value = confirmPassword;
-        fn();
-        control._confirmPasswordNode.value = oldPasswordValue;
-    },
     
 
     /**
@@ -783,11 +767,13 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
      * input.
      */
     function assertGoodPassword(self, control, password, confirmPassword) {
-        self._assertPassword(function () {
-            self.assertValidInput(
-                control, password,
-                Methanal.Util.repr(password) + ' is NOT a good password');
-            }, control, password, confirmPassword);
+        if (confirmPassword === undefined) {
+            confirmPassword = password;
+        }
+        control._confirmPasswordNode.value = confirmPassword;
+        self.assertValidInput(
+            control, password,
+            Methanal.Util.repr(password) + ' is NOT a good password');
     },
 
 
@@ -796,11 +782,13 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
      * input.
      */
     function assertBadPassword(self, control, password, confirmPassword) {
-        self._assertPassword(function () {
-            self.assertInvalidInput(
-                control, password,
-                Methanal.Util.repr(password) + ' IS a good password');
-            }, control, password, confirmPassword);
+        if (confirmPassword === undefined) {
+            confirmPassword = password;
+        }
+        control._confirmPasswordNode.value = confirmPassword;
+        self.assertInvalidInput(
+            control, password,
+            Methanal.Util.repr(password) + ' IS a good password');
     },
 
 
