@@ -858,7 +858,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertGoodPassword(control, 'abc');
                 self.assertGoodPassword(control, '123');
 
-                self.assertThrows(Error,
+                self.assertThrows(Methanal.View.InvalidStrengthCriterion,
                     function () {
                         control.setStrengthCriteria(['DANGERWILLROBINSON']);
                     });

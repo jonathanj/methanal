@@ -1797,6 +1797,13 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
 
 
 /**
+ * An invalid password strength criterion was specified.
+ */
+Divmod.Error.subclass(Methanal.View, 'InvalidStrengthCriterion');
+
+
+
+/**
  * Password input with a verification field and strength checking.
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods(
@@ -1828,7 +1835,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods
             var criterion = criteria[i];
             if (fns[criterion] === undefined) {
                 criterion = Methanal.Util.repr(criterion);
-                throw new Error('Unknown strength criterion: ' + criterion);
+                throw Methanal.View.InvalidStrengthCriterion(criterion);
             }
         }
         self._strengthCriteria = criteria;
