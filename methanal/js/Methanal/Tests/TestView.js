@@ -761,31 +761,35 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
         self.controlType = Methanal.View.VerifiedPasswordInput;
     },
 
-    
+
     function createControl(self, args) {
         var control = Methanal.Tests.TestView.TestVerifiedPasswordInput.upcall(
             self, 'createControl', args);
-        Methanal.Tests.TestView.makeWidgetChildNode(control, 'input', 'confirmPassword');
+        Methanal.Tests.TestView.makeWidgetChildNode(
+            control, 'input', 'confirmPassword');
         return control;
     },
-    
-    
+
+
     /**
      * Validation will fail under the following conditions:
      *     1. The input and confirmPasswordNode node values don't match.
      *     2. If either of the above node values have no length (are blank).
      *     3. If the password value is not strong.  By default, 'strong' means
-     *            more than 4 characters long.
+     *        more than 4 characters long.
      */
     function test_inputValidation(self) {
         self.testControl({value: null},
             function (control) {
+                // Test condition 1
                 control._confirmPasswordNode.value = 'no match';
                 self.assertInvalidInput(control, 'match');
                 control._confirmPasswordNode.value = 'match';
                 self.assertValidInput(control, 'match');
+                // Test condition 2
                 control._confirmPasswordNode.value = '';
                 self.assertInvalidInput(control, '');
+                // Test condition 3
                 self.assertInvalidInput(control, '123');
             });
     });

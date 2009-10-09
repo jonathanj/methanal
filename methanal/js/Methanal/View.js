@@ -1820,9 +1820,11 @@ Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods
      */
     function baseValidator(self, value) {
         if (value !== self._confirmPasswordNode.value || value === null ||
-            self._confirmPasswordNode.value === null)
+            self._confirmPasswordNode.value === null) {
             return 'Passwords do not match.';
+        }
 
-        if (!self.passwordIsStrong(value))
+        if (!self.passwordIsStrong(value)) {
             return 'Password is too weak.';
+        }
     });
