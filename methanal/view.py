@@ -955,7 +955,8 @@ class AutoItemView(ItemView):
 _inputTypes = {
     text:       lambda env: TextInput,
     integer:    lambda env: IntegerInput,
-    timestamp:  lambda env: lambda **kw: DateInput(timezone=env['timezone'], **kw)}
+    timestamp:  lambda env:
+        lambda **kw: DateInput(timezone=env['timezone'], **kw)}
 
 def inputTypeFromAttribute(attr, **env):
     """

@@ -5,9 +5,11 @@
 /**
  * HTMLSelectElement mock implementation.
  */
-Divmod.MockBrowser.Element.subclass(Methanal.Tests.DOMUtil, 'MockHTMLSelectElement').methods(
+Divmod.MockBrowser.Element.subclass(
+    Methanal.Tests.DOMUtil, 'MockHTMLSelectElement').methods(
     function __init__(self) {
-        Methanal.Tests.DOMUtil.MockHTMLSelectElement.upcall(self, '__init__', 'select');
+        Methanal.Tests.DOMUtil.MockHTMLSelectElement.upcall(
+            self, '__init__', 'select');
         self.options = [];
     },
 
@@ -31,7 +33,8 @@ Divmod.MockBrowser.Element.subclass(Methanal.Tests.DOMUtil, 'MockHTMLSelectEleme
 /**
  * HTMLDocument mock implementation.
  */
-Divmod.MockBrowser.Document.subclass(Methanal.Tests.DOMUtil, 'Document').methods(
+Divmod.MockBrowser.Document.subclass(
+    Methanal.Tests.DOMUtil, 'Document').methods(
     function __init__(self) {
         self._elementTags = {};
         Methanal.Tests.DOMUtil.Document.upcall(self, '__init__');
@@ -66,6 +69,7 @@ Divmod.MockBrowser.Document.subclass(Methanal.Tests.DOMUtil, 'Document').methods
 if (document instanceof Divmod.MockBrowser.Document) {
     if (!(document instanceof Methanal.Tests.DOMUtil.Document)) {
         document = Methanal.Tests.DOMUtil.Document();
-        document.registerElementTag('select', Methanal.Tests.DOMUtil.MockHTMLSelectElement);
+        document.registerElementTag(
+            'select', Methanal.Tests.DOMUtil.MockHTMLSelectElement);
     }
 }

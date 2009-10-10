@@ -369,7 +369,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      */
     function loadedUp(self, control) {
         if (self.fullyLoaded) {
-            Divmod.msg('XXX: Control reported in after all controls were supposedly loaded!');
+            Divmod.msg(
+                'XXX: Control (' + control.name + ') reported in after all ' +
+                'controls were supposedly loaded!');
             return;
         }
 
@@ -557,7 +559,8 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             return;
         }
         self._submitNode.disabled = false;
-        Methanal.Util.removeElementClass(self._submitNode, 'methanal-submit-disabled');
+        Methanal.Util.removeElementClass(
+            self._submitNode, 'methanal-submit-disabled');
     },
 
 
@@ -571,7 +574,8 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             return;
         }
         self._submitNode.disabled = true;
-        Methanal.Util.addElementClass(self._submitNode, 'methanal-submit-disabled');
+        Methanal.Util.addElementClass(
+            self._submitNode, 'methanal-submit-disabled');
     },
 
 
@@ -1443,36 +1447,37 @@ Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
  * @type _targetControlName: C{String}
  * @ivar _targetControlName: The name of the input that will be pre-populated.
  */
-Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingTextInput').methods(
-        function __init__(self, node, args) {
-            Methanal.View.PrePopulatingTextInput.upcall(
-                self, '__init__', node, args);
-            self._targetControlName = args.targetControlName;
-        },
+Methanal.View.TextInput.subclass(
+    Methanal.View, 'PrePopulatingTextInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.PrePopulatingTextInput.upcall(
+            self, '__init__', node, args);
+        self._targetControlName = args.targetControlName;
+    },
 
 
-        /**
-         * Get the instance of the target control.
-         */
-        function getTargetControl(self) {
-            return self.getForm().getControl(self._targetControlName);
-        },
+    /**
+     * Get the instance of the target control.
+     */
+    function getTargetControl(self) {
+        return self.getForm().getControl(self._targetControlName);
+    },
 
 
-        function onKeyUp(self, node) {
-            Methanal.View.PrePopulatingTextInput.upcall(self, 'onKeyUp', node);
-            var targetControl = self.getTargetControl();
-            targetControl.setValue(node.value);
-            targetControl.onKeyUp(targetControl.inputNode);
-        },
+    function onKeyUp(self, node) {
+        Methanal.View.PrePopulatingTextInput.upcall(self, 'onKeyUp', node);
+        var targetControl = self.getTargetControl();
+        targetControl.setValue(node.value);
+        targetControl.onKeyUp(targetControl.inputNode);
+    },
 
 
-        function onChange(self, node) {
-            Methanal.View.PrePopulatingTextInput.upcall(self, 'onChange', node);
-            var targetControl = self.getTargetControl();
-            targetControl.setValue(node.value);
-            targetControl.onChange(targetControl.inputNode);
-        });
+    function onChange(self, node) {
+        Methanal.View.PrePopulatingTextInput.upcall(self, 'onChange', node);
+        var targetControl = self.getTargetControl();
+        targetControl.setValue(node.value);
+        targetControl.onChange(targetControl.inputNode);
+    });
 
 
 
@@ -1503,8 +1508,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
 
     function setValue(self, values) {
         values = Methanal.Util.StringSet(values);
-        for (var name in self.inputNode)
+        for (var name in self.inputNode) {
             self.inputNode[name].checked = values.contains(name);
+        }
     },
 
 
@@ -1706,7 +1712,8 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
         var values = self._getSelectedValues();
         var selnode = self.nodeById('selection');
         if (values !== null) {
-            Methanal.Util.replaceNodeText(selnode, 'Selected ' + values.length.toString() + ' item(s).');
+            Methanal.Util.replaceNodeText(
+                selnode, 'Selected ' + values.length.toString() + ' item(s).');
             selnode.style.display = 'block';
         } else {
             selnode.style.display = 'none';
@@ -1942,7 +1949,8 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
 
 
     function baseValidator(self, value) {
-        var rv = Methanal.View.PercentInput.upcall(self, 'baseValidator', value);
+        var rv = Methanal.View.PercentInput.upcall(
+            self, 'baseValidator', value);
         if (rv !== undefined) {
             return rv;
         } else if (value < 0 || value > 1) {
@@ -1962,7 +1970,8 @@ Divmod.Error.subclass(Methanal.View, 'InvalidStrengthCriterion');
 /**
  * Password input with a verification field and strength checking.
  */
-Methanal.View.TextInput.subclass(Methanal.View, 'VerifiedPasswordInput').methods(
+Methanal.View.TextInput.subclass(
+    Methanal.View, 'VerifiedPasswordInput').methods(
     function __init__(self, node, args) {
         Methanal.View.VerifiedPasswordInput.upcall(
             self, '__init__', node, args);

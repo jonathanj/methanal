@@ -121,6 +121,7 @@ class GroupedSelectInputTests(unittest.TestCase):
             for group, subvalues in values:
                 self.assertIn('<optgroup label="%s">' % (group,), result)
                 for value, desc in subvalues:
-                    self.assertIn('<option value="%s">%s</option>' % (value, desc), result)
+                    elem = '<option value="%s">%s</option>' % (value, desc)
+                    self.assertIn(elem, result)
 
         return renderLivePage(page).addCallback(verifyRendering)

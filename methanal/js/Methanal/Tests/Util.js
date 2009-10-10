@@ -48,7 +48,7 @@ Divmod.Class.subclass(Methanal.Tests.Util, 'MockWidget').methods(
     function nodeById(self, id) {
         var node = self._idNodes[id];
         if (!node) {
-            throw Divmod.Runtime.NodeNotFound('Node with id ' + id + ' not found');
+            throw Divmod.Runtime.NodeNotFound('Node not found');
         }
         return node;
     });

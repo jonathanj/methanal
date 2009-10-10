@@ -7,8 +7,8 @@
 
 Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
     /**
-     * L{Methanal.Util.strToInt} converts a base-10 integer value, represented as a
-     * C{String}, to an C{Integer}.
+     * L{Methanal.Util.strToInt} converts a base-10 integer value, represented
+     * as a C{String}, to an C{Integer}.
      */
     function test_strToInt(self) {
         var CASES = [
@@ -24,7 +24,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
             var input = CASES[i][0];
             var expected = CASES[i][1];
             var actual = Methanal.Util.strToInt(input);
-            self.assert(expected === actual, 'input = ' + input + ' :: expected = ' + expected + ' :: actual = ' + actual);
+            self.assert(expected === actual, 'input = ' + input +
+                ' :: expected = ' + expected + ' :: actual = ' + actual);
         }
     },
 
@@ -120,7 +121,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
 
 
 
-Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').methods(
+Divmod.UnitTest.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestStringSet').methods(
     /**
      * Supplying no parameters creates an empty set.
      */
@@ -421,7 +423,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
 /**
  * Tests for L{Methanal.Util.Throbber}.
  */
-Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestThrobber').methods(
+Divmod.UnitTest.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestThrobber').methods(
     function _createThrobber(self, toggleDisplay) {
         var idNodes = {
             'throbber': Methanal.Tests.Util.MockNode('foo')};
@@ -472,7 +475,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestThrobber').metho
 /**
  * Tests for L{Methanal.Util.DOMBuilder}.
  */
-Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestDOMBuilder').methods(
+Divmod.UnitTest.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestDOMBuilder').methods(
     /**
      * Helper function for building a node using C{DOMBuilder}.
      */

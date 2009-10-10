@@ -5,7 +5,8 @@
 
 
 
-Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestValidators, 'TestValidators').methods(
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestValidators, 'TestValidators').methods(
     /**
      * Assert that C{value} is a valid input for C{validator}.
      */
@@ -50,10 +51,10 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestValidators, 'TestValida
         self.assertValid(validEmail, 'foo@bar.com');
         self.assertValid(validEmail, 'f0o.baz-qu_ux@b4r.com');
         self.assertValid(validEmail, 'f0o.baz-qu_ux@b4r.co.za');
+        self.assertValid(validEmail, 'foo+baz@bar.com');
         self.assertInvalid(validEmail, 'hello');
         self.assertInvalid(validEmail, 'hello@');
         self.assertInvalid(validEmail, 'hello@world');
-        self.assertInvalid(validEmail, 'foo+baz@bar.com');
         self.assertInvalid(validEmail, '@bar.com');
         self.assertInvalid(validEmail, '@bar.comhaha');
     },

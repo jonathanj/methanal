@@ -83,8 +83,9 @@ Methanal.Util.removeElementClass = function removeElementClass(node, cls) {
  * @type node: DOM node
  */
 Methanal.Util.removeNodeContent = function removeNodeContent(node) {
-    while (node.lastChild)
+    while (node.lastChild) {
         node.removeChild(node.lastChild);
+    }
 };
 
 
@@ -98,8 +99,9 @@ Methanal.Util.removeNodeContent = function removeNodeContent(node) {
  */
 Methanal.Util.replaceNodeContent = function replaceNodeContent(node, children) {
     Methanal.Util.removeNodeContent(node);
-    for (var i = 0; i < children.length; ++i)
+    for (var i = 0; i < children.length; ++i) {
         node.appendChild(children[i]);
+    }
 };
 
 
@@ -128,15 +130,13 @@ Methanal.Util.replaceNodeText = function replaceNodeText(node, text) {
  * @rtype: C{Integer}
  */
 Methanal.Util.strToInt = function strToInt(s) {
-    if (typeof s !== 'string')
+    if (typeof s !== 'string') {
         return undefined;
-
-    if (s.indexOf('x') !== -1)
+    } else if (s.indexOf('x') !== -1) {
         return undefined;
-
-    if (isNaN(s))
+    } else if (isNaN(s)) {
         return undefined;
-
+    }
     return parseInt(s, 10);
 };
 
@@ -197,9 +197,11 @@ Methanal.Util.cycle = function cycle(/*...*/) {
  * @return: Index of the value in the array, or C{-1} if not found
  */
 Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
-    for (var i = 0; i < a.length; ++i)
-        if (a[i] === v)
+    for (var i = 0; i < a.length; ++i) {
+        if (a[i] === v) {
             return i;
+        }
+    }
     return -1;
 };
 
@@ -217,11 +219,13 @@ Methanal.Util.detachWidget = function detachWidget(widget) {
  * Call a widget's (and all child widgets') C{nodeInserted} method.
  */
 Methanal.Util.nodeInserted = function nodeInserted(widget) {
-    if (widget.nodeInserted !== undefined)
+    if (widget.nodeInserted !== undefined) {
         widget.nodeInserted();
+    }
 
-    for (var i = 0; i < widget.childWidgets.length; ++i)
+    for (var i = 0; i < widget.childWidgets.length; ++i) {
         Methanal.Util.nodeInserted(widget.childWidgets[i]);
+    }
 };
 
 
@@ -293,15 +297,16 @@ Methanal.Util._reprString = function _reprString(o) {
  * @rtype: C{String}
  */
 Methanal.Util.repr = function repr(o) {
-    if (o === null)
+    if (o === null) {
         return 'null';
-    if (typeof(o) == 'string') {
+    } else if (typeof(o) == 'string') {
         return Methanal.Util._reprString(o);
     } else if (typeof(o) == 'undefined') {
         return 'undefined';
     } else if (typeof(o) == 'function') {
-        if (o.name)
+        if (o.name) {
             return '<function ' + o.name + '>';
+        }
     } else if (o instanceof Array) {
         return o.toSource();
     }
@@ -389,8 +394,9 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      */
     function start(self) {
         self._node.style.visibility = 'visible';
-        if (self.toggleDisplay !== undefined)
+        if (self.toggleDisplay !== undefined) {
             self._node.style.display = self.toggleDisplay;
+        }
     },
 
 
@@ -399,8 +405,9 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      */
     function stop(self) {
         self._node.style.visibility = 'hidden';
-        if (self.toggleDisplay !== undefined)
+        if (self.toggleDisplay !== undefined) {
             self._node.style.display = 'none';
+        }
     });
 
 
@@ -418,8 +425,9 @@ Divmod.Class.subclass(Methanal.Util, 'StringSet').methods(
     function __init__(self, seq) {
         var s = {};
         if (seq) {
-            for (var i = 0; i < seq.length; ++i)
+            for (var i = 0; i < seq.length; ++i) {
                 s[seq[i]] = true;
+            }
         }
         self._set = s;
     },
@@ -429,8 +437,9 @@ Divmod.Class.subclass(Methanal.Util, 'StringSet').methods(
      * Apply a function over each element of the set.
      */
     function each(self, fn) {
-        for (var name in self._set)
+        for (var name in self._set) {
             fn(name);
+        }
     },
 
 
@@ -655,7 +664,8 @@ Methanal.Util.Time.fromDate = function fromDate(dateObj) {
  *
  * @rtype: L{Methanal.Util.Time}
  */
-Methanal.Util.Time.fromTimestamp = function fromTimestamp(timestamp, timezoneOffset) {
+Methanal.Util.Time.fromTimestamp =
+function fromTimestamp(timestamp, timezoneOffset) {
     var t = Methanal.Util.Time();
     t._timestamp = timestamp;
     if (timezoneOffset) {
@@ -700,8 +710,9 @@ Methanal.Util.Time.fromRelative = function fromRelative(value, _today) {
         for (var i = 0; i < dayNames.length; ++i) {
             if (dayNames[i].toLowerCase().indexOf(value) == 0) {
                 var todayDay = today.asDate().getDay();
-                if (i <= todayDay)
+                if (i <= todayDay) {
                     i += 7;
+                }
                 return today.offset(
                     Methanal.Util.TimeDelta({'days': i - todayDay}));
             }
@@ -718,21 +729,24 @@ Methanal.Util.Time.fromRelative = function fromRelative(value, _today) {
  * Determine whether C{year} is a leap year.
  */
 Methanal.Util.Time.isLeapYear = function isLeapYear(year) {
-    if (year % 100 == 0)
+    if (year % 100 == 0) {
         return (year % 400 == 0);
+    }
     return (year % 4 == 0);
 };
 
 
 
-Methanal.Util.Time._monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+Methanal.Util.Time._monthLengths = [
+    31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 /**
  * Get the number of days for C{month} in C{year}.
  */
 Methanal.Util.Time.getMonthLength = function getMonthLength(year, month) {
-    if (month == 1 && Methanal.Util.Time.isLeapYear(year))
+    if (month == 1 && Methanal.Util.Time.isLeapYear(year)) {
         return 29;
+    }
     return Methanal.Util.Time._monthLengths[month];
 };
 
@@ -756,23 +770,27 @@ Methanal.Util.Time.guess = function guess(value) {
         var delims = ['-', '/', '.'];
         for (var i = 0; i < delims.length; ++i) {
             var parts = value.split(delims[i]);
-            if (parts.length == 3)
+            if (parts.length == 3) {
                 return parts;
+            }
         }
         return null;
     };
 
     function _validDate(year, month, day) {
-        if (year > 0 && month >= 0 && month < 12)
-            return day > 0 && day <= Methanal.Util.Time.getMonthLength(year, month);
+        if (year > 0 && month >= 0 && month < 12) {
+            var monthLength = Methanal.Util.Time.getMonthLength(year, month);
+            return day > 0 && day <= monthLength;
+        }
         return false;
     };
 
     try {
         return Methanal.Util.Time.fromRelative(value);
     } catch (e) {
-        if (!(e instanceof Methanal.Util.TimeParseError))
+        if (!(e instanceof Methanal.Util.TimeParseError)) {
             throw e;
+        }
     }
 
     var parts = _splitDate();

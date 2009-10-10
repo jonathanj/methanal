@@ -3,6 +3,7 @@ from twisted.trial.unittest import TestCase
 from methanal.util import collectMethods, getArgsDict, Porthole
 
 
+
 class MethodCollectorTests(TestCase):
     def test_simpleUsage(self):
         class A(object):
@@ -15,6 +16,7 @@ class MethodCollectorTests(TestCase):
 
         results = [m() for m in collectMethods(B(), 'foo')]
         self.assertEquals(results, ['B', 'A'])
+
 
     def test_missingMethod(self):
         class A(object):
@@ -30,6 +32,7 @@ class MethodCollectorTests(TestCase):
 
         results = [m() for m in collectMethods(C(), 'foo')]
         self.assertEquals(results, ['C', 'A'])
+
 
     def test_noneAttribute(self):
         """
@@ -50,6 +53,7 @@ class MethodCollectorTests(TestCase):
 
         self.assertRaises(TypeError, results2[0])
 
+
     def test_argumentCollection(self):
         class A(object):
             """
@@ -68,6 +72,7 @@ class MethodCollectorTests(TestCase):
         self.assertEquals(getArgsDict(A()), {u'foo': 1})
         self.assertEquals(getArgsDict(B()), {u'foo': 1, u'bar': 2})
 
+
     def test_argumentCollision(self):
         class A(object):
             """
@@ -85,6 +90,7 @@ class MethodCollectorTests(TestCase):
 
         self.assertRaises(ValueError, getArgsDict, B())
 
+
     def test_argumentNameType(self):
         class A(object):
             """
@@ -94,6 +100,7 @@ class MethodCollectorTests(TestCase):
                 return {'foo': 1}
 
         self.assertRaises(TypeError, getArgsDict, A())
+
 
 
 class PortholeTests(TestCase):
@@ -106,12 +113,14 @@ class PortholeTests(TestCase):
         """
         self.emitter = Porthole()
 
+
     def test_noObservers(self):
         """
         Emitting an event when there are no observers does nothing.
         """
         self.emitter.emitEvent(u'anEvent')
         self.assertEqual(self.emitter.observers, [])
+
 
     def test_addObserver(self):
         """
@@ -122,6 +131,7 @@ class PortholeTests(TestCase):
         self.assertEqual(self.emitter.observers, [None])
         r()
         self.assertEqual(self.emitter.observers, [])
+
 
     def test_twoObservers(self):
         """
@@ -137,6 +147,7 @@ class PortholeTests(TestCase):
         self.emitter.emitEvent(u'anEvent')
         self.assertEqual(self.observed, 2)
         self.assertEqual(len(self.emitter.observers), 2)
+
 
     def test_reentrancy(self):
         """
