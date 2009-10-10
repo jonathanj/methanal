@@ -23,7 +23,7 @@
  *     to determine visible outputs
  *
  * @type outputs: C{Array} of C{String}
- * @ivar outputs: Names of form outputs 
+ * @ivar outputs: Names of form outputs
  */
 Divmod.Class.subclass(Methanal.View, '_Handler').methods(
     function __init__(self, handlerID, cache, fn, inputs, outputs) {
@@ -722,7 +722,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         self._enableSubmit();
     },
 
-    
+
     /**
      * Disable form submission.
      */
@@ -1327,6 +1327,156 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
 
 
 /**
+ * Text input that filters input in real time.
+ *
+ * @type _filters: C{Array} of C{Function}
+ * @ivar _filters: An array of "filters", which are simply JavaScript functions
+ *     that accept and return a C{String}, and are used to transform the
+ *     control's input in real time.
+ *
+ * @type _filterExpn: C{RegExp}
+ * @ivar _filterExpn: The regular expression that the input must match in order
+ *     to validate
+ *
+ * @type _extractExpn: C{RegExp}
+ * @ivar _extractExpn: A regular expression used to extract the valid
+ *     characters out of the input for error reporting
+ */
+Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.FilteringTextInput.upcall(self, '__init__', node, args);
+        self._filters = [];
+        var expn = args.expression;
+        if (expn !== null) {
+            self._filterExpn = new RegExp('^(' + expn + ')+$');
+            self._extractExpn = new RegExp(expn, 'g');
+        }
+    },
+
+
+    /**
+     * Add a real time "filter" to the form input.
+     *
+     * A "filter" is a JavaScript function that accepts a C{String} and
+     * returns a modified version of that C{String}.
+     *
+     * Use L{addFilters} to add more than one "filter" at a time.
+     *
+     * @type filter: C{Function}
+     * @param filter: Each filter is added to the list of existing filters
+     *     attached to the control.  Each filter will be applied in the order
+     *     it was attached.
+     */
+    function addFilter(self, filter) {
+        self._filters.push(filter);
+    },
+
+
+    /**
+     * Add multiple "filters" at once.
+     *
+     * A "filter" is a JavaScript function that accepts a C{String} and
+     * returns a modified version of that C{String}.
+     *
+     * @type filters: C{Array} of C{Function}
+     * @param filters: The array of "filters" will be concatenated to the
+     *     existing array of filters attached to the control.
+     */
+    function addFilters(self, filters) {
+        for (var i = 0; i < filters.length; ++i) {
+            self.addFilter(filters[i]);
+        }
+    },
+
+
+    /**
+     * Apply each filtering function to the input's current value.
+     */
+    function filter(self) {
+        var value = self.inputNode.value;
+        for (var i = 0; i < self._filters.length; ++i) {
+            value = self._filters[i](value);
+        }
+        self.setValue(value);
+    },
+
+
+    function onChange(self, node) {
+        self.filter();
+        Methanal.View.FilteringTextInput.upcall(self, 'onChange', node);
+    },
+
+
+    function onKeyUp(self, node) {
+        self.filter();
+        Methanal.View.FilteringTextInput.upcall(self, 'onKeyUp', node);
+    },
+
+
+    /**
+     * If an expression was specified, this default baseValidator ensures
+     * that the input's current value matches the expression exactly one or
+     * more times.
+     */
+    function baseValidator(self, value) {
+        var rv = Methanal.View.FilteringTextInput.upcall(
+            self, 'baseValidator', value);
+        if (rv) {
+            return rv;
+        }
+
+        if (self._filterExpn !== undefined && !self._filterExpn.test(value)) {
+            return 'Invalid characters: ' + value.replace(
+                self._extractExpn, '');
+        }
+    });
+
+
+
+/**
+ * Text input that pre-populates another control with its own value on
+ * the "onkeyup" and "onchange" DOM events.
+ *
+ * When used to pre-populate a FilteringTextInput, the value
+ * will be transformed according to any filters defined in that input.
+ *
+ * @type _targetControlName: C{String}
+ * @ivar _targetControlName: The name of the input that will be pre-populated.
+ */
+Methanal.View.TextInput.subclass(Methanal.View, 'PrePopulatingTextInput').methods(
+        function __init__(self, node, args) {
+            Methanal.View.PrePopulatingTextInput.upcall(
+                self, '__init__', node, args);
+            self._targetControlName = args.targetControlName;
+        },
+
+
+        /**
+         * Get the instance of the target control.
+         */
+        function getTargetControl(self) {
+            return self.getForm().getControl(self._targetControlName);
+        },
+
+
+        function onKeyUp(self, node) {
+            Methanal.View.PrePopulatingTextInput.upcall(self, 'onKeyUp', node);
+            var targetControl = self.getTargetControl();
+            targetControl.setValue(node.value);
+            targetControl.onKeyUp(targetControl.inputNode);
+        },
+
+
+        function onChange(self, node) {
+            Methanal.View.PrePopulatingTextInput.upcall(self, 'onChange', node);
+            var targetControl = self.getTargetControl();
+            targetControl.setValue(node.value);
+            targetControl.onChange(targetControl.inputNode);
+        });
+
+
+
+/**
  * Checkbox input.
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
@@ -1456,7 +1606,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
     function setValue(self, value) {
         Methanal.View.SelectInput.upcall(self, 'setValue', value);
         // Most browsers just automagically change the value to that of the
-        // first option if you set the value to a nonexistent option value. 
+        // first option if you set the value to a nonexistent option value.
         if (value === null || self.inputNode.value !== value) {
             self._insertPlaceholder();
             self.inputNode.value = '';
@@ -1548,7 +1698,7 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
         return self._getSelectedValues();
     },
 
-    
+
     /**
      * Handle "onchange" DOM event.
      */

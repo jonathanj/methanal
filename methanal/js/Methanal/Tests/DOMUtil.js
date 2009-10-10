@@ -10,7 +10,7 @@ Divmod.MockBrowser.Element.subclass(Methanal.Tests.DOMUtil, 'MockHTMLSelectEleme
         Methanal.Tests.DOMUtil.MockHTMLSelectElement.upcall(self, '__init__', 'select');
         self.options = [];
     },
-    
+
 
     /**
      * Add a new element to the collection of OPTION elements for this SELECT.

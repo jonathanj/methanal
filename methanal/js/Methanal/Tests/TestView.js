@@ -64,8 +64,8 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'TestLiveForm').m
         Methanal.Util.nodeInserted(form);
         return form;
     },
-    
-    
+
+
     /**
      * Freezing and thawing the form increments and decrements the frozen
      * counter. Attempting to thaw a form without a freeze call results in
@@ -121,6 +121,46 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
 
 
     /**
+     * Perform tests on an C{Array} of controls.
+     *
+     * Once the tests have completed (successfully or not) the controls are
+     * removed from the document and forgotten about.
+     *
+     * @type  controls: C{Array} of L{Methanal.View.FormInput}
+     *
+     * @type  testingFunc: C{function} taking an C{Array} of
+     *     L{Methana.View.FormInput}
+     */
+    function testControls(self, controls, testingFunc) {
+        var map = Methanal.Util.map;
+
+        var controlNames = {};
+        map(function (control) {
+            controlNames[control.name] = 1;
+        }, controls);
+
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
+        var containers = [];
+        map(function (control) {
+            var container = self.createContainer(control);
+            form.addChildWidget(container);
+            document.body.appendChild(container.node);
+            containers.push(container);
+        }, controls);
+        Methanal.Util.nodeInserted(form);
+
+        try {
+            testingFunc(controls);
+        } finally {
+            map(function (container) {
+                form.removeChildWidget(container);
+                document.body.removeChild(container.node);
+            }, containers);
+        }
+    },
+
+
+    /**
      * Create a new control and perform some tests on it.
      *
      * Once the tests have completed (successfully or not) the control is
@@ -134,33 +174,23 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
      *     initialised and its node inserted
      */
     function testControl(self, args, testingFunc) {
-        if (args === undefined || args === null)
-            args = {};
-        if (args.name === undefined || args.name === null)
-            args.name = 'methanalControl';
-        if (args.label === undefined || args.label === null)
-            args.label = 'a_label';
-        if (args.value === undefined || args.value === null)
-            args.value = null;
+        function defaultArg(name, value) {
+            if (args[name] === undefined || args[name] == null) {
+                args[name] = value;
+            }
+        }
+
+        args = args || {};
+        defaultArg('name', 'methanalControl');
+        defaultArg('label', 'a_label');
+        defaultArg('value', null);
 
         var control = self.createControl(args);
-        var controlNames = {};
-        controlNames[control.name] = 1;
-        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
-        var container = self.createContainer(control);
-        form.addChildWidget(container);
-        document.body.appendChild(container.node);
-        Methanal.Util.nodeInserted(form);
-
-        try {
-            testingFunc(control);
-        } catch (e) {
-            throw e;
-        } finally {
-            document.body.removeChild(container.node);
-        }
+        self.testControls([control], function (controls) {
+            testingFunc(controls[0]);
+        });
     },
-    
+
 
     /**
      * Assert that C{value} is valid input for C{control}.
@@ -299,7 +329,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
         self.assertIdentical(control.inputNode.options.length, 2);
         self.assertOption(control.inputNode.options[0], 'v2', 'd2');
     },
-    
+
 
     /**
      * L{Methanal.View.SelectInput.append} and
@@ -312,8 +342,8 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
                 self._testAppendInsert(control);
             });
     },
-    
-    
+
+
     /**
      * L{Methanal.View.SelectInput.insert} still works even when faced with
      * a broken implementation like Internet Explorer's.
@@ -335,7 +365,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
     });
 
 
-    
+
 /**
  * Mimic Internet Explorer's broken C{HTMLSelectElement.add} behaviour.
  */
@@ -425,8 +455,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.getValue(), 'hello');
             });
     },
-    
-    
+
+
     /**
      * When C{embeddedLabel} is C{true}, L{Methanal.View.TextInput.setValue}
      * sets the node value to a string when it is not empty, otherwise it sets
@@ -449,8 +479,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.getValue(), 'hello');
             });
     },
-    
-    
+
+
     /**
      * Focussing a L{Methanal.View.TextInput} removes any label it might have
      * and removing the focus applies a label, should it need one.
@@ -468,7 +498,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.inputNode.value, 'A label');
             });
     },
-    
+
 
     /**
      * Display value-enabled L{Methanal.View.TextInput}s call
@@ -492,6 +522,154 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(called, 1);
                 control.onKeyUp(control.inputNode);
                 self.assertIdentical(called, 2);
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.FilteringTextInput}
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestFilteringTextInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.FilteringTextInput;
+    },
+
+
+    /**
+     * If C{expression} is given then input that doesn't match the expression
+     * is treated as being invalid.
+     */
+    function test_expression(self) {
+        self.testControl({value: null, expression: '[a-z0-9\-]'},
+            function (control) {
+                self.assertValidInput(control, 'valid-input');
+                self.assertInvalidInput(control, 'INvalid input!');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.FilteringTextInput}'s onKeyUp and onChange event
+     * handlers transform the input being entered in real time according to all
+     * filtration functions specified in the control's filters attribute.
+     */
+    function test_filters(self) {
+        self.testControl({value: null, expression: '[a-z0-9]'},
+            function (control) {
+                control.addFilters([
+                    function(value) { return value.toLowerCase(); },
+                    function(value) { return value.replace(/[^a-z0-9]/g, ''); },
+                    ]);
+                control.setValue('A+');
+                control.onKeyUp(control.inputNode);
+                self.assertIdentical(control.getValue(), 'a');
+                control.setValue('ValId InpUt!');
+                control.onChange(control.inputNode);
+                self.assertIdentical(control.getValue(), 'validinput');
+            });
+    },
+
+
+    /**
+     * When no expression is given, the control will validate any text input.
+     */
+    function test_noExpression(self) {
+        self.testControl({value: null, expression: null},
+            function (control) {
+                self.assertValidInput(control, 'VaL1d 1NPut!@#$');
+            });
+    },
+
+
+    /**
+     * If an expression is given and no filters are added to the control, input
+     * will not be transformed but validation will occur, and otherwise will
+     * act like a regular TextInput.
+     */
+    function test_noFilters(self) {
+        self.testControl({value: null, expression: '[a-z0-9]'},
+            function (control) {
+                var value = 'INvalid input!';
+                control.setValue(value);
+                control.onChange(control.inputNode);
+                self.assertIdentical(control.getValue(), value);
+                self.assertInvalidInput(control, value);
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.PrePopulatingTextInput}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestPrePopulatingTextInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.PrePopulatingTextInput;
+        self.targetControlName = 'targetControl';
+    },
+
+
+    /**
+     * Create a target control to be pre-populated.
+     */
+    function createTargetControl(self, controlType, args) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var control = controlType(node, args);
+        node.appendChild(document.createElement('input'));
+        Methanal.Tests.TestView.makeWidgetChildNode(
+            control, 'span', 'displayValue')
+        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
+        return control;
+    },
+
+
+    /**
+     * L{Methanal.View.PrePopulatingTextInput}'s onKeyUp and onChange event
+     * handlers send their input values to the control specified at creation.
+     */
+    function test_prePopulation(self) {
+        var control = self.createControl({
+            value: null,
+            targetControlName: self.targetControlName});
+        var targetControl = self.createTargetControl(
+            Methanal.View.TextInput, {
+                name: self.targetControlName,
+                value: null});
+        self.testControls([control, targetControl],
+            function (controls) {
+                control.setValue('hello');
+                control.onKeyUp(control.inputNode);
+                self.assertIdentical(targetControl.getValue(), 'hello');
+                control.setValue('hello world');
+                control.onChange(control.inputNode);
+                self.assertIdentical(targetControl.getValue(), 'hello world');
+            });
+    },
+
+
+    /**
+     * When the target control is a L{Methanal.View.FilteringTextInput},
+     * the target's filters, if any, will be applied after pre-population.
+     */
+    function test_filteringTextInputCompatibility(self) {
+        var control = self.createControl({
+            value: null,
+            targetControlName: self.targetControlName});
+        var targetControl = self.createTargetControl(
+            Methanal.View.FilteringTextInput, {
+                name: self.targetControlName,
+                value: null,
+                expression: '[a-z]'});
+        self.testControls([control, targetControl],
+            function (controls) {
+                targetControl.addFilters([
+                    function(value) { return value.toLowerCase(); },
+                    function(value) { return value.replace(/[^a-z]/g, '*'); },
+                    ]);
+                control.setValue('Hello World.');
+                control.onChange(control.inputNode);
+                self.assertIdentical(targetControl.getValue(), 'hello*world*');
             });
     });
 
@@ -531,8 +709,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(called, 2);
             });
     },
-    
-    
+
+
     /**
      * L{Methanal.View.DateInput.getValue} returns a timestamp in milliseconds
      * if the input node's value is a valid date, C{null} if it is blank and
@@ -551,8 +729,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.getValue(), 1230768000000);
             });
     },
-    
-    
+
+
     /**
      * L{Methanal.View.DateInput} only accepts input that is a valid date, in a
      * parseable format.

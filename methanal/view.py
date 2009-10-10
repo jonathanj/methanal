@@ -400,6 +400,56 @@ class TextInput(FormInput):
 
 
 
+class FilteringTextInput(TextInput):
+    """
+    A L{TextInput} that allows real time filtering on the input and provides
+    customizable default validation.
+
+    See the JavaScript docstrings for more detail.
+
+    @type expression: C{unicode}
+    @ivar expression: A regular expression that specifies what characters
+        are allowed to be part of the value of the input field, or C{None}
+        for no validation
+
+        For example::
+        
+            - Allow alphanumerics: [a-zA-z0-9]
+            - Allow either the string "cat" or "dog": cat|dog
+    """
+    jsClass = u'Methanal.View.FilteringTextInput'
+    
+    
+    def __init__(self, expression=None, **kw):
+        super(FilteringTextInput, self).__init__(**kw)
+        self.expression = expression
+
+
+    def getArgs(self):
+        return {u'expression': self.expression}
+
+
+
+class PrePopulatingTextInput(TextInput):
+    """
+    Text input that updates another input's value with its own in real time.
+
+    @type targetControlName: C{unicode}
+    @ivar targetControlName: The name of the input to pre-populate
+    """
+    jsClass = u'Methanal.View.PrePopulatingTextInput'
+
+
+    def __init__(self, targetControlName, **kw):
+        super(PrePopulatingInput, self).__init__(**kw)
+        self.targetControlName = targetControlName
+
+
+    def getArgs(self):
+        return {u'targetControlName': self.targetControlName}
+
+
+
 class DateInput(TextInput):
     """
     Textual date input.

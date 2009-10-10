@@ -551,7 +551,7 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'SimpleLookupForm').methods(
     /**
      * Set the result values.
      *
-     * @type  values: C{Array} of C{[String, object]} 
+     * @type  values: C{Array} of C{[String, object]}
      * @param values: Sequence of C{[value, description]} results
      */
     function setOptions(self, values) {
