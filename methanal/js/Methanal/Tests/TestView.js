@@ -525,8 +525,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(called, 0);
                 control.setValue('2009-01-01');
                 self.assertIdentical(called, 1);
-                self.assertIdentical(displayValue,
-                    Methanal.Util.Time.guess('2009-01-01').asHumanly());
+                var t = Methanal.Util.Time.fromDate(new Date(2009, 0, 1));
+                self.assertIdentical(displayValue, t.oneDay().asHumanly());
                 control.onKeyUp(control.inputNode);
                 self.assertIdentical(called, 2);
             });
@@ -548,7 +548,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 control.setValue('NOTAVALIDDATE');
                 self.assertIdentical(control.getValue(), undefined);
                 control.setValue('2009-01-01');
-                self.assertIdentical(control.getValue(), 1230760800000);
+                self.assertIdentical(control.getValue(), 1230768000000);
             });
     },
     
