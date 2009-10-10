@@ -561,6 +561,38 @@ class PercentInput(DecimalInput):
 
 
 
+class VerifiedPasswordInput(TextInput):
+    """
+    Password input with verification and strength checking.
+
+    @type minPasswordLength: C{int}
+    @ivar minPasswordLength: Minimum acceptable password length, or C{None}
+        to use the default client-side value
+
+    @type strengthCriteria: C{list} of C{unicode}
+    @ivar strengthCriteria: A list of criteria names for password strength
+        testing, or C{None} for no additional strength criteria. See
+        L{Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA} in the
+        Javascript source for possible values
+    """
+    fragmentName = 'methanal-verified-password-input'
+    jsClass = u'Methanal.View.VerifiedPasswordInput'
+
+
+    def __init__(self, minPasswordLength=None, strengthCriteria=None, **kw):
+        super(VerifiedPasswordInput, self).__init__(**kw)
+        self.minPasswordLength = minPasswordLength
+        if strengthCriteria is None:
+            strengthCriteria = []
+        self.strengthCriteria = strengthCriteria
+
+
+    def getArgs(self):
+        return {u'minPasswordLength': self.minPasswordLength,
+                u'strengthCriteria':  self.strengthCriteria}
+
+
+
 class ChoiceInput(FormInput):
     """
     Abstract input with multiple options.

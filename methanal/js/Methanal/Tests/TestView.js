@@ -198,14 +198,14 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
      * Set the input node's value to C{value} and passes the result of
      * C{control.getValue} to C{control.baseValidator}.
      */
-    function assertValidInput(self, control, value) {
-        var oldValue = control.inputNode.value;
+    function assertValidInput(self, control, value, msg) {
         control.inputNode.value = value;
-        var msg = (Methanal.Util.repr(value) + ' is NOT valid input for ' +
-            Methanal.Util.repr(control));
+        if (msg === undefined) {
+            msg = (Methanal.Util.repr(value) + ' is NOT valid input for ' +
+                Methanal.Util.repr(control));
+        }
         self.assertIdentical(
             control.baseValidator(control.getValue()), undefined, msg);
-        control.inputNode.value = oldValue;
     },
 
 
@@ -926,6 +926,120 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertInvalidInput(control, '101');
                 self.assertInvalidInput(control, '101%');
                 self.assertInvalidInput(control, '-1');
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.VerifiedPasswordInput}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestVerifiedPasswordInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.VerifiedPasswordInput;
+    },
+    
+
+    /**
+     * Assert that C{password}, and optionally C{confirmPassword}, are a good
+     * input.
+     */
+    function assertGoodPassword(self, control, password, confirmPassword) {
+        if (confirmPassword === undefined) {
+            confirmPassword = password;
+        }
+        control._confirmPasswordNode.value = confirmPassword;
+        self.assertValidInput(
+            control, password,
+            Methanal.Util.repr(password) + ' is NOT a good password');
+    },
+
+
+    /**
+     * Assert that C{password}, and optionally C{confirmPassword}, are a bad
+     * input.
+     */
+    function assertBadPassword(self, control, password, confirmPassword) {
+        if (confirmPassword === undefined) {
+            confirmPassword = password;
+        }
+        control._confirmPasswordNode.value = confirmPassword;
+        self.assertInvalidInput(
+            control, password,
+            Methanal.Util.repr(password) + ' IS a good password');
+    },
+
+
+    function createControl(self, args) {
+        var control = Methanal.Tests.TestView.TestVerifiedPasswordInput.upcall(
+            self, 'createControl', args);
+        Methanal.Tests.TestView.makeWidgetChildNode(
+            control, 'input', 'confirmPassword');
+        return control;
+    },
+
+
+    /**
+     * Validation will fail under the following conditions:
+     *     1. The input and confirmPasswordNode node values don't match.
+     *     2. If either of the above node values have no length (are blank).
+     */
+    function test_inputValidation(self) {
+        self.testControl({value: null},
+            function (control) {
+                // Test condition 1
+                self.assertBadPassword(control, 'match', 'no match');
+                self.assertGoodPassword(control, 'match', 'match');
+                // Test condition 2
+                self.assertBadPassword(control, '', '');
+            });
+    },
+    
+    
+    /**
+     * Changing the password strength criteria results in different validation
+     * criteria for the control.
+     */
+    function test_strengthCriteria(self) {
+        // Override the default criteria of 5 or more characters.
+        self.testControl({value: null, minPasswordLength: 3},
+            function (control) {
+                self.assertBadPassword(control, '12');
+                self.assertGoodPassword(control, '123');
+
+                control.setStrengthCriteria(['ALPHA']);
+                self.assertGoodPassword(control, 'Abc');
+                self.assertBadPassword(control, '123');
+
+                control.setStrengthCriteria(['NUMERIC']);
+                self.assertBadPassword(control, 'Abc');
+                self.assertGoodPassword(control, '123');
+
+                control.setStrengthCriteria(['ALPHA', 'NUMERIC']);
+                self.assertBadPassword(control, 'Abc');
+                self.assertBadPassword(control, '123');
+                self.assertGoodPassword(control, 'Abc123');
+
+                control.setStrengthCriteria(['MIXEDCASE']);
+                self.assertGoodPassword(control, 'Abc');
+                self.assertGoodPassword(control, 'abC');
+                self.assertBadPassword(control, 'abc');
+                self.assertBadPassword(control, '123');
+
+                control.setStrengthCriteria(['SYMBOLS']);
+                self.assertGoodPassword(control, '!@#_');
+                self.assertBadPassword(control, ' ');
+                self.assertBadPassword(control, 'abc');
+
+                control.setStrengthCriteria([]);
+                self.assertGoodPassword(control, '!@#_');
+                self.assertGoodPassword(control, 'abc');
+                self.assertGoodPassword(control, '123');
+
+                self.assertThrows(Methanal.View.InvalidStrengthCriterion,
+                    function () {
+                        control.setStrengthCriteria(['DANGERWILLROBINSON']);
+                    });
             });
     });
 
