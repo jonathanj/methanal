@@ -210,6 +210,14 @@ Divmod.Error.subclass(Methanal.View, 'FreezeThawMismatch');
 
 
 /**
+ * A control reported as finished loading, once all controls were already
+ * loaded.
+ */
+Divmod.Error.subclass(Methanal.View, 'UnexpectedControl');
+
+
+
+/**
  * Base class for things that behave like forms.
  *
  * @type _validatorCache: L{Methanal.View._HandlerCache}
@@ -369,10 +377,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      */
     function loadedUp(self, control) {
         if (self.fullyLoaded) {
-            Divmod.msg(
-                'XXX: Control (' + control.name + ') reported in after all ' +
-                'controls were supposedly loaded!');
-            return;
+            throw new Methanal.View.UnexpectedControl(control.name);
         }
 
         delete self.controlNames[control.name];
