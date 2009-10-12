@@ -704,6 +704,12 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     function test_displayValue(self) {
         self.testControl({value: null},
             function (control) {
+                // TextInput._updateDisplayValue should have been called by the
+                // time the node has been inserted, if it has then the first
+                // child of _displayValueNode will be defined.
+                var displayValueText = control._displayValueNode.childNodes[0];
+                self.assertNotIdentical(displayValueText, undefined);
+
                 var called = 0;
                 var displayValue = '';
                 control._originalMakeDisplayValue = control.makeDisplayValue;

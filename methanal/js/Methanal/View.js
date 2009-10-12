@@ -1225,6 +1225,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
     function enableDisplayValue(self) {
         self._displayValueNode.style.display = 'block';
         self._useDisplayValue = true;
+        self._updateDisplayValue();
     },
 
 
