@@ -21,7 +21,8 @@
  *
  * @rtype: DOM element
  */
-Methanal.Tests.TestView.makeWidgetChildNode = function makeWidgetChildNode(widget, tagName, id) {
+Methanal.Tests.TestView.makeWidgetChildNode =
+function makeWidgetChildNode(widget, tagName, id) {
     var node = document.createElement(tagName);
     if (id) {
         node.id = widget.translateNodeId(id);
@@ -35,7 +36,8 @@ Methanal.Tests.TestView.makeWidgetChildNode = function makeWidgetChildNode(widge
 /**
  * L{Methanal.View.LiveForm} mock implementation.
  */
-Methanal.View.LiveForm.subclass(Methanal.Tests.TestView, 'MockLiveForm').methods(
+Methanal.View.LiveForm.subclass(
+    Methanal.Tests.TestView, 'MockLiveForm').methods(
     function __init__(self, controlNames) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         Methanal.Tests.TestView.MockLiveForm.upcall(
@@ -54,7 +56,8 @@ Methanal.View.LiveForm.subclass(Methanal.Tests.TestView, 'MockLiveForm').methods
 /**
  * Tests for L{Methanal.View.LiveForm}.
  */
-Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'TestLiveForm').methods(
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestView, 'TestLiveForm').methods(
     /**
      * Create a C{Methanal.View.LiveForm}.
      */
@@ -91,7 +94,8 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'TestLiveForm').m
 /**
  * Base class for L{Methanal.View.FormInput} mock implementations.
  */
-Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCase').methods(
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestView, 'FormInputTestCase').methods(
     /**
      * Create the mock Methanal control.
      *
@@ -230,7 +234,8 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
 /**
  * Tests for L{Methanal.View.SelectInput}.
  */
-Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'TestSelectInput').methods(
+Methanal.Tests.TestView.FormInputTestCase.subclass(
+    Methanal.Tests.TestView, 'TestSelectInput').methods(
     function createControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = Methanal.View.SelectInput(node, args);
@@ -369,7 +374,8 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Mimic Internet Explorer's broken C{HTMLSelectElement.add} behaviour.
  */
-Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(Methanal.Tests.TestView, 'MockIEHTMLSelectElement').methods(
+Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(
+    Methanal.Tests.TestView, 'MockIEHTMLSelectElement').methods(
     function add(self, element, before) {
         if (before === null) {
             throw new Error('Guess again, before cannot be null.');
@@ -389,7 +395,8 @@ Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(Methanal.Tests.TestView, '
 /**
  * Tests for L{Methanal.View.MultiSelectInput}.
  */
-Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'TestMultiSelectInputOnChange').methods(
+Methanal.Tests.TestView.FormInputTestCase.subclass(
+    Methanal.Tests.TestView, 'TestMultiSelectInputOnChange').methods(
     function createControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = Methanal.View.MultiSelectInput(node, args);
@@ -418,12 +425,14 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Common control creation for L{Methanal.View.TextInput} inputs.
  */
-Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'BaseTestTextInput').methods(
+Methanal.Tests.TestView.FormInputTestCase.subclass(
+    Methanal.Tests.TestView, 'BaseTestTextInput').methods(
     function createControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = self.controlType(node, args);
         node.appendChild(document.createElement('input'));
-        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'displayValue')
+        Methanal.Tests.TestView.makeWidgetChildNode(
+            control, 'span', 'displayValue')
         Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
         return control;
     });
@@ -433,7 +442,8 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Bas
 /**
  * Tests for L{Methanal.View.TextInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestTextInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestTextInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.TextInput;
     },
@@ -530,7 +540,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.FilteringTextInput}
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestFilteringTextInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestFilteringTextInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.FilteringTextInput;
     },
@@ -603,7 +614,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.PrePopulatingTextInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestPrePopulatingTextInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestPrePopulatingTextInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.PrePopulatingTextInput;
         self.targetControlName = 'targetControl';
@@ -678,7 +690,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.DateInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestDateInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestDateInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.DateInput;
     },
@@ -752,7 +765,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.IntegerInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestIntegerInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestIntegerInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.IntegerInput;
     },
@@ -777,7 +791,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.DecimalInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestDecimalInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestDecimalInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.DecimalInput;
     },
@@ -852,7 +867,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.PercentInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestPercentInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestPercentInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.PercentInput;
     },
@@ -934,7 +950,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.VerifiedPasswordInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestVerifiedPasswordInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestVerifiedPasswordInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.VerifiedPasswordInput;
     },
@@ -1048,7 +1065,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.InputContainer}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestFormGroup').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestFormGroup').methods(
     function setUp(self) {
         self.controlType = Methanal.View.TextInput;
     },
