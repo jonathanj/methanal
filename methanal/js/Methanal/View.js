@@ -633,10 +633,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
 
     function nodeInserted(self) {
         self.throbber = Methanal.Util.Throbber(self);
-        var form = self.widgetParent;
-        if (!form.viewOnly) {
-            form.actions = self;
-        }
+        self.widgetParent.actions = self;
     },
 
 

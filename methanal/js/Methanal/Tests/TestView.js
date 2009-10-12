@@ -1,3 +1,4 @@
+// import Divmod.Defer
 // import Divmod.UnitTest
 // import Nevow.Test.WidgetUtil
 // import Methanal.View
@@ -38,10 +39,12 @@ function makeWidgetChildNode(widget, tagName, id) {
  */
 Methanal.View.LiveForm.subclass(
     Methanal.Tests.TestView, 'MockLiveForm').methods(
-    function __init__(self, controlNames) {
+    function __init__(self, controlNames, viewOnly) {
+        viewOnly = viewOnly || false;
+
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         Methanal.Tests.TestView.MockLiveForm.upcall(
-            self, '__init__', node, false, controlNames);
+            self, '__init__', node, viewOnly, controlNames);
 
         var makeWidgetChildNode = Methanal.Tests.TestView.makeWidgetChildNode;
         makeWidgetChildNode(self, 'span', 'form-error');
@@ -64,9 +67,9 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create a C{Methanal.View.LiveForm}.
      */
-    function createForm(self) {
+    function createForm(self, viewOnly) {
         var controlNames = {};
-        form = Methanal.Tests.TestView.MockLiveForm(controlNames);
+        form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
         Methanal.Util.nodeInserted(form);
         return form;
     },
@@ -90,6 +93,56 @@ Methanal.Tests.Util.TestCase.subclass(
             function() {
                 form.thaw();
             });
+    },
+
+
+    /**
+     * Setting the form valid / invalid enables / disables the actions.
+     */
+    function test_validInvalid(self) {
+        var form = self.createForm();
+        form.setValid();
+        self.assertIdentical(form.actions._disabled, false);
+        form.setInvalid();
+        self.assertIdentical(form.actions._disabled, true);
+    },
+
+
+    /**
+     * Submitting a form calls L{Methanal.View.LiveForm.submitSuccess} upon
+     * successful submission and L{Methanal.View.LiveForm.submitFailure} upon
+     * a failed submission.
+     */
+    function test_submission(self) {
+        var success;
+        var form = self.createForm();
+
+        function succeed(methodName, data) {
+            self.assertIdentical(form.actions._disabled, true);
+            return Divmod.Defer.succeed(data);
+        };
+
+        function fail(methodName, data) {
+            self.assertIdentical(form.actions._disabled, true);
+            return Divmod.Defer.fail('too bad');
+        };
+
+        form.submitSuccess = function (data) {
+            self.assertIdentical(form.actions._disabled, false);
+            success = true;
+        };
+        form.submitFailure = function (error) {
+            self.assertIdentical(form.actions._disabled, false);
+            success = false;
+        };
+
+        form.callRemote = succeed;
+        form.submit();
+        self.assertIdentical(success, true);
+
+        form.callRemote = fail;
+        form.submit();
+        self.assertIdentical(success, false);
     });
 
 
