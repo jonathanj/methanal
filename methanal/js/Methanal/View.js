@@ -633,6 +633,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
 
     function nodeInserted(self) {
         self.throbber = Methanal.Util.Throbber(self);
+        var form = self.widgetParent;
+        if (!form.viewOnly) {
+            form.actions = self;
+        }
     },
 
 
@@ -679,10 +683,6 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
     function nodeInserted(self) {
         self._formErrorNode = self.nodeById('form-error');
-        if (!self.viewOnly) {
-            self.actions = Nevow.Athena.Widget.get(
-                self.nodeById('actions').getElementsByTagName('div')[0]);
-        }
         self.throbber = Methanal.Util.Throbber(self);
     },
 
