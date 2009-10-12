@@ -441,7 +441,7 @@ class PrePopulatingTextInput(TextInput):
 
 
     def __init__(self, targetControlName, **kw):
-        super(PrePopulatingInput, self).__init__(**kw)
+        super(PrePopulatingTextInput, self).__init__(**kw)
         self.targetControlName = targetControlName
 
 
