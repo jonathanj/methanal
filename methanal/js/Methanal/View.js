@@ -593,10 +593,16 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     /**
-     * Reset form inputs.
+     * Reset form inputs to their initial values.
      */
     function reset(self) {
+        // XXX: Use the DOM function to reset for values that might not
+        // otherwise be reset, like password confirmations etc. Ideally
+        // each control's reset method should take care of these.
         self.node.reset();
+        for (var name in self.controls) {
+            self.getControl(name).reset();
+        }
         self.refresh();
     },
 
@@ -996,7 +1002,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
     function nodeInserted(self) {
         self.inputNode = self.getInputNode();
         self._errorNode = self.nodeById('error');
-        self.setValue(self._initialValue);
+        self.reset();
 
         function _baseValidator(value) {
             return self.baseValidator(value);
@@ -1006,6 +1012,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         form.controls[self.name] = self;
         form.addValidator([self.name], [_baseValidator]);
         form.loadedUp(self);
+    },
+
+
+    /**
+     * Reset the form input to its initial value.
+     */
+    function reset(self) {
+        self.setValue(self._initialValue);
     },
 
 
