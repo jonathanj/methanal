@@ -688,36 +688,6 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     /**
-     * Enable the form's submit button.
-     *
-     * This does nothing if the form is "view only."
-     */
-    function _enableSubmit(self) {
-        if (self.viewOnly) {
-            return;
-        }
-        self._submitNode.disabled = false;
-        Methanal.Util.removeElementClass(
-            self._submitNode, 'methanal-submit-disabled');
-    },
-
-
-    /**
-     * Disable the form's submit button.
-     *
-     * This does nothing if the form is "view only."
-     */
-    function _disableSubmit(self) {
-        if (self.viewOnly) {
-            return;
-        }
-        self._submitNode.disabled = true;
-        Methanal.Util.addElementClass(
-            self._submitNode, 'methanal-submit-disabled');
-    },
-
-
-    /**
      * Get the form associated with this widget.
      */
     function getForm(self) {
