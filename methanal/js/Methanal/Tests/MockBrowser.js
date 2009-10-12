@@ -6,7 +6,7 @@ Divmod.MockBrowser.Element.subclass(
     Methanal.Tests.MockBrowser, 'Element').methods(
     function __init__(self, tagName) {
         Methanal.Tests.MockBrowser.Element.upcall(self, '__init__', tagName);
-        self.lastChild = null;
+        self._updateChildProperties();
     },
 
 
