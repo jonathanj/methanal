@@ -48,16 +48,18 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
     function __init__(self, node, args) {
         Methanal.Widgets.QueryList.upcall(self, '__init__', node);
 
-        self._hasActions = self.actions !== undefined && self.actions.length > 0;
+        self._hasActions = self.actions && self.actions.length > 0;
 
         self._columnIDs = args.columnIDs;
-        if (self.columnAliases === undefined)
+        if (self.columnAliases === undefined) {
             self.columnAliases = args.columnAliases;
+        }
 
-        if (args.rows.length > 0)
+        if (args.rows.length > 0) {
             self._rows = args.rows;
-        else
+        } else {
             self._rows = null;
+        }
 
         self._cycler = Methanal.Util.cycle('odd', 'even');
         self.defaultActionNavigates = false;
@@ -68,10 +70,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
         self.table = self.node.getElementsByTagName('table')[0];
         self.rebuildHeaders();
 
-        if (self._rows !== null)
+        if (self._rows !== null) {
             self.populate(self._rows);
-        else
+        } else {
             self.empty();
+        }
     },
 
 
@@ -134,8 +137,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
      * @param rowData: Mapping of column identifiers to values
      */
     function rowInserted(self, index, node, rowData) {
-        if (node !== null)
+        if (node !== null) {
             Methanal.Util.addElementClass(node, self._cycler());
+        }
     },
 
 
@@ -185,8 +189,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
         var _self = Nevow.Athena.Widget.get(this);
         if (_self.defaultAction) {
             var rv = this._onclick(evt);
-            if (!_self.defaultActionNavigates)
+            if (!_self.defaultActionNavigates) {
                 return rv;
+            }
         }
 
         return _self.onCellClick(url);
@@ -257,8 +262,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
             tr.appendChild(cell);
         }
 
-        if (self._hasActions)
+        if (self._hasActions) {
             tr.appendChild(self._makeActionsCell(rowData));
+        }
 
         return tr;
     },
@@ -330,8 +336,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
      *     to values
      */
     function populate(self, rows) {
-        for (var i = 0; i < rows.length; ++i)
+        for (var i = 0; i < rows.length; ++i) {
             self.appendRow(rows[i]);
+        }
     },
 
 
@@ -351,11 +358,13 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
      */
     function _createHeaderData(self) {
         var headerData = [];
-        for (var i = 0; i < self._columnIDs.length; ++i)
+        for (var i = 0; i < self._columnIDs.length; ++i) {
             headerData.push(self._columnIDs[i]);
+        }
 
-        if (self._hasActions)
+        if (self._hasActions) {
             headerData.push('actions');
+        }
 
         return headerData;
     },
@@ -551,14 +560,15 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'SimpleLookupForm').methods(
     /**
      * Set the result values.
      *
-     * @type  values: C{Array} of C{[String, object]} 
+     * @type  values: C{Array} of C{[String, object]}
      * @param values: Sequence of C{[value, description]} results
      */
     function setOptions(self, values) {
         var resultsWidget = self.getControl('__results');
         var resultsNode = resultsWidget.inputNode;
-        while (resultsNode.options.length)
+        while (resultsNode.options.length) {
             resultsNode.remove(0);
+        }
 
         var doc = self.node.ownerDocument;
         for (var i = 0; i < values.length; ++i) {
@@ -568,7 +578,10 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'SimpleLookupForm').methods(
             resultsNode.appendChild(optionNode);
         }
 
-        var value = resultsNode.options.length > 0 ? resultsNode.options[0] : null;
+        var value = null;
+        if (resultsNodes.options.length > 0) {
+            value = resultsNode[0];
+        }
         resultsWidget.setValue(value);
         resultsWidget.onChange();
     },
@@ -578,8 +591,9 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'SimpleLookupForm').methods(
         Methanal.Widgets.SimpleLookupForm.upcall(self, 'valueChanged', control);
 
         // Don't trigger when the result input is changed.
-        if (control.name === '__results')
+        if (control.name === '__results') {
             return;
+        }
 
         // Gather form values from all the filter attributes.
         var values = {};

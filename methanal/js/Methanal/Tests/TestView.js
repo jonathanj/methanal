@@ -21,7 +21,8 @@
  *
  * @rtype: DOM element
  */
-Methanal.Tests.TestView.makeWidgetChildNode = function makeWidgetChildNode(widget, tagName, id) {
+Methanal.Tests.TestView.makeWidgetChildNode =
+function makeWidgetChildNode(widget, tagName, id) {
     var node = document.createElement(tagName);
     if (id) {
         node.id = widget.translateNodeId(id);
@@ -35,7 +36,8 @@ Methanal.Tests.TestView.makeWidgetChildNode = function makeWidgetChildNode(widge
 /**
  * L{Methanal.View.LiveForm} mock implementation.
  */
-Methanal.View.LiveForm.subclass(Methanal.Tests.TestView, 'MockLiveForm').methods(
+Methanal.View.LiveForm.subclass(
+    Methanal.Tests.TestView, 'MockLiveForm').methods(
     function __init__(self, controlNames) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         Methanal.Tests.TestView.MockLiveForm.upcall(
@@ -47,8 +49,44 @@ Methanal.View.LiveForm.subclass(Methanal.Tests.TestView, 'MockLiveForm').methods
         makeWidgetChildNode(self, 'img', 'throbber');
 
         document.body.appendChild(node);
+    });
 
-        self.nodeInserted();
+
+
+/**
+ * Tests for L{Methanal.View.LiveForm}.
+ */
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestView, 'TestLiveForm').methods(
+    /**
+     * Create a C{Methanal.View.LiveForm}.
+     */
+    function createForm(self) {
+        var controlNames = {};
+        form = Methanal.Tests.TestView.MockLiveForm(controlNames);
+        Methanal.Util.nodeInserted(form);
+        return form;
+    },
+
+
+    /**
+     * Freezing and thawing the form increments and decrements the frozen
+     * counter. Attempting to thaw a form without a freeze call results in
+     * an exception.
+     */
+    function test_freezeThaw(self) {
+        var form = self.createForm();
+        form.freeze();
+        self.assertIdentical(form._frozen, 1);
+        form.freeze();
+        self.assertIdentical(form._frozen, 2);
+        form.thaw();
+        form.thaw();
+        self.assertIdentical(form._frozen, 0);
+        self.assertThrows(Methanal.View.FreezeThawMismatch,
+            function() {
+                form.thaw();
+            });
     });
 
 
@@ -56,7 +94,8 @@ Methanal.View.LiveForm.subclass(Methanal.Tests.TestView, 'MockLiveForm').methods
 /**
  * Base class for L{Methanal.View.FormInput} mock implementations.
  */
-Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCase').methods(
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestView, 'FormInputTestCase').methods(
     /**
      * Create the mock Methanal control.
      *
@@ -67,6 +106,61 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
      */
     function createControl(self, args) {
         throw new Error('Subclasses must implement "createControl".')
+    },
+
+
+    /**
+     * Create the control container.
+     */
+    function createContainer(self, child) {
+        var row = Methanal.View.FormRow(
+            Nevow.Test.WidgetUtil.makeWidgetNode());
+        Methanal.Tests.TestView.makeWidgetChildNode(row, 'span', 'error-text')
+
+        row.addChildWidget(child);
+        row.node.appendChild(child.node);
+
+        return row;
+    },
+
+
+    /**
+     * Perform tests on an C{Array} of controls.
+     *
+     * Once the tests have completed (successfully or not) the controls are
+     * removed from the document and forgotten about.
+     *
+     * @type  controls: C{Array} of L{Methanal.View.FormInput}
+     *
+     * @type  testingFunc: C{function} taking an C{Array} of
+     *     L{Methana.View.FormInput}
+     */
+    function testControls(self, controls, testingFunc) {
+        var map = Methanal.Util.map;
+
+        var controlNames = {};
+        map(function (control) {
+            controlNames[control.name] = 1;
+        }, controls);
+
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
+        var containers = [];
+        map(function (control) {
+            var container = self.createContainer(control);
+            form.addChildWidget(container);
+            document.body.appendChild(container.node);
+            containers.push(container);
+        }, controls);
+        Methanal.Util.nodeInserted(form);
+
+        try {
+            testingFunc(controls);
+        } finally {
+            map(function (container) {
+                form.removeChildWidget(container);
+                document.body.removeChild(container.node);
+            }, containers);
+        }
     },
 
 
@@ -84,39 +178,23 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
      *     initialised and its node inserted
      */
     function testControl(self, args, testingFunc) {
-        if (args === undefined || args === null)
-            args = {};
-        if (args.name === undefined || args.name === null)
-            args.name = 'methanalControl';
-        if (args.label === undefined || args.label === null)
-            args.label = 'a_label';
-        if (args.value === undefined || args.value === null)
-            args.value = null;
+        function defaultArg(name, value) {
+            if (args[name] === undefined || args[name] == null) {
+                args[name] = value;
+            }
+        }
+
+        args = args || {};
+        defaultArg('name', 'methanalControl');
+        defaultArg('label', 'a_label');
+        defaultArg('value', null);
 
         var control = self.createControl(args);
-        var controlNames = {};
-        controlNames[args.name] = 1;
-        var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
-        var row = Methanal.View.FormRow(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
-        Methanal.Tests.TestView.makeWidgetChildNode(row, 'span', 'error-text')
-        row.setWidgetParent(form);
-        document.body.appendChild(row.node);
-        row.nodeInserted();
-
-        control.setWidgetParent(row);
-        row.node.appendChild(control.node);
-        control.nodeInserted();
-
-        try {
-            testingFunc(control);
-        } catch (e) {
-            throw e;
-        } finally {
-            document.body.removeChild(row.node);
-        }
+        self.testControls([control], function (controls) {
+            testingFunc(controls[0]);
+        });
     },
-    
+
 
     /**
      * Assert that C{value} is valid input for C{control}.
@@ -124,14 +202,14 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
      * Set the input node's value to C{value} and passes the result of
      * C{control.getValue} to C{control.baseValidator}.
      */
-    function assertValidInput(self, control, value) {
-        var oldValue = control.inputNode.value;
+    function assertValidInput(self, control, value, msg) {
         control.inputNode.value = value;
-        var msg = (Methanal.Util.repr(value) + ' is NOT valid input for ' +
-            Methanal.Util.repr(control));
+        if (msg === undefined) {
+            msg = (Methanal.Util.repr(value) + ' is NOT valid input for ' +
+                Methanal.Util.repr(control));
+        }
         self.assertIdentical(
             control.baseValidator(control.getValue()), undefined, msg);
-        control.inputNode.value = oldValue;
     },
 
 
@@ -156,7 +234,8 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestView, 'FormInputTestCas
 /**
  * Tests for L{Methanal.View.SelectInput}.
  */
-Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'TestSelectInput').methods(
+Methanal.Tests.TestView.FormInputTestCase.subclass(
+    Methanal.Tests.TestView, 'TestSelectInput').methods(
     function createControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = Methanal.View.SelectInput(node, args);
@@ -255,7 +334,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
         self.assertIdentical(control.inputNode.options.length, 2);
         self.assertOption(control.inputNode.options[0], 'v2', 'd2');
     },
-    
+
 
     /**
      * L{Methanal.View.SelectInput.append} and
@@ -268,8 +347,8 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
                 self._testAppendInsert(control);
             });
     },
-    
-    
+
+
     /**
      * L{Methanal.View.SelectInput.insert} still works even when faced with
      * a broken implementation like Internet Explorer's.
@@ -291,11 +370,12 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
     });
 
 
-    
+
 /**
  * Mimic Internet Explorer's broken C{HTMLSelectElement.add} behaviour.
  */
-Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(Methanal.Tests.TestView, 'MockIEHTMLSelectElement').methods(
+Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(
+    Methanal.Tests.TestView, 'MockIEHTMLSelectElement').methods(
     function add(self, element, before) {
         if (before === null) {
             throw new Error('Guess again, before cannot be null.');
@@ -315,7 +395,8 @@ Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(Methanal.Tests.TestView, '
 /**
  * Tests for L{Methanal.View.MultiSelectInput}.
  */
-Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'TestMultiSelectInputOnChange').methods(
+Methanal.Tests.TestView.FormInputTestCase.subclass(
+    Methanal.Tests.TestView, 'TestMultiSelectInputOnChange').methods(
     function createControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = Methanal.View.MultiSelectInput(node, args);
@@ -344,12 +425,14 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Common control creation for L{Methanal.View.TextInput} inputs.
  */
-Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'BaseTestTextInput').methods(
+Methanal.Tests.TestView.FormInputTestCase.subclass(
+    Methanal.Tests.TestView, 'BaseTestTextInput').methods(
     function createControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = self.controlType(node, args);
         node.appendChild(document.createElement('input'));
-        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'displayValue')
+        Methanal.Tests.TestView.makeWidgetChildNode(
+            control, 'span', 'displayValue')
         Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
         return control;
     });
@@ -359,7 +442,8 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(Methanal.Tests.TestView, 'Bas
 /**
  * Tests for L{Methanal.View.TextInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestTextInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestTextInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.TextInput;
     },
@@ -381,8 +465,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.getValue(), 'hello');
             });
     },
-    
-    
+
+
     /**
      * When C{embeddedLabel} is C{true}, L{Methanal.View.TextInput.setValue}
      * sets the node value to a string when it is not empty, otherwise it sets
@@ -405,8 +489,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.getValue(), 'hello');
             });
     },
-    
-    
+
+
     /**
      * Focussing a L{Methanal.View.TextInput} removes any label it might have
      * and removing the focus applies a label, should it need one.
@@ -424,7 +508,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(control.inputNode.value, 'A label');
             });
     },
-    
+
 
     /**
      * Display value-enabled L{Methanal.View.TextInput}s call
@@ -454,9 +538,160 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 
 
 /**
+ * Tests for L{Methanal.View.FilteringTextInput}
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestFilteringTextInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.FilteringTextInput;
+    },
+
+
+    /**
+     * If C{expression} is given then input that doesn't match the expression
+     * is treated as being invalid.
+     */
+    function test_expression(self) {
+        self.testControl({value: null, expression: '[a-z0-9\-]'},
+            function (control) {
+                self.assertValidInput(control, 'valid-input');
+                self.assertInvalidInput(control, 'INvalid input!');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.FilteringTextInput}'s onKeyUp and onChange event
+     * handlers transform the input being entered in real time according to all
+     * filtration functions specified in the control's filters attribute.
+     */
+    function test_filters(self) {
+        self.testControl({value: null, expression: '[a-z0-9]'},
+            function (control) {
+                control.addFilters([
+                    function(value) { return value.toLowerCase(); },
+                    function(value) { return value.replace(/[^a-z0-9]/g, ''); },
+                    ]);
+                control.setValue('A+');
+                control.onKeyUp(control.inputNode);
+                self.assertIdentical(control.getValue(), 'a');
+                control.setValue('ValId InpUt!');
+                control.onChange(control.inputNode);
+                self.assertIdentical(control.getValue(), 'validinput');
+            });
+    },
+
+
+    /**
+     * When no expression is given, the control will validate any text input.
+     */
+    function test_noExpression(self) {
+        self.testControl({value: null, expression: null},
+            function (control) {
+                self.assertValidInput(control, 'VaL1d 1NPut!@#$');
+            });
+    },
+
+
+    /**
+     * If an expression is given and no filters are added to the control, input
+     * will not be transformed but validation will occur, and otherwise will
+     * act like a regular TextInput.
+     */
+    function test_noFilters(self) {
+        self.testControl({value: null, expression: '[a-z0-9]'},
+            function (control) {
+                var value = 'INvalid input!';
+                control.setValue(value);
+                control.onChange(control.inputNode);
+                self.assertIdentical(control.getValue(), value);
+                self.assertInvalidInput(control, value);
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.PrePopulatingTextInput}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestPrePopulatingTextInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.PrePopulatingTextInput;
+        self.targetControlName = 'targetControl';
+    },
+
+
+    /**
+     * Create a target control to be pre-populated.
+     */
+    function createTargetControl(self, controlType, args) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var control = controlType(node, args);
+        node.appendChild(document.createElement('input'));
+        Methanal.Tests.TestView.makeWidgetChildNode(
+            control, 'span', 'displayValue')
+        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
+        return control;
+    },
+
+
+    /**
+     * L{Methanal.View.PrePopulatingTextInput}'s onKeyUp and onChange event
+     * handlers send their input values to the control specified at creation.
+     */
+    function test_prePopulation(self) {
+        var control = self.createControl({
+            value: null,
+            targetControlName: self.targetControlName});
+        var targetControl = self.createTargetControl(
+            Methanal.View.TextInput, {
+                name: self.targetControlName,
+                value: null});
+        self.testControls([control, targetControl],
+            function (controls) {
+                control.setValue('hello');
+                control.onKeyUp(control.inputNode);
+                self.assertIdentical(targetControl.getValue(), 'hello');
+                control.setValue('hello world');
+                control.onChange(control.inputNode);
+                self.assertIdentical(targetControl.getValue(), 'hello world');
+            });
+    },
+
+
+    /**
+     * When the target control is a L{Methanal.View.FilteringTextInput},
+     * the target's filters, if any, will be applied after pre-population.
+     */
+    function test_filteringTextInputCompatibility(self) {
+        var control = self.createControl({
+            value: null,
+            targetControlName: self.targetControlName});
+        var targetControl = self.createTargetControl(
+            Methanal.View.FilteringTextInput, {
+                name: self.targetControlName,
+                value: null,
+                expression: '[a-z]'});
+        self.testControls([control, targetControl],
+            function (controls) {
+                targetControl.addFilters([
+                    function(value) { return value.toLowerCase(); },
+                    function(value) { return value.replace(/[^a-z]/g, '*'); },
+                    ]);
+                control.setValue('Hello World.');
+                control.onChange(control.inputNode);
+                self.assertIdentical(targetControl.getValue(), 'hello*world*');
+            });
+    });
+
+
+
+/**
  * Tests for L{Methanal.View.DateInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestDateInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestDateInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.DateInput;
     },
@@ -481,14 +716,14 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertIdentical(called, 0);
                 control.setValue('2009-01-01');
                 self.assertIdentical(called, 1);
-                self.assertIdentical(displayValue,
-                    Methanal.Util.Time.guess('2009-01-01').asHumanly());
+                var t = Methanal.Util.Time.fromDate(new Date(2009, 0, 1));
+                self.assertIdentical(displayValue, t.oneDay().asHumanly());
                 control.onKeyUp(control.inputNode);
                 self.assertIdentical(called, 2);
             });
     },
-    
-    
+
+
     /**
      * L{Methanal.View.DateInput.getValue} returns a timestamp in milliseconds
      * if the input node's value is a valid date, C{null} if it is blank and
@@ -504,11 +739,11 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 control.setValue('NOTAVALIDDATE');
                 self.assertIdentical(control.getValue(), undefined);
                 control.setValue('2009-01-01');
-                self.assertIdentical(control.getValue(), 1230760800000);
+                self.assertIdentical(control.getValue(), 1230768000000);
             });
     },
-    
-    
+
+
     /**
      * L{Methanal.View.DateInput} only accepts input that is a valid date, in a
      * parseable format.
@@ -530,7 +765,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.IntegerInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestIntegerInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestIntegerInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.IntegerInput;
     },
@@ -555,7 +791,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.DecimalInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestDecimalInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestDecimalInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.DecimalInput;
     },
@@ -630,7 +867,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
 /**
  * Tests for L{Methanal.View.PercentInput}.
  */
-Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'TestPercentInput').methods(
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestPercentInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.PercentInput;
     },
@@ -704,5 +942,171 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(Methanal.Tests.TestView, 'Tes
                 self.assertInvalidInput(control, '101');
                 self.assertInvalidInput(control, '101%');
                 self.assertInvalidInput(control, '-1');
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.VerifiedPasswordInput}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestVerifiedPasswordInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.VerifiedPasswordInput;
+    },
+    
+
+    /**
+     * Assert that C{password}, and optionally C{confirmPassword}, are a good
+     * input.
+     */
+    function assertGoodPassword(self, control, password, confirmPassword) {
+        if (confirmPassword === undefined) {
+            confirmPassword = password;
+        }
+        control._confirmPasswordNode.value = confirmPassword;
+        self.assertValidInput(
+            control, password,
+            Methanal.Util.repr(password) + ' is NOT a good password');
+    },
+
+
+    /**
+     * Assert that C{password}, and optionally C{confirmPassword}, are a bad
+     * input.
+     */
+    function assertBadPassword(self, control, password, confirmPassword) {
+        if (confirmPassword === undefined) {
+            confirmPassword = password;
+        }
+        control._confirmPasswordNode.value = confirmPassword;
+        self.assertInvalidInput(
+            control, password,
+            Methanal.Util.repr(password) + ' IS a good password');
+    },
+
+
+    function createControl(self, args) {
+        var control = Methanal.Tests.TestView.TestVerifiedPasswordInput.upcall(
+            self, 'createControl', args);
+        Methanal.Tests.TestView.makeWidgetChildNode(
+            control, 'input', 'confirmPassword');
+        return control;
+    },
+
+
+    /**
+     * Validation will fail under the following conditions:
+     *     1. The input and confirmPasswordNode node values don't match.
+     *     2. If either of the above node values have no length (are blank).
+     */
+    function test_inputValidation(self) {
+        self.testControl({value: null},
+            function (control) {
+                // Test condition 1
+                self.assertBadPassword(control, 'match', 'no match');
+                self.assertGoodPassword(control, 'match', 'match');
+                // Test condition 2
+                self.assertBadPassword(control, '', '');
+            });
+    },
+    
+    
+    /**
+     * Changing the password strength criteria results in different validation
+     * criteria for the control.
+     */
+    function test_strengthCriteria(self) {
+        // Override the default criteria of 5 or more characters.
+        self.testControl({value: null, minPasswordLength: 3},
+            function (control) {
+                self.assertBadPassword(control, '12');
+                self.assertGoodPassword(control, '123');
+
+                control.setStrengthCriteria(['ALPHA']);
+                self.assertGoodPassword(control, 'Abc');
+                self.assertBadPassword(control, '123');
+
+                control.setStrengthCriteria(['NUMERIC']);
+                self.assertBadPassword(control, 'Abc');
+                self.assertGoodPassword(control, '123');
+
+                control.setStrengthCriteria(['ALPHA', 'NUMERIC']);
+                self.assertBadPassword(control, 'Abc');
+                self.assertBadPassword(control, '123');
+                self.assertGoodPassword(control, 'Abc123');
+
+                control.setStrengthCriteria(['MIXEDCASE']);
+                self.assertGoodPassword(control, 'Abc');
+                self.assertGoodPassword(control, 'abC');
+                self.assertBadPassword(control, 'abc');
+                self.assertBadPassword(control, '123');
+
+                control.setStrengthCriteria(['SYMBOLS']);
+                self.assertGoodPassword(control, '!@#_');
+                self.assertBadPassword(control, ' ');
+                self.assertBadPassword(control, 'abc');
+
+                control.setStrengthCriteria([]);
+                self.assertGoodPassword(control, '!@#_');
+                self.assertGoodPassword(control, 'abc');
+                self.assertGoodPassword(control, '123');
+
+                self.assertThrows(Methanal.View.InvalidStrengthCriterion,
+                    function () {
+                        control.setStrengthCriteria(['DANGERWILLROBINSON']);
+                    });
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.InputContainer}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestFormGroup').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.TextInput;
+    },
+
+
+    function createContainer(self, child) {
+        var row = Methanal.Tests.TestView.TestFormGroup.upcall(
+            self, 'createContainer', child);
+
+        var group = Methanal.View.InputContainer(
+            Nevow.Test.WidgetUtil.makeWidgetNode());
+        group.addChildWidget(row);
+        group.node.appendChild(row.node);
+        return group;
+    },
+
+
+    /**
+     * Any active children means the container is visible.
+     */
+    function test_activeChildren(self) {
+        self.testControl({value: null},
+            function (control) {
+                var group = control.widgetParent.widgetParent;
+                self.assertIsInstanceOf(group, Methanal.View.InputContainer);
+                control.setActive(true);
+                self.assertIdentical(group.node.style.display, 'block');
+            });
+    },
+
+
+    /**
+     * No active children means the container is not visible.
+     */
+    function test_noActiveChildren(self) {
+        self.testControl({value: null},
+            function (control) {
+                var group = control.widgetParent.widgetParent;
+                self.assertIsInstanceOf(group, Methanal.View.InputContainer);
+                control.setActive(false);
+                self.assertIdentical(group.node.style.display, 'none');
             });
     });

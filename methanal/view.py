@@ -336,6 +336,9 @@ class InputContainer(ThemedElement):
 class FormGroup(InputContainer):
     """
     Container for visually grouping inputs.
+
+    A C{FormGroup} will be set inactive (and thus hidden) if all of its
+    child controls are inactive too.
     """
     fragmentName = 'methanal-group'
 
@@ -496,6 +499,56 @@ class TextInput(FormInput):
 
 
 
+class FilteringTextInput(TextInput):
+    """
+    A L{TextInput} that allows real time filtering on the input and provides
+    customizable default validation.
+
+    See the JavaScript docstrings for more detail.
+
+    @type expression: C{unicode}
+    @ivar expression: A regular expression that specifies what characters
+        are allowed to be part of the value of the input field, or C{None}
+        for no validation
+
+        For example::
+        
+            - Allow alphanumerics: [a-zA-z0-9]
+            - Allow either the string "cat" or "dog": cat|dog
+    """
+    jsClass = u'Methanal.View.FilteringTextInput'
+    
+    
+    def __init__(self, expression=None, **kw):
+        super(FilteringTextInput, self).__init__(**kw)
+        self.expression = expression
+
+
+    def getArgs(self):
+        return {u'expression': self.expression}
+
+
+
+class PrePopulatingTextInput(TextInput):
+    """
+    Text input that updates another input's value with its own in real time.
+
+    @type targetControlName: C{unicode}
+    @ivar targetControlName: The name of the input to pre-populate
+    """
+    jsClass = u'Methanal.View.PrePopulatingTextInput'
+
+
+    def __init__(self, targetControlName, **kw):
+        super(PrePopulatingInput, self).__init__(**kw)
+        self.targetControlName = targetControlName
+
+
+    def getArgs(self):
+        return {u'targetControlName': self.targetControlName}
+
+
+
 class DateInput(TextInput):
     """
     Textual date input.
@@ -604,6 +657,38 @@ class PercentInput(DecimalInput):
     Decimal input, with values interpreted as percentages.
     """
     jsClass = u'Methanal.View.PercentInput'
+
+
+
+class VerifiedPasswordInput(TextInput):
+    """
+    Password input with verification and strength checking.
+
+    @type minPasswordLength: C{int}
+    @ivar minPasswordLength: Minimum acceptable password length, or C{None}
+        to use the default client-side value
+
+    @type strengthCriteria: C{list} of C{unicode}
+    @ivar strengthCriteria: A list of criteria names for password strength
+        testing, or C{None} for no additional strength criteria. See
+        L{Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA} in the
+        Javascript source for possible values
+    """
+    fragmentName = 'methanal-verified-password-input'
+    jsClass = u'Methanal.View.VerifiedPasswordInput'
+
+
+    def __init__(self, minPasswordLength=None, strengthCriteria=None, **kw):
+        super(VerifiedPasswordInput, self).__init__(**kw)
+        self.minPasswordLength = minPasswordLength
+        if strengthCriteria is None:
+            strengthCriteria = []
+        self.strengthCriteria = strengthCriteria
+
+
+    def getArgs(self):
+        return {u'minPasswordLength': self.minPasswordLength,
+                u'strengthCriteria':  self.strengthCriteria}
 
 
 
@@ -969,7 +1054,8 @@ class AutoItemView(ItemView):
 _inputTypes = {
     text:       lambda env: TextInput,
     integer:    lambda env: IntegerInput,
-    timestamp:  lambda env: lambda **kw: DateInput(timezone=env['timezone'], **kw)}
+    timestamp:  lambda env:
+        lambda **kw: DateInput(timezone=env['timezone'], **kw)}
 
 def inputTypeFromAttribute(attr, **env):
     """

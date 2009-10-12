@@ -11,8 +11,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.Util, 'TestCase').methods(
         self.compare(function (x, y) { return x !== y; },
                      '!==', a, b, message);
     },
-    
-    
+
+
     function assertIsInstanceOf(self, instance, type) {
         var repr = Methanal.Util.repr;
         self.assertIdentical(true, instance instanceof type,
@@ -48,7 +48,7 @@ Divmod.Class.subclass(Methanal.Tests.Util, 'MockWidget').methods(
     function nodeById(self, id) {
         var node = self._idNodes[id];
         if (!node) {
-            throw Divmod.Runtime.NodeNotFound('Node with id ' + id + ' not found');
+            throw Divmod.Runtime.NodeNotFound('Node not found');
         }
         return node;
     });

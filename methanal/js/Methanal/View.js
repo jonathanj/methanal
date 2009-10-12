@@ -23,7 +23,7 @@
  *     to determine visible outputs
  *
  * @type outputs: C{Array} of C{String}
- * @ivar outputs: Names of form outputs 
+ * @ivar outputs: Names of form outputs
  */
 Divmod.Class.subclass(Methanal.View, '_Handler').methods(
     function __init__(self, handlerID, cache, fn, inputs, outputs) {
@@ -202,11 +202,30 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
 
 
 /**
+ * The number of calls to L{Methanal.View.FormBehaviour.thaw} did not match
+ * the number of calls to L{Methanal.View.FormBehaviour.freeze}.
+ */
+Divmod.Error.subclass(Methanal.View, 'FreezeThawMismatch');
+
+
+
+/**
+ * A control reported as finished loading, once all controls were already
+ * loaded.
+ */
+Divmod.Error.subclass(Methanal.View, 'UnexpectedControl');
+
+
+
+/**
  * Base class for things that behave like forms.
  *
  * @type _validatorCache: L{Methanal.View._HandlerCache}
  *
  * @type _depCache: L{Methanal.View._HandlerCache}
+ *
+ * @type _frozen: C{Integer}
+ * @ivar _frozen: Freeze counter
  *
  * @type controls: C{object} mapping C{String} to L{Methanal.View.FormInput}
  * @ivar controls: Mapping of form input names to form inputs; each form input
@@ -254,7 +273,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         var control = self.getControl(name);
         result = Methanal.Util.reduce(_and, values, true);
+        self.freeze();
         control.setActive(result);
+        self.thaw();
     },
 
 
@@ -266,6 +287,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * attributes.
      */
     function formInit(self) {
+        self._frozen = 0;
         self.controls = {};
         self.subforms = {};
 
@@ -286,11 +308,43 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
+     * Freeze validity refreshing.
+     *
+     * L{Methanal.View.FormBehaviour.thaw} should be called for every call to
+     * C{freeze}.
+     */
+    function freeze(self) {
+        self._frozen++;
+    },
+
+
+    /**
+     * Thaw validity refreshing.
+     *
+     * This should be called the same number of times as
+     * L{Methanal.View.FormBehaviour.freeze}.
+     *
+     * @raise Methanal.View.FreezeThawMismatch: If the number of calls to
+     *     L{thaw} do not match the number of calls to C{freeze}
+     */
+    function thaw(self) {
+        self._frozen--;
+        if (self._frozen === 0) {
+            self._refreshValidity();
+        } else if (self._frozen < 0) {
+            throw Methanal.View.FreezeThawMismatch('Too many calls to "thaw".');
+        }
+    },
+
+
+    /**
      * Refresh the validity of the form, based on the states of form inputs and
      * sub-forms.
      */
     function _refreshValidity(self) {
-        self.setValid();
+        if (self._frozen > 0) {
+            return;
+        }
 
         for (var controlName in self.controls) {
             var control = self.getControl(controlName);
@@ -306,6 +360,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
                 return;
             }
         }
+
+        self.setValid();
     },
 
 
@@ -321,8 +377,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      */
     function loadedUp(self, control) {
         if (self.fullyLoaded) {
-            Divmod.msg('XXX: Control reported in after all controls were supposedly loaded!');
-            return;
+            throw new Methanal.View.UnexpectedControl(control.name);
         }
 
         delete self.controlNames[control.name];
@@ -628,6 +683,37 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             self.actions = Nevow.Athena.Widget.get(
                 self.nodeById('actions').getElementsByTagName('div')[0]);
         }
+        self.throbber = Methanal.Util.Throbber(self);
+    },
+
+
+    /**
+     * Enable the form's submit button.
+     *
+     * This does nothing if the form is "view only."
+     */
+    function _enableSubmit(self) {
+        if (self.viewOnly) {
+            return;
+        }
+        self._submitNode.disabled = false;
+        Methanal.Util.removeElementClass(
+            self._submitNode, 'methanal-submit-disabled');
+    },
+
+
+    /**
+     * Disable the form's submit button.
+     *
+     * This does nothing if the form is "view only."
+     */
+    function _disableSubmit(self) {
+        if (self.viewOnly) {
+            return;
+        }
+        self._submitNode.disabled = true;
+        Methanal.Util.addElementClass(
+            self._submitNode, 'methanal-submit-disabled');
     },
 
 
@@ -640,10 +726,16 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     /**
-     * Reset form inputs.
+     * Reset form inputs to their initial values.
      */
     function reset(self) {
+        // XXX: Use the DOM function to reset for values that might not
+        // otherwise be reset, like password confirmations etc. Ideally
+        // each control's reset method should take care of these.
         self.node.reset();
+        for (var name in self.controls) {
+            self.getControl(name).reset();
+        }
         self.refresh();
     },
 
@@ -778,7 +870,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         self.actions.enable();
     },
 
-    
+
     /**
      * Disable form submission.
      */
@@ -849,6 +941,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
     function setActive(self, active) {
         self.node.style.display = active ? 'block' : 'none';
         Methanal.Util.addElementClass(self.node, 'dependancy-child');
+        if (self.widgetParent.setActive) {
+            self.widgetParent.setActive(active);
+        }
     },
 
 
@@ -1040,7 +1135,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
     function nodeInserted(self) {
         self.inputNode = self.getInputNode();
         self._errorNode = self.nodeById('error');
-        self.setValue(self._initialValue);
+        self.reset();
 
         function _baseValidator(value) {
             return self.baseValidator(value);
@@ -1050,6 +1145,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         form.controls[self.name] = self;
         form.addValidator([self.name], [_baseValidator]);
         form.loadedUp(self);
+    },
+
+
+    /**
+     * Reset the form input to its initial value.
+     */
+    function reset(self) {
+        self.setValue(self._initialValue);
     },
 
 
@@ -1108,6 +1211,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         self.error = null;
         self.widgetParent.checkForErrors();
     },
+
 
     /**
      * Set the input as active.
@@ -1379,6 +1483,157 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
 
 
 /**
+ * Text input that filters input in real time.
+ *
+ * @type _filters: C{Array} of C{Function}
+ * @ivar _filters: An array of "filters", which are simply JavaScript functions
+ *     that accept and return a C{String}, and are used to transform the
+ *     control's input in real time.
+ *
+ * @type _filterExpn: C{RegExp}
+ * @ivar _filterExpn: The regular expression that the input must match in order
+ *     to validate
+ *
+ * @type _extractExpn: C{RegExp}
+ * @ivar _extractExpn: A regular expression used to extract the valid
+ *     characters out of the input for error reporting
+ */
+Methanal.View.TextInput.subclass(Methanal.View, 'FilteringTextInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.FilteringTextInput.upcall(self, '__init__', node, args);
+        self._filters = [];
+        var expn = args.expression;
+        if (expn !== null) {
+            self._filterExpn = new RegExp('^(' + expn + ')+$');
+            self._extractExpn = new RegExp(expn, 'g');
+        }
+    },
+
+
+    /**
+     * Add a real time "filter" to the form input.
+     *
+     * A "filter" is a JavaScript function that accepts a C{String} and
+     * returns a modified version of that C{String}.
+     *
+     * Use L{addFilters} to add more than one "filter" at a time.
+     *
+     * @type filter: C{Function}
+     * @param filter: Each filter is added to the list of existing filters
+     *     attached to the control.  Each filter will be applied in the order
+     *     it was attached.
+     */
+    function addFilter(self, filter) {
+        self._filters.push(filter);
+    },
+
+
+    /**
+     * Add multiple "filters" at once.
+     *
+     * A "filter" is a JavaScript function that accepts a C{String} and
+     * returns a modified version of that C{String}.
+     *
+     * @type filters: C{Array} of C{Function}
+     * @param filters: The array of "filters" will be concatenated to the
+     *     existing array of filters attached to the control.
+     */
+    function addFilters(self, filters) {
+        for (var i = 0; i < filters.length; ++i) {
+            self.addFilter(filters[i]);
+        }
+    },
+
+
+    /**
+     * Apply each filtering function to the input's current value.
+     */
+    function filter(self) {
+        var value = self.inputNode.value;
+        for (var i = 0; i < self._filters.length; ++i) {
+            value = self._filters[i](value);
+        }
+        self.setValue(value);
+    },
+
+
+    function onChange(self, node) {
+        self.filter();
+        Methanal.View.FilteringTextInput.upcall(self, 'onChange', node);
+    },
+
+
+    function onKeyUp(self, node) {
+        self.filter();
+        Methanal.View.FilteringTextInput.upcall(self, 'onKeyUp', node);
+    },
+
+
+    /**
+     * If an expression was specified, this default baseValidator ensures
+     * that the input's current value matches the expression exactly one or
+     * more times.
+     */
+    function baseValidator(self, value) {
+        var rv = Methanal.View.FilteringTextInput.upcall(
+            self, 'baseValidator', value);
+        if (rv) {
+            return rv;
+        }
+
+        if (self._filterExpn !== undefined && !self._filterExpn.test(value)) {
+            return 'Invalid characters: ' + value.replace(
+                self._extractExpn, '');
+        }
+    });
+
+
+
+/**
+ * Text input that pre-populates another control with its own value on
+ * the "onkeyup" and "onchange" DOM events.
+ *
+ * When used to pre-populate a FilteringTextInput, the value
+ * will be transformed according to any filters defined in that input.
+ *
+ * @type _targetControlName: C{String}
+ * @ivar _targetControlName: The name of the input that will be pre-populated.
+ */
+Methanal.View.TextInput.subclass(
+    Methanal.View, 'PrePopulatingTextInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.PrePopulatingTextInput.upcall(
+            self, '__init__', node, args);
+        self._targetControlName = args.targetControlName;
+    },
+
+
+    /**
+     * Get the instance of the target control.
+     */
+    function getTargetControl(self) {
+        return self.getForm().getControl(self._targetControlName);
+    },
+
+
+    function onKeyUp(self, node) {
+        Methanal.View.PrePopulatingTextInput.upcall(self, 'onKeyUp', node);
+        var targetControl = self.getTargetControl();
+        targetControl.setValue(node.value);
+        targetControl.onKeyUp(targetControl.inputNode);
+    },
+
+
+    function onChange(self, node) {
+        Methanal.View.PrePopulatingTextInput.upcall(self, 'onChange', node);
+        var targetControl = self.getTargetControl();
+        targetControl.setValue(node.value);
+        targetControl.onChange(targetControl.inputNode);
+    });
+
+
+
+/**
  * Checkbox input.
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
@@ -1405,8 +1660,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
 
     function setValue(self, values) {
         values = Methanal.Util.StringSet(values);
-        for (var name in self.inputNode)
+        for (var name in self.inputNode) {
             self.inputNode[name].checked = values.contains(name);
+        }
     },
 
 
@@ -1508,7 +1764,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
     function setValue(self, value) {
         Methanal.View.SelectInput.upcall(self, 'setValue', value);
         // Most browsers just automagically change the value to that of the
-        // first option if you set the value to a nonexistent option value. 
+        // first option if you set the value to a nonexistent option value.
         if (value === null || self.inputNode.value !== value) {
             self._insertPlaceholder();
             self.inputNode.value = '';
@@ -1522,22 +1778,6 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
             return null;
         }
         return value;
-    },
-
-
-    /**
-     * Handle "onblur" DOM event.
-     */
-    function onBlur(self, node) {
-        self.onChange(node);
-    },
-
-
-    /**
-     * Handle "onfocus" DOM event.
-     */
-    function onFocus(self, node) {
-        self.onChange(node);
     });
 
 
@@ -1616,7 +1856,7 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
         return self._getSelectedValues();
     },
 
-    
+
     /**
      * Handle "onchange" DOM event.
      */
@@ -1624,7 +1864,8 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
         var values = self._getSelectedValues();
         var selnode = self.nodeById('selection');
         if (values !== null) {
-            Methanal.Util.replaceNodeText(selnode, 'Selected ' + values.length.toString() + ' item(s).');
+            Methanal.Util.replaceNodeText(
+                selnode, 'Selected ' + values.length.toString() + ' item(s).');
             selnode.style.display = 'block';
         } else {
             selnode.style.display = 'none';
@@ -1673,7 +1914,13 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
     function makeDisplayValue(self, value) {
         var msg = '';
         try {
-            var time = Methanal.Util.Time.fromTimestamp(value).oneDay();
+            // XXX: There is probably a potential bug here: If "value" (a UTC
+            // timestamp) falls before the switch-over for daylight savings
+            // before the timezone offset has been corrected for, the timezone
+            // offset given here will be the wrong one.
+            var d = new Date(value);
+            var time = Methanal.Util.Time.fromTimestamp(
+                value, d.getTimezoneOffset()).oneDay();
             if (time) {
                 msg = time.asHumanly(self.twentyFourHours);
             }
@@ -1854,10 +2101,103 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
 
 
     function baseValidator(self, value) {
-        var rv = Methanal.View.PercentInput.upcall(self, 'baseValidator', value);
+        var rv = Methanal.View.PercentInput.upcall(
+            self, 'baseValidator', value);
         if (rv !== undefined) {
             return rv;
         } else if (value < 0 || value > 1) {
             return 'Percentage values must be between 0% and 100%'
         }
     });
+
+
+
+/**
+ * An invalid password strength criterion was specified.
+ */
+Divmod.Error.subclass(Methanal.View, 'InvalidStrengthCriterion');
+
+
+
+/**
+ * Password input with a verification field and strength checking.
+ */
+Methanal.View.TextInput.subclass(
+    Methanal.View, 'VerifiedPasswordInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.VerifiedPasswordInput.upcall(
+            self, '__init__', node, args);
+        self._minPasswordLength = args.minPasswordLength || 5;
+        self.setStrengthCriteria(args.strengthCriteria || []);
+    },
+
+
+    function nodeInserted(self) {
+        self._confirmPasswordNode = self.nodeById('confirmPassword');
+        Methanal.View.VerifiedPasswordInput.upcall(self, 'nodeInserted');
+    },
+
+
+    /**
+     * Set the password strength criteria.
+     *
+     * @type  criteria: C{Array} of C{String}
+     * @param criteria: An array of names, matching those found in
+     *     L{Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA}, indicating
+     *     the password strength criteria
+     */
+    function setStrengthCriteria(self, criteria) {
+        var fns = Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA;
+        for (var i = 0; i < criteria.length; ++i) {
+            var criterion = criteria[i];
+            if (fns[criterion] === undefined) {
+                criterion = Methanal.Util.repr(criterion);
+                throw Methanal.View.InvalidStrengthCriterion(criterion);
+            }
+        }
+        self._strengthCriteria = criteria;
+    },
+
+
+    /**
+     * Override this method to change the definition of a 'strong' password.
+     */
+    function passwordIsStrong(self, password) {
+        if (password.length < self._minPasswordLength) {
+            return false;
+        }
+
+        var fns = Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA;
+        for (var i = 0; i < self._strengthCriteria.length; ++i) {
+            var fn = fns[self._strengthCriteria[i]];
+            if (!fn(password)) {
+                return false;
+            }
+        }
+        return true;
+    },
+
+
+    /**
+     * This default validator ensures that the password is strong and that
+     * the password given in both fields have length > 0 and match exactly.
+     */
+    function baseValidator(self, value) {
+        if (value !== self._confirmPasswordNode.value || value === null ||
+            self._confirmPasswordNode.value === null) {
+            return 'Passwords do not match.';
+        }
+
+        if (!self.passwordIsStrong(value)) {
+            return 'Password is too weak.';
+        }
+    });
+
+
+
+Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA = {
+    'ALPHA':     function (value) { return /[a-zA-Z]/.test(value); },
+    'NUMERIC':   function (value) { return /[0-9]/.test(value); },
+    'MIXEDCASE': function (value) {
+        return /[a-z]/.test(value) && /[A-Z]/.test(value); },
+    'SYMBOLS':   function (value) { return /[^A-Za-z0-9\s]/.test(value); }};

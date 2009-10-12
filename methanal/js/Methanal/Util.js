@@ -83,8 +83,9 @@ Methanal.Util.removeElementClass = function removeElementClass(node, cls) {
  * @type node: DOM node
  */
 Methanal.Util.removeNodeContent = function removeNodeContent(node) {
-    while (node.lastChild)
+    while (node.lastChild) {
         node.removeChild(node.lastChild);
+    }
 };
 
 
@@ -98,8 +99,9 @@ Methanal.Util.removeNodeContent = function removeNodeContent(node) {
  */
 Methanal.Util.replaceNodeContent = function replaceNodeContent(node, children) {
     Methanal.Util.removeNodeContent(node);
-    for (var i = 0; i < children.length; ++i)
+    for (var i = 0; i < children.length; ++i) {
         node.appendChild(children[i]);
+    }
 };
 
 
@@ -128,15 +130,13 @@ Methanal.Util.replaceNodeText = function replaceNodeText(node, text) {
  * @rtype: C{Integer}
  */
 Methanal.Util.strToInt = function strToInt(s) {
-    if (typeof s !== 'string')
+    if (typeof s !== 'string') {
         return undefined;
-
-    if (s.indexOf('x') !== -1)
+    } else if (s.indexOf('x') !== -1) {
         return undefined;
-
-    if (isNaN(s))
+    } else if (isNaN(s)) {
         return undefined;
-
+    }
     return parseInt(s, 10);
 };
 
@@ -197,9 +197,11 @@ Methanal.Util.cycle = function cycle(/*...*/) {
  * @return: Index of the value in the array, or C{-1} if not found
  */
 Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
-    for (var i = 0; i < a.length; ++i)
-        if (a[i] === v)
+    for (var i = 0; i < a.length; ++i) {
+        if (a[i] === v) {
             return i;
+        }
+    }
     return -1;
 };
 
@@ -217,11 +219,13 @@ Methanal.Util.detachWidget = function detachWidget(widget) {
  * Call a widget's (and all child widgets') C{nodeInserted} method.
  */
 Methanal.Util.nodeInserted = function nodeInserted(widget) {
-    if (widget.nodeInserted !== undefined)
+    if (widget.nodeInserted !== undefined) {
         widget.nodeInserted();
+    }
 
-    for (var i = 0; i < widget.childWidgets.length; ++i)
+    for (var i = 0; i < widget.childWidgets.length; ++i) {
         Methanal.Util.nodeInserted(widget.childWidgets[i]);
+    }
 };
 
 
@@ -293,15 +297,16 @@ Methanal.Util._reprString = function _reprString(o) {
  * @rtype: C{String}
  */
 Methanal.Util.repr = function repr(o) {
-    if (o === null)
+    if (o === null) {
         return 'null';
-    if (typeof(o) == 'string') {
+    } else if (typeof(o) == 'string') {
         return Methanal.Util._reprString(o);
     } else if (typeof(o) == 'undefined') {
         return 'undefined';
     } else if (typeof(o) == 'function') {
-        if (o.name)
+        if (o.name) {
             return '<function ' + o.name + '>';
+        }
     } else if (o instanceof Array) {
         return o.toSource();
     }
@@ -314,7 +319,7 @@ Methanal.Util.repr = function repr(o) {
  * Right justify a string to a given length with padding.
  *
  * @type  s: C{String}
- * 
+ *
  * @type  width: C{Integer}
  * @param width: Justification width
  *
@@ -389,8 +394,9 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      */
     function start(self) {
         self._node.style.visibility = 'visible';
-        if (self.toggleDisplay !== undefined)
+        if (self.toggleDisplay !== undefined) {
             self._node.style.display = self.toggleDisplay;
+        }
     },
 
 
@@ -399,8 +405,9 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      */
     function stop(self) {
         self._node.style.visibility = 'hidden';
-        if (self.toggleDisplay !== undefined)
+        if (self.toggleDisplay !== undefined) {
             self._node.style.display = 'none';
+        }
     });
 
 
@@ -418,8 +425,9 @@ Divmod.Class.subclass(Methanal.Util, 'StringSet').methods(
     function __init__(self, seq) {
         var s = {};
         if (seq) {
-            for (var i = 0; i < seq.length; ++i)
+            for (var i = 0; i < seq.length; ++i) {
                 s[seq[i]] = true;
+            }
         }
         self._set = s;
     },
@@ -429,8 +437,9 @@ Divmod.Class.subclass(Methanal.Util, 'StringSet').methods(
      * Apply a function over each element of the set.
      */
     function each(self, fn) {
-        for (var name in self._set)
+        for (var name in self._set) {
             fn(name);
+        }
     },
 
 
@@ -479,26 +488,37 @@ Divmod.Error.subclass(Methanal.Util, 'TimeParseError');
 
 
 /**
- * A high-level object built on top of C{Date}.
+ * A high-level time and date object.
  *
- * @type _date: C{Date}
- * @ivar _date: Underlying Date instance
+ * @type _timestamp: C{Number}
+ * @ivar _timestamp: Number of milliseconds since the epoch:
+ *     January 1, 1970, 00:00:00 UTC
  *
  * @type _oneDay: C{boolean}
  * @ivar _oneDay: Is this a truncated Time instance?
  */
 Divmod.Class.subclass(Methanal.Util, 'Time').methods(
     function __init__(self) {
-        self._date = new Date();
+        var d = new Date();
+        self._timezoneOffset = d.getTimezoneOffset() * 60 * 1000;
+        self._timestamp = d.getTime() - self._timezoneOffset;
         self._oneDay = false;
     },
 
 
     /**
-     * C{Date} representation.
+     * Local time C{Date} representation.
      */
     function asDate(self) {
-        return self._date;
+        return new Date(self._timestamp + self._timezoneOffset);
+    },
+
+
+    /**
+     * UTC C{Date} representation.
+     */
+    function asUTCDate(self) {
+        return new Date(self._timestamp);
     },
 
 
@@ -506,7 +526,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * The number of milliseconds since the epoch.
      */
     function asTimestamp(self) {
-        return self._date.getTime();
+        return self._timestamp;
     },
 
 
@@ -514,7 +534,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * A human-readable string representation.
      */
     function asHumanly(self, twentyFourHours) {
-        var _date = self._date;
+        var _date = self.asDate();
         var r = [];
         r.push(self.getDayName(true) + ',');
         r.push(_date.getDate().toString());
@@ -522,28 +542,24 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
         r.push(_date.getFullYear().toString());
 
         if (!self._oneDay) {
-            function _humanlyTime(dateWithTime, twentyFourHours) {
-                var prefix = '';
-                var hours = dateWithTime.getHours();
-                if (!twentyFourHours) {
-                    var dm = Methanal.Util.divmod(hours, 12);
-                    prefix = dm[0] > 0 ? ' pm' : ' am';
-                    hours = dm[1] == 0 ? 12 : dm[1];
-                }
-
-                function pad(v) {
-                    return Methanal.Util.rjust(v.toString(), 2, '0');
-                };
-
-                var r = [];
-                r.push(hours);
-                r.push(dateWithTime.getMinutes());
-                r.push(dateWithTime.getSeconds());
-                r = Methanal.Util.map(pad, r);
-                return r.join(':') + prefix;
+            var prefix = '';
+            var hours = _date.getHours();
+            if (!twentyFourHours) {
+                var dm = Methanal.Util.divmod(hours, 12);
+                prefix = dm[0] > 0 ? ' pm' : ' am';
+                hours = dm[1] == 0 ? 12 : dm[1];
             }
 
-            r.push(_humanlyTime(_date, twentyFourHours));
+            function pad(v) {
+                return Methanal.Util.rjust(v.toString(), 2, '0');
+            };
+
+            var t = [];
+            t.push(hours);
+            t.push(_date.getMinutes());
+            t.push(_date.getSeconds());
+            t = Methanal.Util.map(pad, t);
+            r.push(t.join(':') + prefix);
         }
 
         return r.join(' ');
@@ -559,7 +575,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * @rtype: C{String}
      */
     function getDayName(self, shortened) {
-        var name = Methanal.Util.Time._dayNames[self._date.getDay()];
+        var name = Methanal.Util.Time._dayNames[self.asDate().getDay()];
         return shortened ? name.substr(0, 3) : name;
     },
 
@@ -573,7 +589,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * @rtype: C{String}
      */
     function getMonthName(self, shortened) {
-        var name = Methanal.Util.Time._monthNames[self._date.getMonth()];
+        var name = Methanal.Util.Time._monthNames[self.asDate().getMonth()];
         return shortened ? name.substr(0, 3) : name;
     },
 
@@ -585,15 +601,16 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * @return: A new instance representing the truncated date
      */
     function oneDay(self) {
-        var d = new Date(
-            self._date.getFullYear(),
-            self._date.getMonth(),
-            self._date.getDate());
-        var t = Methanal.Util.Time.fromDate(d);
+        var _date = self.asDate();
+        _date.setHours(0);
+        _date.setMinutes(0);
+        _date.setSeconds(0);
+        _date.setMilliseconds(0);
+        var t = Methanal.Util.Time.fromDate(_date);
         t._oneDay = true;
         return t;
     },
-    
+
 
     /**
      * Offset the current instance by some amount of time.
@@ -606,9 +623,9 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * @return: A new instance representing the newly offset time
      */
     function offset(self, delta) {
-        var d = new Date(self.asTimestamp() + delta);
-        var t = Methanal.Util.Time.fromDate(d);
+        var t = Methanal.Util.Time.fromTimestamp(self.asTimestamp() + delta);
         t._oneDay = self._oneDay;
+        t._timezoneOffset = self._timezoneOffset;
         return t;
     });
 
@@ -628,17 +645,36 @@ Methanal.Util.Time._monthNames = [
  */
 Methanal.Util.Time.fromDate = function fromDate(dateObj) {
     var t = Methanal.Util.Time();
-    t._date = dateObj;
+    t._timezoneOffset = dateObj.getTimezoneOffset() * 60 * 1000;
+    t._timestamp = dateObj.getTime() - t._timezoneOffset;
     return t;
 };
 
 
 
 /**
- * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds.
+ * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds,
+ * since January 1, 1970, 00:00:00 UTC.
+ *
+ * @type  timestamp: C{Number}
+ * @param timestamp: Number of milliseconds since the epoch
+ *
+ * @type  timezoneOffset: C{Number}
+ * @param timezoneOffset: Timezone offset in minutes
+ *
+ * @rtype: L{Methanal.Util.Time}
  */
-Methanal.Util.Time.fromTimestamp = function fromTimestamp(timestamp) {
-    return Methanal.Util.Time.fromDate(new Date(timestamp));
+Methanal.Util.Time.fromTimestamp =
+function fromTimestamp(timestamp, timezoneOffset) {
+    var t = Methanal.Util.Time();
+    t._timestamp = timestamp;
+    if (timezoneOffset) {
+        timezoneOffset *= 60 * 1000;
+    } else {
+        timezoneOffset = 0;
+    }
+    t._timezoneOffset = timezoneOffset;
+    return t;
 };
 
 
@@ -652,7 +688,7 @@ Methanal.Util.Time.fromTimestamp = function fromTimestamp(timestamp) {
  *     be at least 3 letters long)
  *
  * @raise Methanal.Util.TimeParseError: If no information can be gleaned from
- *     L{value} 
+ *     L{value}
  *
  * @rtype: L{Methanal.Util.Time}
  */
@@ -674,8 +710,9 @@ Methanal.Util.Time.fromRelative = function fromRelative(value, _today) {
         for (var i = 0; i < dayNames.length; ++i) {
             if (dayNames[i].toLowerCase().indexOf(value) == 0) {
                 var todayDay = today.asDate().getDay();
-                if (i <= todayDay)
+                if (i <= todayDay) {
                     i += 7;
+                }
                 return today.offset(
                     Methanal.Util.TimeDelta({'days': i - todayDay}));
             }
@@ -692,21 +729,24 @@ Methanal.Util.Time.fromRelative = function fromRelative(value, _today) {
  * Determine whether C{year} is a leap year.
  */
 Methanal.Util.Time.isLeapYear = function isLeapYear(year) {
-    if (year % 100 == 0)
+    if (year % 100 == 0) {
         return (year % 400 == 0);
+    }
     return (year % 4 == 0);
 };
 
 
 
-Methanal.Util.Time._monthLengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+Methanal.Util.Time._monthLengths = [
+    31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 /**
  * Get the number of days for C{month} in C{year}.
  */
 Methanal.Util.Time.getMonthLength = function getMonthLength(year, month) {
-    if (month == 1 && Methanal.Util.Time.isLeapYear(year))
+    if (month == 1 && Methanal.Util.Time.isLeapYear(year)) {
         return 29;
+    }
     return Methanal.Util.Time._monthLengths[month];
 };
 
@@ -714,6 +754,9 @@ Methanal.Util.Time.getMonthLength = function getMonthLength(year, month) {
 
 /**
  * Create a L{Methanal.Util.Time} instance from a semi-structured string.
+ *
+ * As this is primarily intended for textual date input by users, L{value} is
+ * interpreted in local time.
  *
  * @type  value: C{String}
  * @param value: Either a numerical YYYYMMDD or DDMMYYY string (separated by
@@ -727,23 +770,27 @@ Methanal.Util.Time.guess = function guess(value) {
         var delims = ['-', '/', '.'];
         for (var i = 0; i < delims.length; ++i) {
             var parts = value.split(delims[i]);
-            if (parts.length == 3)
+            if (parts.length == 3) {
                 return parts;
+            }
         }
         return null;
     };
 
     function _validDate(year, month, day) {
-        if (year > 0 && month >= 0 && month < 12)
-            return day > 0 && day <= Methanal.Util.Time.getMonthLength(year, month);
+        if (year > 0 && month >= 0 && month < 12) {
+            var monthLength = Methanal.Util.Time.getMonthLength(year, month);
+            return day > 0 && day <= monthLength;
+        }
         return false;
     };
 
     try {
         return Methanal.Util.Time.fromRelative(value);
     } catch (e) {
-        if (!(e instanceof Methanal.Util.TimeParseError))
+        if (!(e instanceof Methanal.Util.TimeParseError)) {
             throw e;
+        }
     }
 
     var parts = _splitDate();
@@ -759,10 +806,11 @@ Methanal.Util.Time.guess = function guess(value) {
             y = Methanal.Util.strToInt(parts[2]);
         }
 
-        if (_validDate(y, m, d))
+        if (_validDate(y, m, d)) {
             // TODO: In the future, "guess" should be able to guess times as
             // well as dates.
             return Methanal.Util.Time.fromDate(new Date(y, m, d)).oneDay();
+        }
     }
 
     throw new Methanal.Util.TimeParseError(

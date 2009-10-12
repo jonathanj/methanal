@@ -5,14 +5,15 @@
 
 
 
-Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestDeps, 'TestDeps').methods(
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestDeps, 'TestDeps').methods(
     /**
      * Assert that C{value} triggers C{dep}.
      */
     function assertDepends(self, dep, value) {
+        var repr = Methanal.Util.repr;
         self.assertIdentical(dep(value), true,
-            Methanal.Util.repr(value) + ' does not trigger the dependency for ' +
-            Methanal.Util.repr(dep));
+            repr(value) + ' does not trigger the dependency for ' + repr(dep));
     },
 
 
@@ -20,9 +21,9 @@ Methanal.Tests.Util.TestCase.subclass(Methanal.Tests.TestDeps, 'TestDeps').metho
      * Assert that C{value} does NOT trigger C{dep}.
      */
     function assertNotDepends(self, dep, value) {
+        var repr = Methanal.Util.repr;
         self.assertIdentical(dep(value), false,
-            Methanal.Util.repr(value) + ' triggers the dependency for ' +
-            Methanal.Util.repr(dep));
+            repr(value) + ' triggers the dependency for ' + repr(dep));
     },
 
 

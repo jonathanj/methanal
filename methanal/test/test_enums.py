@@ -154,10 +154,10 @@ class EnumTests(unittest.TestCase):
 
         e = self.assertRaises(AttributeError,
                               getattr, self.enum.get(u'bar'), 'boop')
-        self.assertIn('boop', e.message)
+        self.assertIn('boop', str(e))
         e = self.assertRaises(AttributeError,
                           getattr, self.enum.get(u'bar'), 'beep')
-        self.assertIn('beep', e.message)
+        self.assertIn('beep', str(e))
 
 
     def test_hidden(self):

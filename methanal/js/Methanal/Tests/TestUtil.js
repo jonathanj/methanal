@@ -7,8 +7,8 @@
 
 Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
     /**
-     * L{Methanal.Util.strToInt} converts a base-10 integer value, represented as a
-     * C{String}, to an C{Integer}.
+     * L{Methanal.Util.strToInt} converts a base-10 integer value, represented
+     * as a C{String}, to an C{Integer}.
      */
     function test_strToInt(self) {
         var CASES = [
@@ -24,7 +24,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
             var input = CASES[i][0];
             var expected = CASES[i][1];
             var actual = Methanal.Util.strToInt(input);
-            self.assert(expected === actual, 'input = ' + input + ' :: expected = ' + expected + ' :: actual = ' + actual);
+            self.assert(expected === actual, 'input = ' + input +
+                ' :: expected = ' + expected + ' :: actual = ' + actual);
         }
     },
 
@@ -62,7 +63,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
         var expected = "\"\\r\\n\\f\\b\\t\"";
         self.assertIdentical(repr, expected);
     },
-    
+
 
     /**
      * Right justifying a string pads it with the first character of the fill
@@ -98,8 +99,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
         self.assertThrows(Error,
             function () { Methanal.Util.map(null, seq); });
     },
-    
-    
+
+
     /**
      * Find the quotient and remainder of two numbers.
      */
@@ -120,7 +121,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
 
 
 
-Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').methods(
+Divmod.UnitTest.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestStringSet').methods(
     /**
      * Supplying no parameters creates an empty set.
      */
@@ -130,7 +132,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').meth
             self.assert(false, 'Set is not empty');
         });
     },
-    
+
 
     /**
      * L{Methanal.Util.StringSet.each} applies a function over all elements
@@ -149,7 +151,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestStringSet').meth
         self.assertIdentical(called, 2);
         self.assertIdentical(values.length, 0);
     },
-    
+
 
     /**
      * L{Methanal.Util.StringSet.contains} correctly reports the presence of
@@ -220,20 +222,23 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
         function assertTimeParsed(data, timestamp) {
             var time = Methanal.Util.Time.guess(data);
             self.assertIdentical(time._oneDay, true);
-            self.assertIdentical(time.asTimestamp(), timestamp);
+            // User input is interpreted as local time, but the tests should
+            // pass regardless of the runner's local timezone, so we use UTC
+            // dates.
+            self.assertIdentical(time.asUTCDate().getTime(), timestamp);
         };
 
-        assertTimeParsed('2009/9/1',   1251756000000);
-        assertTimeParsed('2009.09.01', 1251756000000);
-        assertTimeParsed('2009-09-01', 1251756000000);
-        assertTimeParsed('1/9/2009',   1251756000000);
-        assertTimeParsed('01.09.2009', 1251756000000);
-        assertTimeParsed('01-09-2009', 1251756000000);
-        assertTimeParsed('1/9/2009',   1251756000000);
-        assertTimeParsed('29/2/2008',  1204236000000);
+        assertTimeParsed('2009/9/1',   1251763200000);
+        assertTimeParsed('2009.09.01', 1251763200000);
+        assertTimeParsed('2009-09-01', 1251763200000);
+        assertTimeParsed('1/9/2009',   1251763200000);
+        assertTimeParsed('01.09.2009', 1251763200000);
+        assertTimeParsed('01-09-2009', 1251763200000);
+        assertTimeParsed('1/9/2009',   1251763200000);
+        assertTimeParsed('29/2/2008',  1204243200000);
     },
 
-    
+
     /**
      * L{Methanal.Util.Time.guess} throws L{Methanal.Util.TimeParseError} when
      * the input is not in any recognisable format, and reraises the original
@@ -264,9 +269,9 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      * Create a L{Methanal.Util.Time} instance from a C{Date}.
      */
     function test_fromDate(self) {
-        var d = new Date();
+        var d = new Date(2009, 8, 1, 12, 34, 56, 78);
         var t = Methanal.Util.Time.fromDate(d);
-        self.assertIdentical(t.asTimestamp(), d.getTime());
+        self.assertIdentical(t.asDate().getTime(), d.getTime());
     },
 
 
@@ -309,19 +314,32 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      * Create a L{Methanal.Util.Time} instance from a timestamp in milliseconds.
      */
     function test_fromTimestamp(self) {
-        var t = Methanal.Util.Time.fromTimestamp(1251759723000);
-        self.assertIdentical(t.asHumanly(), 'Tue, 1 Sep 2009 01:02:03 am');
+        var t;
+        var timestamp;
+
+        timestamp = 1251766923000;
+        t = Methanal.Util.Time.fromTimestamp(timestamp);
+        self.assertIdentical(t.asUTCDate().getTime(), timestamp);
+        self.assertIdentical(t._timezoneOffset, 0);
+
+        var d = new Date();
+        timestamp = d.getTime();
+        t = Methanal.Util.Time.fromTimestamp(timestamp, d.getTimezoneOffset());
+        self.assertIdentical(t.asUTCDate().getTime(), timestamp);
+        self.assertIdentical(
+            t._timezoneOffset, d.getTimezoneOffset() * 60 * 1000);
     },
 
 
     /**
      * L{Methanal.Util.Time.asDate} converts a Time into a C{Date} representing
-     * the same time.
+     * the same I{local} time.
      */
     function test_asDate(self) {
         var t = Methanal.Util.Time();
         var d = t.asDate();
-        self.assertIdentical(t.asTimestamp(), d.getTime());
+        self.assertIdentical(
+            t.asTimestamp() + d.getTimezoneOffset() * 60 * 1000, d.getTime());
     },
 
 
@@ -330,7 +348,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      * milliseconds elapsed since the epoch.
      */
     function test_asTimestamp(self) {
-        self.assertIdentical(self._knownTime.asTimestamp(), 1252193783002);
+        self.assertIdentical(self._knownTime.asTimestamp(), 1252200983002);
     },
 
 
@@ -385,18 +403,18 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
         self.assertIdentical(od.getMilliseconds(), 0);
     },
 
-    
+
     /**
      * L{Methanal.Util.Time.offset} offsets a Time by the given number of
      * milliseconds.
      */
     function test_offset(self) {
         var t = self._knownTime.offset(Methanal.Util.TimeDelta({'days': -1}));
-        self.assertIdentical(t.asTimestamp(), 1252107383002);
+        self.assertIdentical(t.asTimestamp(), 1252114583002);
         self.assertIdentical(t.oneDay().asHumanly(), 'Sat, 5 Sep 2009');
 
         var t = self._knownTime.offset(Methanal.Util.TimeDelta({'days': 1}));
-        self.assertIdentical(t.asTimestamp(), 1252280183002);
+        self.assertIdentical(t.asTimestamp(), 1252287383002);
         self.assertIdentical(t.oneDay().asHumanly(), 'Mon, 7 Sep 2009');
     });
 
@@ -405,7 +423,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
 /**
  * Tests for L{Methanal.Util.Throbber}.
  */
-Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestThrobber').methods(
+Divmod.UnitTest.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestThrobber').methods(
     function _createThrobber(self, toggleDisplay) {
         var idNodes = {
             'throbber': Methanal.Tests.Util.MockNode('foo')};
@@ -422,7 +441,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestThrobber').metho
         var throbber = self._createThrobber();
         self.assertIdentical(throbber._node.name, 'foo');
     },
-    
+
 
     /**
      * Starting and stopping the throbber, under normal conditions, adjusts the
@@ -456,7 +475,8 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestThrobber').metho
 /**
  * Tests for L{Methanal.Util.DOMBuilder}.
  */
-Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestDOMBuilder').methods(
+Divmod.UnitTest.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestDOMBuilder').methods(
     /**
      * Helper function for building a node using C{DOMBuilder}.
      */
