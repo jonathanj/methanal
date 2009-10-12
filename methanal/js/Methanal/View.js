@@ -475,6 +475,138 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
 /**
+ * A form action.
+ */
+Nevow.Athena.Widget.subclass(Methanal.View, 'FormAction').methods(
+    function nodeInserted(self) {
+        if (self.widgetParent._disabled) {
+            self.disable();
+        } else {
+            self.enable();
+        }
+    },
+
+
+    /**
+     * Enable form action.
+     */
+    function enable(self) {
+        throw new Error('Subclasses must implement "enable"');
+    },
+
+
+    /**
+     * Disable form action.
+     */
+    function disable(self) {
+        throw new Error('Subclasses must implement "disable"');
+    },
+
+
+    /**
+     * Get the parent L{Methanal.View.LiveForm}.
+     */
+    function getForm(self) {
+        return self.widgetParent.widgetParent;
+    },
+
+
+    function invoke(self) {
+        throw new Error('Subclasses must implement "invoke"');
+    });
+
+
+
+/**
+ * Base class for push button form actions.
+ */
+Methanal.View.FormAction.subclass(Methanal.View, 'ActionButton').methods(
+    function nodeInserted(self) {
+        self._buttonNode = self.node.getElementsByTagName('button')[0];
+        Methanal.View.ActionButton.upcall(self, 'nodeInserted');
+    },
+
+
+    function enable(self) {
+        self._buttonNode.disabled = false;
+        Methanal.Util.removeElementClass(self._buttonNode, 'methanal-submit-disabled');
+    },
+
+
+    function disable(self) {
+        self._buttonNode.disabled = true;
+        Methanal.Util.addElementClass(self._buttonNode, 'methanal-submit-disabled');
+    });
+
+
+
+/**
+ * Submit form action.
+ *
+ * Invoking this action calls L{Methanal.View.LiveForm.submit}.
+ */
+Methanal.View.ActionButton.subclass(Methanal.View, 'SubmitAction').methods(
+    function invoke(self) {
+        return self.getForm().submit();
+    });
+
+
+
+/**
+ * Reset form action.
+ */
+Methanal.View.ActionButton.subclass(Methanal.View, 'ResetAction').methods(
+    function invoke(self) {
+        self.getForm().reset();
+        return false;
+    });
+
+
+
+/**
+ * Form action container.
+ *
+ * @type throbber: L{Methanal.Util.Throbber}
+ * @ivar throbber: Action throbber
+ */
+Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
+    function __init__(self, node) {
+        Methanal.View.ActionContainer.upcall(self, '__init__', node);
+        self._disabled = false;
+    },
+
+
+    function nodeInserted(self) {
+        self.throbber = Methanal.Util.Throbber(self);
+    },
+
+
+    /**
+     * Enable all form actions.
+     */
+    function enable(self) {
+        for (var i = 0; i < self.childWidgets.length; ++i) {
+            self.childWidgets[i].enable();
+        }
+        self._disabled = false;
+    },
+
+
+    /**
+     * Disable all form actions.
+     */
+    function disable(self) {
+        for (var i = 0; i < self.childWidgets.length; ++i) {
+            self.childWidgets[i].disable();
+        }
+        self._disabled = true;
+    });
+
+
+
+/**
+ * A form view.
+ *
  * @type viewOnly: C{boolean}
  * @ivar viewOnly: Should the submit button for this form be visible?
  *
@@ -493,37 +625,9 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function nodeInserted(self) {
         self._formErrorNode = self.nodeById('form-error');
         if (!self.viewOnly) {
-            self._submitNode = self.nodeById('submit');
+            self.actions = Nevow.Athena.Widget.get(
+                self.nodeById('actions').getElementsByTagName('div')[0]);
         }
-        self.throbber = Methanal.Util.Throbber(self);
-    },
-
-
-    /**
-     * Enable the form's submit button.
-     *
-     * This does nothing if the form is "view only."
-     */
-    function _enableSubmit(self) {
-        if (self.viewOnly) {
-            return;
-        }
-        self._submitNode.disabled = false;
-        Methanal.Util.removeElementClass(self._submitNode, 'methanal-submit-disabled');
-    },
-
-
-    /**
-     * Disable the form's submit button.
-     *
-     * This does nothing if the form is "view only."
-     */
-    function _disableSubmit(self) {
-        if (self.viewOnly) {
-            return;
-        }
-        self._submitNode.disabled = true;
-        Methanal.Util.addElementClass(self._submitNode, 'methanal-submit-disabled');
     },
 
 
@@ -567,13 +671,13 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         }
 
         self.clearError();
-        self._disableSubmit();
-        self.throbber.start();
+        self.actions.disable();
+        self.actions.throbber.start();
 
         var d = self.callRemote('invoke', data);
         d.addBoth(function (value) {
-            self.throbber.stop();
-            self._enableSubmit();
+            self.actions.throbber.stop();
+            self.actions.enable();
             return value;
         });
         d.addCallback(function (value) { return self.submitSuccess(value); });
@@ -671,7 +775,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * Enable the form for submission.
      */
     function setValid(self) {
-        self._enableSubmit();
+        self.actions.enable();
     },
 
     
@@ -679,7 +783,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * Disable form submission.
      */
     function setInvalid(self) {
-        self._disableSubmit();
+        self.actions.disable();
     });
 
 
