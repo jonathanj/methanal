@@ -413,13 +413,13 @@ class FilteringTextInput(TextInput):
         for no validation
 
         For example::
-        
+
             - Allow alphanumerics: [a-zA-z0-9]
             - Allow either the string "cat" or "dog": cat|dog
     """
     jsClass = u'Methanal.View.FilteringTextInput'
-    
-    
+
+
     def __init__(self, expression=None, **kw):
         super(FilteringTextInput, self).__init__(**kw)
         self.expression = expression
@@ -442,7 +442,7 @@ class PrePopulatingTextInput(TextInput):
 
     def __init__(self, targetControlName, **kw):
         super(PrePopulatingTextInput, self).__init__(**kw)
-        self.targetControlName = targetControlName
+        self.targetControlName = unicode(targetControlName)
 
 
     def getArgs(self):

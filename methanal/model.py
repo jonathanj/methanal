@@ -337,7 +337,7 @@ def paramsFromSchema(store, itemClass, item=None, ignoredAttributes=set()):
     @type ignoredAttributes: C{set} of C{str}
     @param ignoredAttributes: Names of attributes to skip creating parameters
         for
-    
+
     @rtype: C{iterable} of model parameters
     """
     for name, attr in itemClass.getSchema():
