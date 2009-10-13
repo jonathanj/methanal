@@ -496,18 +496,24 @@ class DateInput(TextInput):
 
 
 
-class IntegerInput(TextInput):
+class IntegerValueMixin(object):
     """
-    Integer input.
+    Mixin to convert parameter values to C{int} when a value is present, or
+    the empty string when the value is C{None}.
     """
-    jsClass = u'Methanal.View.IntegerInput'
-
-
     def getValue(self):
         value = self.param.value
         if value is None:
             return u''
         return int(value)
+
+
+
+class IntegerInput(IntegerValueMixin, TextInput):
+    """
+    Integer input.
+    """
+    jsClass = u'Methanal.View.IntegerInput'
 
 
 
@@ -680,18 +686,11 @@ class GroupedSelectInput(SelectInput):
 
 
 
-class IntegerSelectInput(SelectInput):
+class IntegerSelectInput(IntegerValueMixin, SelectInput):
     """
     Dropdown input backed by integer values.
     """
     jsClass = u'Methanal.View.IntegerSelectInput'
-
-
-    def getValue(self):
-        value = self.param.value
-        if value is None:
-            return u''
-        return int(value)
 
 
 
