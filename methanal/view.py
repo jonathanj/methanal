@@ -841,10 +841,12 @@ class ItemViewBase(LiveForm):
             self.original = item
         elif itemClass is not None:
             self.itemClass = itemClass
+            if store is None:
+                raise ValueError('You must pass "store" with "itemClass"')
             self.store = store
             self.original = itemClass
         else:
-            raise ValueError('You must pass either item or itemClass')
+            raise ValueError('You must pass either "item" or "itemClass"')
 
         self.model = self.modelFactory(item=self.item,
                                        itemClass=self.itemClass,
