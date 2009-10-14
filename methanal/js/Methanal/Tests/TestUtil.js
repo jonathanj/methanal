@@ -1,11 +1,184 @@
 // import Divmod.UnitTest
-// import Divmod.MockBrowser
 // import Methanal.Util
 // import Methanal.Tests.Util
+// import Methanal.Tests.MockBrowser
 
 
 
-Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestUtil').methods(
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestUtil').methods(
+    /**
+     * L{Methanal.Util.addElementClass} and L{Methanal.Util.removeElementClass}
+     * add and remove values to an element's C{className} attribute.
+     */
+    function test_addRemoveElementClass(self) {
+        var node = document.createElement('div');
+        var addElementClass = Methanal.Util.addElementClass;
+        var removeElementClass = Methanal.Util.removeElementClass;
+
+        addElementClass(node, 'foo');
+        self.assertIdentical(node.className, 'foo');
+        addElementClass(node, 'foo');
+        self.assertIdentical(node.className, 'foo');
+
+        addElementClass(node, 'bar');
+        self.assertIdentical(node.className, 'foo bar');
+
+        removeElementClass(node, 'foo');
+        self.assertIdentical(node.className, 'bar');
+
+        removeElementClass(node, 'bar');
+        self.assertIdentical(node.className, '');
+
+        removeElementClass(node, 'bar');
+        self.assertIdentical(node.className, '');
+    },
+
+
+    /**
+     * Create a DOM node with some children.
+     */
+    function _makeNodeWithChildren(self) {
+        var T = Methanal.Util.DOMBuilder(document);
+        var node = T('div', {}, [
+            T('span', {}, ['hello ',
+                T('strong', {}, 'world')]),
+            T('em', {}, ['!'])]);
+        self.assertIdentical(node.childNodes.length, 2);
+        return node;
+    },
+
+
+    /**
+     * L{Methanal.Util.removeNodeContent} removes all of a node's children.
+     */
+    function test_removeNodeContent(self) {
+        var node = self._makeNodeWithChildren();
+        Methanal.Util.removeNodeContent(node);
+        self.assertIdentical(node.childNodes.length, 0);
+    },
+
+
+    /**
+     * L{Methanal.Util.replaceNodeContent} replaces a node's children with
+     * some other children.
+     */
+    function test_replaceNodeContent(self) {
+        var T = Methanal.Util.DOMBuilder(document);
+        var node = self._makeNodeWithChildren();
+        var children = [T('strong', {}, ['yay'])];
+        Methanal.Util.replaceNodeContent(node, children);
+        self.assertArraysEqual(node.childNodes, children);
+    },
+
+
+    /**
+     * L{Methanal.Util.replaceNodeText} replaces a node's content with a text
+     * node.
+     */
+    function test_replaceNodeText(self) {
+        var node = self._makeNodeWithChildren();
+        Methanal.Util.replaceNodeText(node, 'hey');
+        self.assertIdentical(node.childNodes.length, 1);
+        self.assertIsInstanceOf(node.firstChild, Divmod.MockBrowser.TextNode);
+    },
+
+
+    /**
+     * L{Methanal.Util.formatDecimal} pretty-prints a number with thousand
+     * separators.
+     */
+    function test_formatDecimal(self) {
+        var formatDecimal = Methanal.Util.formatDecimal;
+        self.assertIdentical(formatDecimal(1), '1');
+        self.assertIdentical(formatDecimal(100), '100');
+        self.assertIdentical(formatDecimal(1000), '1,000');
+        self.assertIdentical(formatDecimal(10000), '10,000');
+        self.assertIdentical(formatDecimal(1000000), '1,000,000');
+
+        self.assertIdentical(formatDecimal(1000.25), '1,000.25');
+        self.assertIdentical(formatDecimal(1000000.66), '1,000,000.66');
+    },
+
+
+    /**
+     * L{Methanal.Util.cycle} produces a callable that iterates through
+     * the original arguments indefinitely.
+     */
+    function test_cycle(self) {
+        var cycler = Methanal.Util.cycle(42, 5144, 'a');
+        self.assertIdentical(cycler(), 42);
+        self.assertIdentical(cycler(), 5144);
+        self.assertIdentical(cycler(), 'a');
+        self.assertIdentical(cycler(), 42);
+    },
+
+
+    /**
+     * L{Methanal.Util.arrayIndexOf} finds the first index of an element in an
+     * array, or C{-1} if no such element exists.
+     */
+    function test_arrayIndexOf(self) {
+        var arrayIndexOf = Methanal.Util.arrayIndexOf;
+        var a = ['x', 'y', 'z', 'x'];
+        self.assertIdentical(arrayIndexOf(a, 'x'), 0);
+        self.assertIdentical(arrayIndexOf(a, 'y'), 1);
+        self.assertIdentical(arrayIndexOf(a, 'z'), 2);
+        self.assertIdentical(arrayIndexOf(a, 'a'), -1);
+    },
+
+
+    /**
+     * L{Methanal.Util.nodeInserted} calls a widget's C{nodeInserted} method
+     * and the C{nodeInserted} method of each child widget.
+     */
+    function test_nodeInserted(self) {
+        function makeWidget(childWidgets) {
+            return {
+                'childWidgets': childWidgets,
+                'nodeInserted': function () {
+                    this.nodeInserted = true;
+                }};
+        };
+
+        var childWidgets = [];
+        for (var i = 0; i < 5; ++i) {
+            childWidgets.push(makeWidget([]));
+        }
+        var widget = makeWidget(childWidgets);
+
+        Methanal.Util.nodeInserted(widget);
+        self.assertIdentical(widget.nodeInserted, true);
+        for (var i = 0; i < childWidgets.length; ++i) {
+            self.assertIdentical(childWidgets[i].nodeInserted, true);
+        }
+    },
+
+
+    /**
+     * L{Methanal.Util.repr} converts an object to a human-readable string.
+     */
+    function test_repr(self) {
+        var repr = Methanal.Util.repr;
+        self.assertIdentical(repr('a'), '"a"');
+        self.assertIdentical(repr('a"b"c'), '"a\\"b\\"c"');
+        self.assertIdentical(repr(1), '1');
+        self.assertIdentical(repr(null), 'null');
+        self.assertIdentical(repr(undefined), 'undefined');
+        self.assertIdentical(repr(repr), '<function repr>');
+        var a = [1, 2, 3, 'a', ['b', '"c"']];
+        self.assertIdentical(repr(a), '[1, 2, 3, "a", ["b", "\\"c\\""]]');
+        var o = {a: 1};
+        self.assertIdentical(repr(o), '{"a": 1}');
+        var o2 = {a: 1, b: 2};
+        self.assertIdentical(repr(o2), '{"a": 1, "b": 2}');
+
+        var type = Divmod.Class.subclass('Foo');
+        var i = type();
+        self.assertIdentical(repr(i), i.toString());
+    },
+
+
     /**
      * L{Methanal.Util.strToInt} converts a base-10 integer value, represented
      * as a C{String}, to an C{Integer}.

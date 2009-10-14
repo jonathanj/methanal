@@ -1,7 +1,3 @@
-// import Nevow.Athena
-
-
-
 /**
  * Add a class to an element's "className" attribute.
  *
@@ -95,7 +91,7 @@ Methanal.Util.removeNodeContent = function removeNodeContent(node) {
  *
  * @type node: DOM node
  *
- * @type children: C{Array}
+ * @type children: C{Array} of C{DOM nodes}
  */
 Methanal.Util.replaceNodeContent = function replaceNodeContent(node, children) {
     Methanal.Util.removeNodeContent(node);
@@ -107,7 +103,7 @@ Methanal.Util.replaceNodeContent = function replaceNodeContent(node, children) {
 
 
 /**
- * Replace a node's text node with new text.
+ * Replace all of a node's content with text.
  *
  * @type node: DOM node
  *
@@ -308,7 +304,20 @@ Methanal.Util.repr = function repr(o) {
             return '<function ' + o.name + '>';
         }
     } else if (o instanceof Array) {
-        return o.toSource();
+        var names = Methanal.Util.map(Methanal.Util.repr, o);
+        return '[' + names.join(', ') + ']';
+    } else {
+        if (o.constructor !== undefined && o.constructor.name !== undefined) {
+            var typeName = o.constructor.name;
+            if (typeName == 'Object') {
+                var names = [];
+                var repr = Methanal.Util.repr;
+                for (var key in o) {
+                    names.push(repr(key) + ': ' + repr(o[key]));
+                }
+                return '{' + names.join(', ') + '}';
+            }
+        }
     }
     return o.toString();
 };

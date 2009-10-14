@@ -3,7 +3,7 @@
 // import Methanal.View
 // import Methanal.Util
 // import Methanal.Tests.Util
-// import Methanal.Tests.DOMUtil
+// import Methanal.Tests.MockBrowser
 
 
 
@@ -374,7 +374,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
 /**
  * Mimic Internet Explorer's broken C{HTMLSelectElement.add} behaviour.
  */
-Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(
+Methanal.Tests.MockBrowser.MockHTMLSelectElement.subclass(
     Methanal.Tests.TestView, 'MockIEHTMLSelectElement').methods(
     function add(self, element, before) {
         if (before === null) {

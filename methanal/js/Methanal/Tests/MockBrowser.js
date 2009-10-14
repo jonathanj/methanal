@@ -2,13 +2,40 @@
 
 
 
+Divmod.MockBrowser.Element.subclass(
+    Methanal.Tests.MockBrowser, 'Element').methods(
+    function __init__(self, tagName) {
+        Methanal.Tests.MockBrowser.Element.upcall(self, '__init__', tagName);
+        self._updateChildProperties();
+    },
+
+
+    function _updateChildProperties(self) {
+        self.firstChild = self.childNodes[0] || null;
+        self.lastChild = self.childNodes[self.childNodes.length - 1] || null;
+    },
+
+
+    function appendChild(self, child) {
+        Methanal.Tests.MockBrowser.Element.upcall(self, 'appendChild', child);
+        self._updateChildProperties();
+    },
+
+
+    function removeChild(self, child) {
+        Methanal.Tests.MockBrowser.Element.upcall(self, 'removeChild', child);
+        self._updateChildProperties();
+    });
+
+
+
 /**
  * HTMLSelectElement mock implementation.
  */
-Divmod.MockBrowser.Element.subclass(
-    Methanal.Tests.DOMUtil, 'MockHTMLSelectElement').methods(
+Methanal.Tests.MockBrowser.Element.subclass(
+    Methanal.Tests.MockBrowser, 'MockHTMLSelectElement').methods(
     function __init__(self) {
-        Methanal.Tests.DOMUtil.MockHTMLSelectElement.upcall(
+        Methanal.Tests.MockBrowser.MockHTMLSelectElement.upcall(
             self, '__init__', 'select');
         self.options = [];
     },
@@ -34,10 +61,10 @@ Divmod.MockBrowser.Element.subclass(
  * HTMLDocument mock implementation.
  */
 Divmod.MockBrowser.Document.subclass(
-    Methanal.Tests.DOMUtil, 'Document').methods(
+    Methanal.Tests.MockBrowser, 'Document').methods(
     function __init__(self) {
         self._elementTags = {};
-        Methanal.Tests.DOMUtil.Document.upcall(self, '__init__');
+        Methanal.Tests.MockBrowser.Document.upcall(self, '__init__');
     },
 
 
@@ -56,7 +83,7 @@ Divmod.MockBrowser.Document.subclass(
         if (self._elementTags[tagName]) {
             el = self._elementTags[tagName]();
         } else {
-            el = Divmod.MockBrowser.Element(tagName);
+            el = Methanal.Tests.MockBrowser.Element(tagName);
         }
         el._setOwnerDocument(self);
         self._allElements.push(el);
@@ -67,9 +94,9 @@ Divmod.MockBrowser.Document.subclass(
 
 // Only override Divmod's mock document.
 if (document instanceof Divmod.MockBrowser.Document) {
-    if (!(document instanceof Methanal.Tests.DOMUtil.Document)) {
-        document = Methanal.Tests.DOMUtil.Document();
+    if (!(document instanceof Methanal.Tests.MockBrowser.Document)) {
+        document = Methanal.Tests.MockBrowser.Document();
         document.registerElementTag(
-            'select', Methanal.Tests.DOMUtil.MockHTMLSelectElement);
+            'select', Methanal.Tests.MockBrowser.MockHTMLSelectElement);
     }
 }
