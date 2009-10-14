@@ -401,7 +401,7 @@ class IntegerSelectInputTests(ChoiceInputTests):
 
 
 class ObjectSelectInputTests(FormInputTests):
-    skip = 'ObjectSelectInput is a horrible mess, it needs to be fixed properly'
+    todo = 'ObjectSelectInput is a horrible mess, it needs to be fixed properly'
 
 
 

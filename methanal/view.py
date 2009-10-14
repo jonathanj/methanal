@@ -442,7 +442,7 @@ class PrePopulatingTextInput(TextInput):
 
     def __init__(self, targetControlName, **kw):
         super(PrePopulatingTextInput, self).__init__(**kw)
-        self.targetControlName = unicode(targetControlName)
+        self.targetControlName = unicode(targetControlName, 'ascii')
 
 
     def getArgs(self):
