@@ -694,10 +694,12 @@ class IntegerSelectInput(IntegerValueMixin, SelectInput):
 
 
 
-# XXX: Does this really belong here? It seems like an atrocious hack.
 class ObjectSelectInput(SelectInput):
     """
     Choice input for arbitrary Python objects.
+
+    @type _objects: C{dict} mapping C{int} to C{object}
+    @ivar _objects: Mapping of object identities to objects
     """
     def __init__(self, values, **kw):
         """
@@ -706,48 +708,29 @@ class ObjectSelectInput(SelectInput):
         @type values: C{iterable} of C{(obj, unicode)}
         @param values: An iterable of C{(object, description)} pairs
         """
-        self.objects = objects = []
+        self._objects = objects = {}
         selectValues = []
-        for i, (obj, desc) in enumerate(values):
-            objects.append(obj)
-            selectValues.append((str(i), desc))
-
+        for obj, desc in values:
+            value = id(obj)
+            objects[value] = obj
+            selectValues.append((value, desc))
         super(ObjectSelectInput, self).__init__(values=selectValues, **kw)
-
-
-    def addObject(self, obj):
-        i = unicode(len(self.objects))
-        self.objects.append(obj)
-        return i
-
-
-    def removeObject(self, index):
-        # XXX: HACK: ergh, we should probably a.) keep our own counter (instead
-        # of using len(objects)) and b.) use a dict instead of a list, so that
-        # removing items isn't a huge mission
-        o = self.objects[index]
-        self.objects[index] = None
-        return o
 
 
     def getValue(self):
         value = super(ObjectSelectInput, self).getValue()
-
-        try:
-            return self.objects.index(value)
-        except ValueError:
-            return None
+        if value is None:
+            return u''
+        return unicode(id(value))
 
 
     def invoke(self, data):
-        value = data[self.param.name]
-        if value is not None:
-            try:
-                index = int(value)
-                value = self.objects[index]
-            except ValueError:
-                value = None
-
+        try:
+            objID = int(data[self.param.name])
+        except (ValueError, TypeError):
+            value = None
+        else:
+            value = self._objects.get(objID)
         self.param.value = value
 
 
