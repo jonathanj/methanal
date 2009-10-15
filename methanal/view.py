@@ -434,7 +434,7 @@ class PrePopulatingTextInput(TextInput):
     """
     Text input that updates another input's value with its own in real time.
 
-    @type targetControlName: C{unicode}
+    @type targetControlName: C{str}
     @ivar targetControlName: The name of the input to pre-populate
     """
     jsClass = u'Methanal.View.PrePopulatingTextInput'
