@@ -413,13 +413,13 @@ class FilteringTextInput(TextInput):
         for no validation
 
         For example::
-        
+
             - Allow alphanumerics: [a-zA-z0-9]
             - Allow either the string "cat" or "dog": cat|dog
     """
     jsClass = u'Methanal.View.FilteringTextInput'
-    
-    
+
+
     def __init__(self, expression=None, **kw):
         super(FilteringTextInput, self).__init__(**kw)
         self.expression = expression
@@ -434,7 +434,7 @@ class PrePopulatingTextInput(TextInput):
     """
     Text input that updates another input's value with its own in real time.
 
-    @type targetControlName: C{unicode}
+    @type targetControlName: C{str}
     @ivar targetControlName: The name of the input to pre-populate
     """
     jsClass = u'Methanal.View.PrePopulatingTextInput'
@@ -442,7 +442,7 @@ class PrePopulatingTextInput(TextInput):
 
     def __init__(self, targetControlName, **kw):
         super(PrePopulatingTextInput, self).__init__(**kw)
-        self.targetControlName = targetControlName
+        self.targetControlName = unicode(targetControlName, 'ascii')
 
 
     def getArgs(self):
@@ -496,18 +496,24 @@ class DateInput(TextInput):
 
 
 
-class IntegerInput(TextInput):
+class IntegerValueMixin(object):
     """
-    Integer input.
+    Mixin to convert parameter values to C{int} when a value is present, or
+    the empty string when the value is C{None}.
     """
-    jsClass = u'Methanal.View.IntegerInput'
-
-
     def getValue(self):
         value = self.param.value
         if value is None:
             return u''
         return int(value)
+
+
+
+class IntegerInput(IntegerValueMixin, TextInput):
+    """
+    Integer input.
+    """
+    jsClass = u'Methanal.View.IntegerInput'
 
 
 
@@ -680,18 +686,11 @@ class GroupedSelectInput(SelectInput):
 
 
 
-class IntegerSelectInput(SelectInput):
+class IntegerSelectInput(IntegerValueMixin, SelectInput):
     """
     Dropdown input backed by integer values.
     """
     jsClass = u'Methanal.View.IntegerSelectInput'
-
-
-    def getValue(self):
-        value = self.param.value
-        if value is None:
-            return u''
-        return int(value)
 
 
 
@@ -841,10 +840,12 @@ class ItemViewBase(LiveForm):
             self.original = item
         elif itemClass is not None:
             self.itemClass = itemClass
+            if store is None:
+                raise ValueError('You must pass "store" with "itemClass"')
             self.store = store
             self.original = itemClass
         else:
-            raise ValueError('You must pass either item or itemClass')
+            raise ValueError('You must pass either "item" or "itemClass"')
 
         self.model = self.modelFactory(item=self.item,
                                        itemClass=self.itemClass,
