@@ -1,9 +1,10 @@
+// import Divmod.Defer
 // import Divmod.UnitTest
 // import Nevow.Test.WidgetUtil
 // import Methanal.View
 // import Methanal.Util
 // import Methanal.Tests.Util
-// import Methanal.Tests.DOMUtil
+// import Methanal.Tests.MockBrowser
 
 
 
@@ -38,15 +39,20 @@ function makeWidgetChildNode(widget, tagName, id) {
  */
 Methanal.View.LiveForm.subclass(
     Methanal.Tests.TestView, 'MockLiveForm').methods(
-    function __init__(self, controlNames) {
+    function __init__(self, controlNames, viewOnly) {
+        viewOnly = viewOnly || false;
+
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         Methanal.Tests.TestView.MockLiveForm.upcall(
-            self, '__init__', node, false, controlNames);
+            self, '__init__', node, viewOnly, controlNames);
 
         var makeWidgetChildNode = Methanal.Tests.TestView.makeWidgetChildNode;
         makeWidgetChildNode(self, 'span', 'form-error');
-        makeWidgetChildNode(self, 'button', 'submit');
         makeWidgetChildNode(self, 'img', 'throbber');
+        self.actions = Methanal.View.ActionContainer(
+            Nevow.Test.WidgetUtil.makeWidgetNode());
+        self.addChildWidget(self.actions);
+        self.node.appendChild(self.actions.node);
 
         document.body.appendChild(node);
     });
@@ -61,9 +67,9 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create a C{Methanal.View.LiveForm}.
      */
-    function createForm(self) {
+    function createForm(self, viewOnly) {
         var controlNames = {};
-        form = Methanal.Tests.TestView.MockLiveForm(controlNames);
+        form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
         Methanal.Util.nodeInserted(form);
         return form;
     },
@@ -87,6 +93,56 @@ Methanal.Tests.Util.TestCase.subclass(
             function() {
                 form.thaw();
             });
+    },
+
+
+    /**
+     * Setting the form valid / invalid enables / disables the actions.
+     */
+    function test_validInvalid(self) {
+        var form = self.createForm();
+        form.setValid();
+        self.assertIdentical(form.actions._disabled, false);
+        form.setInvalid();
+        self.assertIdentical(form.actions._disabled, true);
+    },
+
+
+    /**
+     * Submitting a form calls L{Methanal.View.LiveForm.submitSuccess} upon
+     * successful submission and L{Methanal.View.LiveForm.submitFailure} upon
+     * a failed submission.
+     */
+    function test_submission(self) {
+        var success;
+        var form = self.createForm();
+
+        function succeed(methodName, data) {
+            self.assertIdentical(form.actions._disabled, true);
+            return Divmod.Defer.succeed(data);
+        };
+
+        function fail(methodName, data) {
+            self.assertIdentical(form.actions._disabled, true);
+            return Divmod.Defer.fail('too bad');
+        };
+
+        form.submitSuccess = function (data) {
+            self.assertIdentical(form.actions._disabled, false);
+            success = true;
+        };
+        form.submitFailure = function (error) {
+            self.assertIdentical(form.actions._disabled, false);
+            success = false;
+        };
+
+        form.callRemote = succeed;
+        form.submit();
+        self.assertIdentical(success, true);
+
+        form.callRemote = fail;
+        form.submit();
+        self.assertIdentical(success, false);
     });
 
 
@@ -374,7 +430,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
 /**
  * Mimic Internet Explorer's broken C{HTMLSelectElement.add} behaviour.
  */
-Methanal.Tests.DOMUtil.MockHTMLSelectElement.subclass(
+Methanal.Tests.MockBrowser.MockHTMLSelectElement.subclass(
     Methanal.Tests.TestView, 'MockIEHTMLSelectElement').methods(
     function add(self, element, before) {
         if (before === null) {
@@ -704,6 +760,12 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     function test_displayValue(self) {
         self.testControl({value: null},
             function (control) {
+                // TextInput._updateDisplayValue should have been called by the
+                // time the node has been inserted, if it has then the first
+                // child of _displayValueNode will be defined.
+                var displayValueText = control._displayValueNode.childNodes[0];
+                self.assertNotIdentical(displayValueText, undefined);
+
                 var called = 0;
                 var displayValue = '';
                 control._originalMakeDisplayValue = control.makeDisplayValue;

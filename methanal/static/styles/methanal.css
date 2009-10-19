@@ -371,9 +371,10 @@ button.roll-up {
 .methanal-submit-error {
     color: white;
     background: #74010c;
-    border: 1px solid #f30219;
-    padding: 4px;
-    margin-top: 0.5em;
+    border-top: 1px solid #f30219;
+    padding: 5px;
+    margin: -5px;
+    margin-top: 5px;
 }
 
 .methanal-submit-error h1 {
@@ -395,5 +396,22 @@ button.roll-up {
 }
 
 .methanal-submit-error-action img {
+    vertical-align: middle;
+}
+
+.methanal-action-container {
+    border-top: 1px solid #aaa;
+    background: white;
+    margin: -5px;
+    margin-top: 5px;
+    padding: 5px 0;
+}
+
+.methanal-action-container .methanal-action-button {
+    margin: 0 5px;
+}
+
+.throbber {
+    visibility: hidden;
     vertical-align: middle;
 }

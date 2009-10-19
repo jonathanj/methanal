@@ -167,7 +167,7 @@ class PrePopulatingTextInputTests(FormInputTests):
     controlType = view.PrePopulatingTextInput
 
     createArgs = [
-        dict(targetControlName=u'bbq')]
+        dict(targetControlName='bbq')]
 
     brokenCreateArgs = [
         (TypeError, dict())]
