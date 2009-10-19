@@ -107,7 +107,6 @@ class ActionContainer(ThemedElement):
 
         @type action: L{FormAction}
         """
-        action.setFragmentParent(self)
         self.actions.append(action)
 
 
@@ -115,7 +114,8 @@ class ActionContainer(ThemedElement):
     def actions(self, req, tag):
         form = self.fragmentParent
         for action in self.actions:
-            if not form.viewOnly or (form.viewOnly and action.allowViewOnly):
+            if not form.viewOnly or action.allowViewOnly:
+                action.setFragmentParent(self)
                 yield action
 
 
