@@ -2,8 +2,7 @@
     <form action="#" nevow:render="liveElement">
         <athena:handler event="onsubmit" handler="handleSubmit" />
         <nevow:invisible nevow:render="children" />
-        <button class="methanal-submit" id="submit" type="submit" nevow:render="button" />
-        <img style="visibility: hidden;" id="throbber" class="throbber" src="/static/Methanal/images/main-throbber.gif" />
+        <div id="actions" nevow:render="actions" />
         <div style="display: none;" id="form-error" class="methanal-submit-error" />
     </form>
 </div>
