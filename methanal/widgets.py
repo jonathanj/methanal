@@ -395,3 +395,26 @@ class SimpleLookup(Lookup):
 
         values = [(o, self.describer(o)) for o in self.objects]
         ObjectSelectInput(parent=form, name='__results', values=values)
+
+
+
+class ModalDialog(ThemedElement):
+    jsClass = u'Methanal.Widgets.ModalDialog'
+    fragmentName = 'methanal-modal-dialog'
+
+
+    def __init__(self, title, content, **kw):
+        super(ModalDialog, self).__init__(**kw)
+        self._title = title
+        self._content = content
+        self._content.setFragmentParent(self)
+
+
+    @renderer
+    def title(self, req, tag):
+        return tag[self._title]
+
+
+    @renderer
+    def content(self, req, tag):
+        return tag[self._content]

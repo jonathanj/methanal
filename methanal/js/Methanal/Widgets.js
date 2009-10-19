@@ -609,3 +609,80 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'SimpleLookupForm').methods(
             self.setOptions(values);
         });
     });
+
+
+
+Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
+    function nodeInserted(self) {
+        var T = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+        self._overlayNode = T('div', {'class': 'modal-dialog-overlay'});
+        self.node.parentNode.appendChild(self._overlayNode);
+    },
+
+
+    function setCallbacks(self, okayCallback, cancelCallback) {
+        self.okayCallback = okayCallback;
+        self.cancelCallback = cancelCallback;
+    },
+
+
+    /**
+     * Close the modal dialog.
+     */
+    function _closeDialog(self) {
+        self.detach();
+        self.node.parentNode.removeChild(self.node);
+        self._overlayNode.parentNode.removeChild(self._overlayNode);
+    },
+
+
+    function _callback(self, cb) {
+        var d;
+        if (cb) {
+            d = cb();
+        } else {
+            d = Divmod.Defer.succeed(null);
+        }
+
+        return d.addCallback(function () {
+            self._closeDialog();
+        });
+    },
+
+
+    function submit(self) {
+        return self._callback(self.okayCallback);
+    },
+
+
+    function cancel(self) {
+        return self._callback(self.cancelCallback);
+    });
+
+
+
+Methanal.Widgets.ModalDialog.fromWidgetInfo = function fromWidgetInfo(widgetParent, widgetInfo) {
+    var d = widgetParent.addChildWidgetFromWidgetInfo(widgetInfo);
+    return d.addCallback(function (widget) {
+        widgetParent.node.appendChild(widget.node);
+        Methanal.Util.nodeInserted(widget);
+        return widget;
+    });
+};
+
+
+
+Methanal.View.LiveForm.subclass(Methanal.Widgets, 'ModalDialogForm').methods(
+    function submit(self) {
+        var d = Methanal.Widgets.ModalDialogForm.upcall(self, 'submit');
+        d.addCallback(function () {
+            return self.widgetParent.submit();
+        });
+        return d;
+    },
+
+
+    function cancel(self) {
+        self.widgetParent.cancel();
+        return false;
+    });

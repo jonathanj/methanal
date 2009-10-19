@@ -22,3 +22,20 @@
 .roll-up-bar img {
     position: absolute;
 }
+
+.modal-dialog-overlay {
+    background: black;
+    filter: alpha(opacity=75);
+}
+
+.modal-dialog-middle {
+    position: absolute;
+    top: 5%;
+    left: 0%;
+}
+
+.modal-dialog-inner {
+    margin: 0 auto;
+    width: 75%;
+    border: 2px solid #999;
+}
