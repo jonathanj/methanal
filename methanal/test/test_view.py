@@ -302,12 +302,26 @@ class VerifiedPasswordInputTests(FormInputTests):
 
 
 
-class ChoiceInputTests(FormInputTests):
+class ChoiceInputTestsMixin(object):
+    """
+    Mixin for L{methanal.view.ChoiceInput} based controls.
+    """
+    def createControl(self, args):
+        """
+        Create a L{methanal.view.ChoiceInput} from C{values} and assert that
+        L{methanal.view.ChoiceInput.values} provides L{IEnumeration}.
+        """
+        control = super(ChoiceInputTestsMixin, self).createControl(args)
+        self.assertTrue(IEnumeration.providedBy(control.values))
+        return control
+
+
+
+class ChoiceInputTests(ChoiceInputTestsMixin, FormInputTests):
     """
     Tests for L{methanal.view.ChoiceInput}.
     """
     controlType = view.ChoiceInput
-
 
     createArgs = [
         dict(values=[
@@ -325,9 +339,7 @@ class ChoiceInputTests(FormInputTests):
         calling C{asPairs} results in the same values as C{values}.
         """
         control = super(ChoiceInputTests, self).createControl(args)
-        values = args.get('values')
-        self.assertTrue(IEnumeration.providedBy(control.values))
-        self.assertEquals(control.values.asPairs(), list(values))
+        self.assertEquals(control.values.asPairs(), list(args.get('values')))
         return control
 
 
@@ -400,8 +412,69 @@ class IntegerSelectInputTests(ChoiceInputTests):
 
 
 
-class ObjectSelectInputTests(FormInputTests):
-    pass
+class ObjectSelectInputTests(ChoiceInputTestsMixin, FormInputTests):
+    """
+    Test for L{methanal.view.ObjectSelectInput}.
+    """
+    controlType = view.ObjectSelectInput
+
+    values = [
+        (int, u'Foo'),
+        (str, u'Bar')]
+
+    createArgs = [
+        dict(values=values)]
+
+
+    def test_choiceValues(self):
+        """
+        ObjectSelectInput provides C{(int, unicode)} pairs to ChoiceInput
+        and maintains a mapping of object identities to objects.
+        """
+        control = self.createControl(dict(values=self.values))
+
+        _objects = control._objects
+        self.assertIdentical(_objects.get(id(int)), int)
+        self.assertIdentical(_objects.get(id(str)), str)
+
+        self.assertEquals(control.values.asPairs(), [
+            (id(int), u'Foo'),
+            (id(str), u'Bar')])
+
+
+    def test_getValue(self):
+        """
+        L{methanal.view.ObjectSelectInput.getValue} retrieves an empty string
+        in the C{None} case and a C{unicode} string representing an object
+        identity in the case where a value exists.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        param.value = int
+        self.assertEquals(control.getValue(), unicode(id(int)))
+
+        param.value = None
+        self.assertEquals(control.getValue(), u'')
+
+
+    def test_invoke(self):
+        """
+        L{methanal.view.ObjectSelectInput.invoke} sets the parameter value to
+        C{None} in the C{None} (or unknown object identity) case and a Python
+        object, representing the object with the specified identity, in the
+        case where a value exists.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        data = {param.name: unicode(id(int))}
+        control.invoke(data)
+        self.assertIdentical(param.value, int)
+
+        data = {param.name: u''}
+        control.invoke(data)
+        self.assertIdentical(param.value, None)
 
 
 
