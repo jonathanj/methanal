@@ -371,9 +371,10 @@ button.roll-up {
 .methanal-submit-error {
     color: white;
     background: #74010c;
-    border: 1px solid #f30219;
-    padding: 4px;
-    margin-top: 0.5em;
+    border-top: 1px solid #f30219;
+    padding: 5px;
+    margin: -5px;
+    margin-top: 5px;
 }
 
 .methanal-submit-error h1 {
@@ -398,6 +399,23 @@ button.roll-up {
     vertical-align: middle;
 }
 
+.methanal-action-container {
+    border-top: 1px solid #aaa;
+    background: white;
+    margin: -5px;
+    margin-top: 5px;
+    padding: 5px 0;
+}
+
+.methanal-action-container .methanal-action-button {
+    margin: 0 5px;
+}
+
+.throbber {
+    visibility: hidden;
+    vertical-align: middle;
+}
+
 .modal-dialog-overlay {
     position: fixed;
     top: 0;
@@ -413,10 +431,6 @@ button.roll-up {
     z-index: 1001;
 
     display: table;
-    /*
-    overflow: hidden;
-    */
-
     position: absolute;
     top: 0;
     left: 0;
@@ -433,7 +447,6 @@ button.roll-up {
 .modal-dialog-inner {
     display: table;
     margin: 5% auto;
-
     background: white;
     padding: 1em;
     -moz-border-radius: 4px;
@@ -448,4 +461,3 @@ button.roll-up {
     padding: 0;
     font-weight: normal;
 }
-

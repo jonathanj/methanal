@@ -21,6 +21,105 @@ from methanal.enums import ListEnumeration
 
 
 
+class FormAction(ThemedElement):
+    """
+    L{LiveForm} action.
+
+    @type defaultName: C{unicode}
+    @cvar defaultName: Default name for the action
+
+    @type allowViewOnly: C{bool}
+    @cvar allowViewOnly: Allow this action to be present in a "view only" form
+
+    @type name: C{unicode}
+    @ivar name: Action name
+    """
+    defaultName = None
+    allowViewOnly = False
+
+
+    def __init__(self, name=None, **kw):
+        super(FormAction, self).__init__(**kw)
+        if name is None:
+            name = self.defaultName
+        self.name = name
+
+
+
+class ActionButton(FormAction):
+    """
+    L{LiveForm} action represented by a push button.
+
+    @type button: C{str}
+    @cvar button: Button type, should correspond with values for the C{button}
+        element in HTML forms
+    """
+    fragmentName = 'methanal-action-button'
+    type = 'button'
+
+
+    @renderer
+    def button(self, req, tag):
+        return tag(type=self.type)[self.name]
+
+
+
+class SubmitAction(ActionButton):
+    """
+    L{LiveForm} action for submitting a form.
+    """
+    jsClass = u'Methanal.View.SubmitAction'
+    defaultName = u'Submit'
+    type = 'submit'
+
+
+
+class ResetAction(ActionButton):
+    """
+    L{LiveForm} action for resetting a form's controls.
+    """
+    jsClass = u'Methanal.View.ResetAction'
+    defaultName = u'Reset'
+    type = 'reset'
+
+
+
+class ActionContainer(ThemedElement):
+    """
+    Container for L{FormAction}s.
+
+    @type actions: C{list} of L{FormAction}
+    """
+    fragmentName = 'methanal-action-container'
+    jsClass = u'Methanal.View.ActionContainer'
+
+
+    def __init__(self, actions, **kw):
+        super(ActionContainer, self).__init__(**kw)
+        self.actions = []
+        for action in actions:
+            self.addAction(action)
+
+
+    def addAction(self, action):
+        """
+        Add an action to the form.
+
+        @type action: L{FormAction}
+        """
+        self.actions.append(action)
+
+
+    @renderer
+    def actions(self, req, tag):
+        form = self.fragmentParent
+        for action in self.actions:
+            if not form.viewOnly or action.allowViewOnly:
+                action.setFragmentParent(self)
+                yield action
+
+
+
 class SimpleForm(ThemedElement):
     """
     A simple form.
@@ -106,19 +205,24 @@ class LiveForm(SimpleForm):
     @type viewOnly: C{bool}
     @ivar viewOnly: Flag indicating whether model values are written back when
         invoked
+
+    @type actions: L{ActionContainer}
     """
     fragmentName = 'methanal-liveform'
     jsClass = u'Methanal.View.LiveForm'
 
 
-    def __init__(self, store, model, viewOnly=False, **kw):
-        """
-        Initialise the form.
-        """
+    def __init__(self, store, model, viewOnly=False, actions=None, **kw):
         super(LiveForm, self).__init__(store=store, model=model, **kw)
         if self.model.doc is None:
             viewOnly = True
         self.viewOnly = viewOnly
+
+        if actions is None:
+            actions = ActionContainer(
+                actions=[SubmitAction(name=self.model.doc)],
+                fragmentParent=self)
+        self.actions = actions
 
 
     def getInitialArguments(self):
@@ -127,13 +231,8 @@ class LiveForm(SimpleForm):
 
 
     @renderer
-    def button(self, req, tag):
-        """
-        Render the form's submission button.
-        """
-        if self.viewOnly:
-            return []
-        return tag[self.model.doc]
+    def actions(self, req, tag):
+        return tag[self.actions]
 
 
     @expose
