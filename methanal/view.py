@@ -40,7 +40,7 @@ class FormAction(ThemedElement):
 
     def __init__(self, name=None, **kw):
         super(FormAction, self).__init__(**kw)
-        if name is None:
+        if not name:
             name = self.defaultName
         self.name = name
 

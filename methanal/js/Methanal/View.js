@@ -708,7 +708,6 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
     function nodeInserted(self) {
         self._formErrorNode = self.nodeById('form-error');
-        self.throbber = Methanal.Util.Throbber(self);
     },
 
 
