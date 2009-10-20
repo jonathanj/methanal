@@ -111,7 +111,7 @@ class ActionContainer(ThemedElement):
 
 
     @renderer
-    def actions(self, req, tag):
+    def formActions(self, req, tag):
         form = self.fragmentParent
         for action in self.actions:
             if not form.viewOnly or action.allowViewOnly:
@@ -231,7 +231,7 @@ class LiveForm(SimpleForm):
 
 
     @renderer
-    def actions(self, req, tag):
+    def formActions(self, req, tag):
         return tag[self.actions]
 
 
