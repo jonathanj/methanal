@@ -292,9 +292,14 @@ Methanal.Tests.Util.TestCase.subclass(
  */
 Methanal.Tests.TestView.FormInputTestCase.subclass(
     Methanal.Tests.TestView, 'TestSelectInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.SelectInput;
+    },
+
+
     function createControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
-        var control = Methanal.View.SelectInput(node, args);
+        var control = self.controlType(node, args);
         node.appendChild(document.createElement('select'));
         Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
         return control;
@@ -350,6 +355,14 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
                 self.assertIdentical(control.inputNode.value, '');
                 control.setValue('v1');
                 self.assertIdentical(control.inputNode.value, 'v1');
+
+                control.append(1, 'd2');
+                control.setValue('1');
+                self.assertIdentical(control.inputNode.value, '1');
+                // XXX: This should work, but the mock DOM stuff doesn't coerce
+                // the values of select inputs.
+                //control.setValue(1);
+                //self.assertIdentical(control.inputNode.value, '1');
             });
     },
 
@@ -473,6 +486,45 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
             function (control) {
                 // Our monkey-patched "onChange" handler should not fire and
                 // things should just carry on all happy and shiny.
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.IntegerSelectInput}.
+ */
+Methanal.Tests.TestView.TestSelectInput.subclass(
+    Methanal.Tests.TestView, 'TestIntegerSelectInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.IntegerSelectInput;
+    },
+    
+
+    /**
+     * L{Methanal.View.SelectInput.getValue} returns the input node's C{value}
+     * attribute or C{null} when the attribute is C{null} or empty.
+     */
+    function test_getValue(self) {
+        self.testControl({value: ''},
+            function (control) {
+                self.assertIdentical(control.getValue(), null);
+            });
+
+        self.testControl({value: null},
+            function (control) {
+                self.assertIdentical(control.getValue(), null);
+            });
+
+        self.testControl({value: ''},
+            function (control) {
+                control.append('v1', 'd1');
+                control.inputNode.value = 'v1';
+                self.assertIdentical(control.getValue(), undefined);
+
+                control.append('1', 'd1');
+                control.inputNode.value = '1';
+                self.assertIdentical(control.getValue(), 1);
             });
     });
 
