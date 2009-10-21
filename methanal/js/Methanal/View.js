@@ -640,6 +640,8 @@ Methanal.View.ActionButton.subclass(Methanal.View, 'SubmitAction').methods(
 
 /**
  * Reset form action.
+ *
+ * Invoking this action calls L{Methanal.View.LiveForm.reset}.
  */
 Methanal.View.ActionButton.subclass(Methanal.View, 'ResetAction').methods(
     function invoke(self) {

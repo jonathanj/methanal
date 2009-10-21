@@ -612,6 +612,9 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'SimpleLookupForm').methods(
 
 
 
+/**
+ * Modal dialog widget.
+ */
 Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
     function nodeInserted(self) {
         var T = Methanal.Util.DOMBuilder(self.node.ownerDocument);
@@ -620,47 +623,26 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
     },
 
 
-    function setCallbacks(self, okayCallback, cancelCallback) {
-        self.okayCallback = okayCallback;
-        self.cancelCallback = cancelCallback;
-    },
-
-
     /**
-     * Close the modal dialog.
+     * Dismiss the dialog.
      */
-    function _closeDialog(self) {
+    function close(self) {
         self.detach();
         self.node.parentNode.removeChild(self.node);
         self._overlayNode.parentNode.removeChild(self._overlayNode);
-    },
-
-
-    function _callback(self, cb) {
-        var d;
-        if (cb) {
-            d = cb();
-        } else {
-            d = Divmod.Defer.succeed(null);
-        }
-
-        return d.addCallback(function () {
-            self._closeDialog();
-        });
-    },
-
-
-    function submit(self) {
-        return self._callback(self.okayCallback);
-    },
-
-
-    function cancel(self) {
-        return self._callback(self.cancelCallback);
     });
 
 
 
+/**
+ * Create a modal dialog from Athena widget information.
+ *
+ * @type widgetParent: C{Nevow.Athena.Widget}
+ *
+ * @param widgetInfo: Widget information for the modal dialog.
+ *
+ * @rtype: C{Deferred} -> C{Nevow.Athena.Widget}
+ */
 Methanal.Widgets.ModalDialog.fromWidgetInfo = function fromWidgetInfo(widgetParent, widgetInfo) {
     var d = widgetParent.addChildWidgetFromWidgetInfo(widgetInfo);
     return d.addCallback(function (widget) {
@@ -672,17 +654,39 @@ Methanal.Widgets.ModalDialog.fromWidgetInfo = function fromWidgetInfo(widgetPare
 
 
 
+/**
+ * Cancel form action.
+ *
+ * Invoking this actions calls L{Methanal.Widgets.ModalDialogForm.cancel}.
+ */
+Methanal.View.ActionButton.subclass(Methanal.Widgets, 'CancelAction').methods(
+    function invoke(self) {
+        return self.getForm().cancel();
+    });
+
+
+
+/**
+ * Base class for modal dialog forms.
+ *
+ * Provides functionality for dismissing the dialog when a form action is
+ * invoked.
+ */
 Methanal.View.LiveForm.subclass(Methanal.Widgets, 'ModalDialogForm').methods(
     function submit(self) {
         var d = Methanal.Widgets.ModalDialogForm.upcall(self, 'submit');
-        d.addCallback(function () {
-            return self.widgetParent.submit();
+        d.addCallback(function (result) {
+            self.widgetParent.close();
+            return result;
         });
         return d;
     },
 
 
+    /**
+     * Dismiss the dialog.
+     */
     function cancel(self) {
-        self.widgetParent.cancel();
+        self.widgetParent.close();
         return false;
     });
