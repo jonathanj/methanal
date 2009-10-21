@@ -557,6 +557,12 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
  * A form action.
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'FormAction').methods(
+    function __init__(self, node, args) {
+        Methanal.View.FormAction.upcall(self, '__init__', node);
+        self.actionID = args.actionID;
+    },
+
+
     function nodeInserted(self) {
         if (self.widgetParent._disabled) {
             self.disable();
@@ -603,6 +609,7 @@ Methanal.View.FormAction.subclass(Methanal.View, 'ActionButton').methods(
     function nodeInserted(self) {
         self._buttonNode = self.node.getElementsByTagName('button')[0];
         Methanal.View.ActionButton.upcall(self, 'nodeInserted');
+        self.widgetParent.loadedUp(self);
     },
 
 
@@ -649,14 +656,24 @@ Methanal.View.ActionButton.subclass(Methanal.View, 'ResetAction').methods(
  * @ivar throbber: Action throbber
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
-    function __init__(self, node) {
+    function __init__(self, node, args) {
         Methanal.View.ActionContainer.upcall(self, '__init__', node);
         self._disabled = false;
+        self.actionIDs = args.actionIDs;
     },
 
 
     function nodeInserted(self) {
         self.throbber = Methanal.Util.Throbber(self);
+    },
+
+
+    function loadedUp(self, action) {
+        delete self.actionIDs[action.actionID];
+        for (var name in self.actionIDs) {
+            return;
+        }
+
         self.widgetParent.setActions(self);
     },
 
