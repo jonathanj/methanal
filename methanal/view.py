@@ -241,8 +241,7 @@ class LiveForm(SimpleForm):
 
         if actions is None:
             actions = ActionContainer(
-                actions=[SubmitAction(name=self.model.doc)],
-                fragmentParent=self)
+                actions=[SubmitAction(name=self.model.doc)])
         self.actions = actions
 
 
@@ -253,6 +252,7 @@ class LiveForm(SimpleForm):
 
     @renderer
     def formActions(self, req, tag):
+        self.actions.setFragmentParent(self)
         return tag[self.actions]
 
 
