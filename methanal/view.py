@@ -40,7 +40,7 @@ class FormAction(ThemedElement):
 
     def __init__(self, name=None, **kw):
         super(FormAction, self).__init__(**kw)
-        if name is None:
+        if not name:
             name = self.defaultName
         self.name = name
 
@@ -111,7 +111,7 @@ class ActionContainer(ThemedElement):
 
 
     @renderer
-    def actions(self, req, tag):
+    def formActions(self, req, tag):
         form = self.fragmentParent
         for action in self.actions:
             if not form.viewOnly or action.allowViewOnly:
@@ -231,7 +231,7 @@ class LiveForm(SimpleForm):
 
 
     @renderer
-    def actions(self, req, tag):
+    def formActions(self, req, tag):
         return tag[self.actions]
 
 

@@ -13,7 +13,7 @@ from nevow import athena, loaders
 from nevow.testutil import renderLivePage
 
 from methanal.imethanal import IEnumeration
-from methanal.model import ItemModel, Value, DecimalValue
+from methanal.model import ItemModel, Value, DecimalValue, Model
 from methanal import view
 
 
@@ -35,6 +35,40 @@ class MockParent(object):
 
     def addFormChild(self, child):
         pass
+
+
+
+def renderWidget(widget):
+    """
+    Flatten and render a widget.
+
+    @rtype: C{Deferred} -> C{str}
+    @return: A deferred that fires with the flattened output
+    """
+    page = athena.LivePage(docFactory=loaders.stan(widget))
+    widget.setFragmentParent(page)
+    return renderLivePage(page)
+
+
+
+class LiveFormTests(unittest.TestCase):
+    """
+    Tests for L{methanal.view.LiveForm}.
+    """
+    def setUp(self):
+        self.form = view.LiveForm(store=None, model=Model())
+
+
+    def test_renderActions(self):
+        """
+        The actions of a LiveForm are rendered according to the given actions.
+        """
+        def verifyRendering(result):
+            # XXX: This is not the best thing ever.
+            self.assertIn('<div id="athenaid:1-actions"', result)
+            self.assertIn('Submit</button>', result)
+
+        return renderWidget(self.form).addCallback(verifyRendering)
 
 
 
@@ -87,18 +121,6 @@ class FormInputTests(unittest.TestCase):
         args.setdefault('name', self.name)
         args.setdefault('parent', self.createParent(args))
         return self.controlType(**args)
-
-
-    def renderControl(self, control):
-        """
-        Flatten and render a control.
-
-        @rtype: C{Deferred} -> C{str}
-        @return: A deferred that fires with the flattened output
-        """
-        page = athena.LivePage(docFactory=loaders.stan(control))
-        control.setFragmentParent(page)
-        return renderLivePage(page)
 
 
     def test_creation(self):
@@ -381,7 +403,7 @@ class GroupedSelectInputTests(ChoiceInputTests):
                     elem = '<option value="%s">%s</option>' % (value, desc)
                     self.assertIn(elem, result)
 
-        return self.renderControl(control).addCallback(verifyRendering)
+        return renderWidget(control).addCallback(verifyRendering)
 
 
 
@@ -495,7 +517,7 @@ class CheckboxInputTests(FormInputTests):
         def verifyRendering(result):
             self.assertNotIn('checked="checked"', result)
 
-        return self.renderControl(control).addCallback(verifyRendering)
+        return renderWidget(control).addCallback(verifyRendering)
 
 
     def test_renderChecked(self):
@@ -508,7 +530,7 @@ class CheckboxInputTests(FormInputTests):
         def verifyRendering(result):
             self.assertIn('checked="checked"', result)
 
-        return self.renderControl(control).addCallback(verifyRendering)
+        return renderWidget(control).addCallback(verifyRendering)
 
 
     def test_renderInlineLabel(self):
@@ -522,7 +544,7 @@ class CheckboxInputTests(FormInputTests):
         def verifyRendering(result):
             self.assertIn('HELLO WORLD</label>', result)
 
-        return self.renderControl(control).addCallback(verifyRendering)
+        return renderWidget(control).addCallback(verifyRendering)
 
 
 
