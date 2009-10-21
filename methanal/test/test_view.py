@@ -13,7 +13,7 @@ from nevow import athena, loaders
 from nevow.testutil import renderLivePage
 
 from methanal.imethanal import IEnumeration
-from methanal.model import ItemModel, Value, DecimalValue
+from methanal.model import ItemModel, Value, DecimalValue, Model
 from methanal import view
 
 
@@ -35,6 +35,40 @@ class MockParent(object):
 
     def addFormChild(self, child):
         pass
+
+
+
+def renderWidget(widget):
+    """
+    Flatten and render a widget.
+
+    @rtype: C{Deferred} -> C{str}
+    @return: A deferred that fires with the flattened output
+    """
+    page = athena.LivePage(docFactory=loaders.stan(widget))
+    widget.setFragmentParent(page)
+    return renderLivePage(page)
+
+
+
+class LiveFormTests(unittest.TestCase):
+    """
+    Tests for L{methanal.view.LiveForm}.
+    """
+    def setUp(self):
+        self.form = view.LiveForm(store=None, model=Model())
+
+
+    def test_renderActions(self):
+        """
+        The actions of a LiveForm are rendered according to the given actions.
+        """
+        def verifyRendering(result):
+            # XXX: This is not the best thing ever.
+            self.assertIn('<div id="athenaid:1-actions"', result)
+            self.assertIn('Submit</button>', result)
+
+        return renderWidget(self.form).addCallback(verifyRendering)
 
 
 
@@ -87,18 +121,6 @@ class FormInputTests(unittest.TestCase):
         args.setdefault('name', self.name)
         args.setdefault('parent', self.createParent(args))
         return self.controlType(**args)
-
-
-    def renderControl(self, control):
-        """
-        Flatten and render a control.
-
-        @rtype: C{Deferred} -> C{str}
-        @return: A deferred that fires with the flattened output
-        """
-        page = athena.LivePage(docFactory=loaders.stan(control))
-        control.setFragmentParent(page)
-        return renderLivePage(page)
 
 
     def test_creation(self):
@@ -302,12 +324,26 @@ class VerifiedPasswordInputTests(FormInputTests):
 
 
 
-class ChoiceInputTests(FormInputTests):
+class ChoiceInputTestsMixin(object):
+    """
+    Mixin for L{methanal.view.ChoiceInput} based controls.
+    """
+    def createControl(self, args):
+        """
+        Create a L{methanal.view.ChoiceInput} from C{values} and assert that
+        L{methanal.view.ChoiceInput.values} provides L{IEnumeration}.
+        """
+        control = super(ChoiceInputTestsMixin, self).createControl(args)
+        self.assertTrue(IEnumeration.providedBy(control.values))
+        return control
+
+
+
+class ChoiceInputTests(ChoiceInputTestsMixin, FormInputTests):
     """
     Tests for L{methanal.view.ChoiceInput}.
     """
     controlType = view.ChoiceInput
-
 
     createArgs = [
         dict(values=[
@@ -325,9 +361,7 @@ class ChoiceInputTests(FormInputTests):
         calling C{asPairs} results in the same values as C{values}.
         """
         control = super(ChoiceInputTests, self).createControl(args)
-        values = args.get('values')
-        self.assertTrue(IEnumeration.providedBy(control.values))
-        self.assertEquals(control.values.asPairs(), list(values))
+        self.assertEquals(control.values.asPairs(), list(args.get('values')))
         return control
 
 
@@ -369,7 +403,7 @@ class GroupedSelectInputTests(ChoiceInputTests):
                     elem = '<option value="%s">%s</option>' % (value, desc)
                     self.assertIn(elem, result)
 
-        return self.renderControl(control).addCallback(verifyRendering)
+        return renderWidget(control).addCallback(verifyRendering)
 
 
 
@@ -400,8 +434,69 @@ class IntegerSelectInputTests(ChoiceInputTests):
 
 
 
-class ObjectSelectInputTests(FormInputTests):
-    pass
+class ObjectSelectInputTests(ChoiceInputTestsMixin, FormInputTests):
+    """
+    Test for L{methanal.view.ObjectSelectInput}.
+    """
+    controlType = view.ObjectSelectInput
+
+    values = [
+        (int, u'Foo'),
+        (str, u'Bar')]
+
+    createArgs = [
+        dict(values=values)]
+
+
+    def test_choiceValues(self):
+        """
+        ObjectSelectInput provides C{(int, unicode)} pairs to ChoiceInput
+        and maintains a mapping of object identities to objects.
+        """
+        control = self.createControl(dict(values=self.values))
+
+        _objects = control._objects
+        self.assertIdentical(_objects.get(id(int)), int)
+        self.assertIdentical(_objects.get(id(str)), str)
+
+        self.assertEquals(control.values.asPairs(), [
+            (id(int), u'Foo'),
+            (id(str), u'Bar')])
+
+
+    def test_getValue(self):
+        """
+        L{methanal.view.ObjectSelectInput.getValue} retrieves an empty string
+        in the C{None} case and a C{unicode} string representing an object
+        identity in the case where a value exists.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        param.value = int
+        self.assertEquals(control.getValue(), unicode(id(int)))
+
+        param.value = None
+        self.assertEquals(control.getValue(), u'')
+
+
+    def test_invoke(self):
+        """
+        L{methanal.view.ObjectSelectInput.invoke} sets the parameter value to
+        C{None} in the C{None} (or unknown object identity) case and a Python
+        object, representing the object with the specified identity, in the
+        case where a value exists.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        data = {param.name: unicode(id(int))}
+        control.invoke(data)
+        self.assertIdentical(param.value, int)
+
+        data = {param.name: u''}
+        control.invoke(data)
+        self.assertIdentical(param.value, None)
 
 
 
@@ -422,7 +517,7 @@ class CheckboxInputTests(FormInputTests):
         def verifyRendering(result):
             self.assertNotIn('checked="checked"', result)
 
-        return self.renderControl(control).addCallback(verifyRendering)
+        return renderWidget(control).addCallback(verifyRendering)
 
 
     def test_renderChecked(self):
@@ -435,7 +530,7 @@ class CheckboxInputTests(FormInputTests):
         def verifyRendering(result):
             self.assertIn('checked="checked"', result)
 
-        return self.renderControl(control).addCallback(verifyRendering)
+        return renderWidget(control).addCallback(verifyRendering)
 
 
     def test_renderInlineLabel(self):
@@ -449,7 +544,7 @@ class CheckboxInputTests(FormInputTests):
         def verifyRendering(result):
             self.assertIn('HELLO WORLD</label>', result)
 
-        return self.renderControl(control).addCallback(verifyRendering)
+        return renderWidget(control).addCallback(verifyRendering)
 
 
 

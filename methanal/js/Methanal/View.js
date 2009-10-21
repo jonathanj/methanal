@@ -385,6 +385,20 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             return;
         }
 
+        if (self.actions !== undefined) {
+            self._finishLoading();
+        }
+    },
+
+
+    /**
+     * Perform final form initialisation tasks.
+     *
+     * Once all controls in L{controlNames} have reported in and L{setActions}
+     * has been called, form loading completes by refreshing validators and
+     * dependencies, controls cannot report in loading is complete.
+     */
+    function _finishLoading(self) {
         self.fullyLoaded = true;
 
         for (var name in self._depCache._inputToHandlers) {
@@ -392,8 +406,18 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             Methanal.Util.addElementClass(node, 'dependancy-parent');
             node.title = 'Other fields depend on this field';
         }
-
         self.refresh();
+    },
+
+
+    /**
+     * Set L{actions} and perform any pending initialisation.
+     */
+    function setActions(self, actions) {
+        self.actions = actions;
+        if (!self.fullyLoaded) {
+            self._finishLoading();
+        }
     },
 
 
@@ -633,7 +657,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
 
     function nodeInserted(self) {
         self.throbber = Methanal.Util.Throbber(self);
-        self.widgetParent.actions = self;
+        self.widgetParent.setActions(self);
     },
 
 
@@ -668,6 +692,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  *
  * @type controlNames: C{object} of C{String}
  * @ivar controlNames: Names of form inputs as a mapping
+ *
+ * @type actions: L{Methanal.View.ActionContainer}
+ * @ivar actions: Action container widget, this is only assigned once the action
+ *     container widget's C{nodeInserted} method has been called
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function __init__(self, node, viewOnly, controlNames) {
@@ -680,7 +708,6 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
     function nodeInserted(self) {
         self._formErrorNode = self.nodeById('form-error');
-        self.throbber = Methanal.Util.Throbber(self);
     },
 
 
@@ -1733,7 +1760,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
         Methanal.View.SelectInput.upcall(self, 'setValue', value);
         // Most browsers just automagically change the value to that of the
         // first option if you set the value to a nonexistent option value.
-        if (value === null || self.inputNode.value !== value) {
+        // Please note this is "!=" and not "!==" to handle the auto-coercion
+        // employed by select inputs for their "value" attribute.
+        if (value === null || self.inputNode.value != value) {
             self._insertPlaceholder();
             self.inputNode.value = '';
         }
