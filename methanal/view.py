@@ -82,7 +82,6 @@ class SubmitAction(ActionButton):
     """
     jsClass = u'Methanal.View.SubmitAction'
     defaultName = u'Submit'
-    type = 'submit'
 
 
 
