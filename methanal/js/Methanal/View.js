@@ -561,6 +561,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormAction').methods(
     function __init__(self, node, args) {
         Methanal.View.FormAction.upcall(self, '__init__', node);
         self.actionID = args.actionID;
+        self.allowViewOnly = args.allowViewOnly;
     },
 
 
@@ -621,8 +622,10 @@ Methanal.View.FormAction.subclass(Methanal.View, 'ActionButton').methods(
 
 
     function disable(self) {
-        self._buttonNode.disabled = true;
-        Methanal.Util.addElementClass(self._buttonNode, 'methanal-submit-disabled');
+        if (!self.allowViewOnly) {
+            self._buttonNode.disabled = true;
+            Methanal.Util.addElementClass(self._buttonNode, 'methanal-submit-disabled');
+        }
     });
 
 

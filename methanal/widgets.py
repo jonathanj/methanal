@@ -437,6 +437,7 @@ class CancelAction(ActionButton):
     """
     jsClass = u'Methanal.Widgets.CancelAction'
     defaultName = u'Cancel'
+    allowViewOnly = True
 
 
 
