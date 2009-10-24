@@ -755,6 +755,31 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     /**
+     * Focus the first form input.
+     */
+    function focusFirstInput(self) {
+        // In case we couldn't find anything, this is as close as it'll get.
+        self.node.focus();
+
+        // Loop over input containers.
+        for (var i = 0; i < self.childWidgets.length; ++i) {
+            var container = self.childWidgets[i];
+            // Loop over contained widgets.
+            for (var j = 0; j < container.childWidgets.length; ++j) {
+                var widget = container.childWidgets[j];
+                if (widget.getInputNode) {
+                    widget.getInputNode().focus();
+                    return;
+                } else {
+                    // Edge closer and closer to something useful.
+                    widget.node.focus();
+                }
+            }
+        }
+    },
+
+
+    /**
      * Reset form inputs to their initial values.
      */
     function reset(self) {

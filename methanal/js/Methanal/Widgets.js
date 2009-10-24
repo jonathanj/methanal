@@ -673,6 +673,12 @@ Methanal.View.ActionButton.subclass(Methanal.Widgets, 'CancelAction').methods(
  * invoked.
  */
 Methanal.View.LiveForm.subclass(Methanal.Widgets, 'ModalDialogForm').methods(
+    function nodeInserted(self) {
+        Methanal.Widgets.ModalDialogForm.upcall(self, 'nodeInserted');
+        self.focusFirstInput();
+    },
+
+
     function submit(self) {
         var d = Methanal.Widgets.ModalDialogForm.upcall(self, 'submit');
         d.addCallback(function (result) {
