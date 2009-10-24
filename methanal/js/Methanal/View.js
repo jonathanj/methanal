@@ -1703,6 +1703,14 @@ Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
     function getInputNode(self) {
+        return self.getCheckboxNodes()[0];
+    },
+
+
+    /**
+     * Get a mapping of checkbox values to checkbox DOM nodes.
+     */
+    function getCheckboxNodes(self) {
         var inputs = {};
         var nodes = self.node.getElementsByTagName('input');
         for (var i = 0; i < nodes.length; ++i) {
@@ -1715,16 +1723,18 @@ Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
 
     function setValue(self, values) {
         values = Methanal.Util.StringSet(values);
-        for (var name in self.inputNode) {
-            self.inputNode[name].checked = values.contains(name);
+        var checkboxes = self.getCheckboxNodes();
+        for (var name in checkboxes) {
+            checkboxes[name].checked = values.contains(name);
         }
     },
 
 
     function getValue(self) {
         var values = [];
-        for (var name in self.inputNode) {
-            var node = self.inputNode[name];
+        var checkboxes = self.getCheckboxNodes();
+        for (var name in checkboxes) {
+            var node = checkboxes[name];
             if (node.checked) {
                 values.push(name);
             }
