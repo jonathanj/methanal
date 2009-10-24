@@ -303,6 +303,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             getData,
             function (name, values) { self._depUpdate(name, values); });
 
+        self.controlsLoaded = false;
         self.fullyLoaded = false;
     },
 
@@ -385,9 +386,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             return;
         }
 
-        if (self.actions !== undefined) {
-            self._finishLoading();
-        }
+        self.controlsLoaded = true;
+        self._finishLoading();
     },
 
 
@@ -399,6 +399,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * dependencies, controls cannot report in loading is complete.
      */
     function _finishLoading(self) {
+        if (!self.actions || !self.controlsLoaded || self.fullyLoaded) {
+            return;
+        }
         self.fullyLoaded = true;
 
         for (var name in self._depCache._inputToHandlers) {
@@ -415,9 +418,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      */
     function setActions(self, actions) {
         self.actions = actions;
-        if (!self.fullyLoaded) {
-            self._finishLoading();
-        }
+        self._finishLoading();
     },
 
 
@@ -667,16 +668,28 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
 
     function nodeInserted(self) {
         self.throbber = Methanal.Util.Throbber(self);
+        // Handle the case where there are no actions.
+        self._finishLoading();
     },
 
 
-    function loadedUp(self, action) {
-        delete self.actionIDs[action.actionID];
+    /**
+     * Finalise the loading process if all actions have reported in.
+     */
+    function _finishLoading(self) {
         for (var name in self.actionIDs) {
             return;
         }
-
         self.widgetParent.setActions(self);
+    },
+
+
+    /**
+     * Handle a form action reporting as having loaded.
+     */
+    function loadedUp(self, action) {
+        delete self.actionIDs[action.actionID];
+        self._finishLoading();
     },
 
 
