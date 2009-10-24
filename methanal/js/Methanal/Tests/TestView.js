@@ -48,12 +48,13 @@ Methanal.View.LiveForm.subclass(
 
         var makeWidgetChildNode = Methanal.Tests.TestView.makeWidgetChildNode;
         makeWidgetChildNode(self, 'span', 'form-error');
-        makeWidgetChildNode(self, 'img', 'throbber');
-        self.actions = Methanal.View.ActionContainer(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
-        self.addChildWidget(self.actions);
-        self.node.appendChild(self.actions.node);
 
+        var actions = Methanal.View.ActionContainer(
+            Nevow.Test.WidgetUtil.makeWidgetNode(), {'actionIDs': {}});
+        makeWidgetChildNode(actions, 'img', 'throbber');
+
+        self.addChildWidget(actions);
+        self.node.appendChild(actions.node);
         document.body.appendChild(node);
     });
 
