@@ -448,8 +448,7 @@ class ModalDialogForm(LiveForm):
     jsClass = u'Methanal.Widgets.ModalDialogForm'
 
 
-    def __init__(self, **kw):
-        actions = kw.pop('actions', None)
+    def __init__(self, actions=None, **kw):
         if actions is None:
             actions = ActionContainer(
                 actions=[SubmitAction(name=u'OK'), CancelAction()])
