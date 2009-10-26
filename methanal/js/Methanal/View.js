@@ -303,6 +303,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             getData,
             function (name, values) { self._depUpdate(name, values); });
 
+        self.controlsLoaded = false;
         self.fullyLoaded = false;
     },
 
@@ -385,9 +386,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             return;
         }
 
-        if (self.actions !== undefined) {
-            self._finishLoading();
-        }
+        self.controlsLoaded = true;
+        self._finishLoading();
     },
 
 
@@ -399,6 +399,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * dependencies, controls cannot report in loading is complete.
      */
     function _finishLoading(self) {
+        if (!self.actions || !self.controlsLoaded || self.fullyLoaded) {
+            return;
+        }
         self.fullyLoaded = true;
 
         for (var name in self._depCache._inputToHandlers) {
@@ -415,9 +418,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      */
     function setActions(self, actions) {
         self.actions = actions;
-        if (!self.fullyLoaded) {
-            self._finishLoading();
-        }
+        self._finishLoading();
     },
 
 
@@ -557,6 +558,13 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
  * A form action.
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'FormAction').methods(
+    function __init__(self, node, args) {
+        Methanal.View.FormAction.upcall(self, '__init__', node);
+        self.actionID = args.actionID;
+        self.allowViewOnly = args.allowViewOnly;
+    },
+
+
     function nodeInserted(self) {
         if (self.widgetParent._disabled) {
             self.disable();
@@ -603,6 +611,7 @@ Methanal.View.FormAction.subclass(Methanal.View, 'ActionButton').methods(
     function nodeInserted(self) {
         self._buttonNode = self.node.getElementsByTagName('button')[0];
         Methanal.View.ActionButton.upcall(self, 'nodeInserted');
+        self.widgetParent.loadedUp(self);
     },
 
 
@@ -613,8 +622,10 @@ Methanal.View.FormAction.subclass(Methanal.View, 'ActionButton').methods(
 
 
     function disable(self) {
-        self._buttonNode.disabled = true;
-        Methanal.Util.addElementClass(self._buttonNode, 'methanal-submit-disabled');
+        if (!self.allowViewOnly) {
+            self._buttonNode.disabled = true;
+            Methanal.Util.addElementClass(self._buttonNode, 'methanal-submit-disabled');
+        }
     });
 
 
@@ -633,6 +644,8 @@ Methanal.View.ActionButton.subclass(Methanal.View, 'SubmitAction').methods(
 
 /**
  * Reset form action.
+ *
+ * Invoking this action calls L{Methanal.View.LiveForm.reset}.
  */
 Methanal.View.ActionButton.subclass(Methanal.View, 'ResetAction').methods(
     function invoke(self) {
@@ -649,15 +662,37 @@ Methanal.View.ActionButton.subclass(Methanal.View, 'ResetAction').methods(
  * @ivar throbber: Action throbber
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
-    function __init__(self, node) {
+    function __init__(self, node, args) {
         Methanal.View.ActionContainer.upcall(self, '__init__', node);
         self._disabled = false;
+        self.actionIDs = args.actionIDs;
     },
 
 
     function nodeInserted(self) {
         self.throbber = Methanal.Util.Throbber(self);
+        // Handle the case where there are no actions.
+        self._finishLoading();
+    },
+
+
+    /**
+     * Finalise the loading process if all actions have reported in.
+     */
+    function _finishLoading(self) {
+        for (var name in self.actionIDs) {
+            return;
+        }
         self.widgetParent.setActions(self);
+    },
+
+
+    /**
+     * Handle a form action reporting as having loaded.
+     */
+    function loadedUp(self, action) {
+        delete self.actionIDs[action.actionID];
+        self._finishLoading();
     },
 
 
@@ -716,6 +751,31 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      */
     function getForm(self) {
         return self;
+    },
+
+
+    /**
+     * Focus the first form input.
+     */
+    function focusFirstInput(self) {
+        // In case we couldn't find anything, this is as close as it'll get.
+        self.node.focus();
+
+        // Loop over input containers.
+        for (var i = 0; i < self.childWidgets.length; ++i) {
+            var container = self.childWidgets[i];
+            // Loop over contained widgets.
+            for (var j = 0; j < container.childWidgets.length; ++j) {
+                var widget = container.childWidgets[j];
+                if (widget.getInputNode) {
+                    widget.getInputNode().focus();
+                    return;
+                } else {
+                    // Edge closer and closer to something useful.
+                    widget.node.focus();
+                }
+            }
+        }
     },
 
 
@@ -1643,6 +1703,14 @@ Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
     function getInputNode(self) {
+        return self.getCheckboxNodes()[0];
+    },
+
+
+    /**
+     * Get a mapping of checkbox values to checkbox DOM nodes.
+     */
+    function getCheckboxNodes(self) {
         var inputs = {};
         var nodes = self.node.getElementsByTagName('input');
         for (var i = 0; i < nodes.length; ++i) {
@@ -1655,16 +1723,18 @@ Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
 
     function setValue(self, values) {
         values = Methanal.Util.StringSet(values);
-        for (var name in self.inputNode) {
-            self.inputNode[name].checked = values.contains(name);
+        var checkboxes = self.getCheckboxNodes();
+        for (var name in checkboxes) {
+            checkboxes[name].checked = values.contains(name);
         }
     },
 
 
     function getValue(self) {
         var values = [];
-        for (var name in self.inputNode) {
-            var node = self.inputNode[name];
+        var checkboxes = self.getCheckboxNodes();
+        for (var name in checkboxes) {
+            var node = checkboxes[name];
             if (node.checked) {
                 values.push(name);
             }

@@ -33,6 +33,9 @@ class FormAction(ThemedElement):
 
     @type name: C{unicode}
     @ivar name: Action name
+
+    @type id: C{unicode}
+    @ivar id: Action identifier
     """
     defaultName = None
     allowViewOnly = False
@@ -43,6 +46,16 @@ class FormAction(ThemedElement):
         if not name:
             name = self.defaultName
         self.name = name
+        self.id = unicode(id(self))
+
+
+    def getInitialArguments(self):
+        return [getArgsDict(self)]
+
+
+    def getArgs(self):
+        return {u'actionID': self.id,
+                u'allowViewOnly': self.allowViewOnly}
 
 
 
@@ -70,7 +83,6 @@ class SubmitAction(ActionButton):
     """
     jsClass = u'Methanal.View.SubmitAction'
     defaultName = u'Submit'
-    type = 'submit'
 
 
 
@@ -99,6 +111,15 @@ class ActionContainer(ThemedElement):
         self.actions = []
         for action in actions:
             self.addAction(action)
+
+
+    def getInitialArguments(self):
+        return [getArgsDict(self)]
+
+
+    def getArgs(self):
+        actionIDs = dict.fromkeys(action.id for action in self.actions)
+        return {u'actionIDs': actionIDs}
 
 
     def addAction(self, action):
@@ -220,8 +241,7 @@ class LiveForm(SimpleForm):
 
         if actions is None:
             actions = ActionContainer(
-                actions=[SubmitAction(name=self.model.doc)],
-                fragmentParent=self)
+                actions=[SubmitAction(name=self.model.doc)])
         self.actions = actions
 
 
@@ -232,6 +252,7 @@ class LiveForm(SimpleForm):
 
     @renderer
     def formActions(self, req, tag):
+        self.actions.setFragmentParent(self)
         return tag[self.actions]
 
 

@@ -20,7 +20,8 @@ from xmantissa.webtheme import ThemedElement
 from methanal.imethanal import IColumn
 from methanal.util import getArgsDict
 from methanal.view import (liveFormFromAttributes, containerFromAttributes,
-    ObjectSelectInput, SimpleForm, FormInput)
+    ObjectSelectInput, SimpleForm, FormInput, LiveForm, SubmitAction,
+    ActionButton, ActionContainer)
 from methanal.model import ValueParameter
 
 
@@ -395,3 +396,60 @@ class SimpleLookup(Lookup):
 
         values = [(o, self.describer(o)) for o in self.objects]
         ObjectSelectInput(parent=form, name='__results', values=values)
+
+
+
+class ModalDialog(ThemedElement):
+    """
+    Modal dialog widget.
+
+    @type title: C{unicode}
+    @ivar title: Dialog title
+
+    @type content: C{nevow.athena.LiveElement}
+    @ivar content: Athena widget to serve as the content for the dialog
+    """
+    jsClass = u'Methanal.Widgets.ModalDialog'
+    fragmentName = 'methanal-modal-dialog'
+
+
+    def __init__(self, title, content, **kw):
+        super(ModalDialog, self).__init__(**kw)
+        self.title = title
+        self.content = content
+
+
+    @renderer
+    def dialogTitle(self, req, tag):
+        return tag[self.title]
+
+
+    @renderer
+    def dialogContent(self, req, tag):
+        self.content.setFragmentParent(self)
+        return tag[self.content]
+
+
+
+class CancelAction(ActionButton):
+    """
+    Form action for dismissing a dialog.
+    """
+    jsClass = u'Methanal.Widgets.CancelAction'
+    defaultName = u'Cancel'
+    allowViewOnly = True
+
+
+
+class ModalDialogForm(LiveForm):
+    """
+    L{methanal.view.LiveForm} for L{methanal.widgets.ModalDialog}.
+    """
+    jsClass = u'Methanal.Widgets.ModalDialogForm'
+
+
+    def __init__(self, actions=None, **kw):
+        if actions is None:
+            actions = ActionContainer(
+                actions=[SubmitAction(name=u'OK'), CancelAction()])
+        super(ModalDialogForm, self).__init__(actions=actions, **kw)
