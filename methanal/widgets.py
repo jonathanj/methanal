@@ -92,7 +92,101 @@ class AttributeColumn(object):
         """
         return getattr(item, self.attribute.attrname)
 
+
+    def extractLink(self, model, item):
+        webTranslator = IWebTranslator(item.store, None)
+        if webTranslator is not None:
+            return unicode(webTranslator.toWebID(item), 'ascii')
+        return None
+
+
+    def getType(self):
+        return type(self.attribute).__name__
+
 registerAdapter(AttributeColumn, SQLAttribute, IColumn)
+
+
+
+class LinkColumn(object):
+    """
+    Provide a custom link for an existing L{IColumn}.
+
+    @type column: L{IColumn}
+    @ivar column: Existing column to provide a custom link for
+
+    @ivar extractLink: A callable matching the signature of
+        L{IColumn.extractLink}
+    """
+    implements(IColumn)
+
+
+    def __init__(self, column, extractLink):
+        self._column = column
+        self.extractLink = extractLink
+        self.extractValue = self._column.extractValue
+        self.getType = self._column.getType
+        self.attributeID = self._column.attributeID
+        self.title = self._column.title
+
+
+
+class Table(ThemedElement):
+    """
+    Tabulate data with column values derived from Items.
+
+    @type items: C{list} of C{axiom.item.Item}
+
+    @type columns: C{list} of C{(unicode, methanal.imethanal.IColumn)}
+    @ivar columns: A sequence of C{(columnID, column)}
+    """
+    jsClass = u'Methanal.Widgets.Table'
+    fragmentName = 'methanal-table'
+
+
+    def __init__(self, items, columns, **kw):
+        super(Table, self).__init__(**kw)
+        self.items = list(items)
+        columns = (IColumn(column) for column in columns)
+        self.columns = [(unicode(column.attributeID, 'ascii'), column)
+                        for column in columns]
+
+
+    def dictifyItem(self, item, index):
+        data = {
+            u'__id__': index,
+            u'__links__': dict()}
+        links = data['__links__']
+        for columnID, column in self.columns:
+            data[columnID] = column.extractValue(self, item)
+            links[columnID] = column.extractLink(self, item)
+        return data
+
+
+    def getInitialArguments(self):
+        return [getArgsDict(self)]
+
+
+    def getArgs(self):
+        columns = []
+        for columnID, column in self.columns:
+            columnType = column.getType()
+            if columnType is not None:
+                columnType = unicode(columnType, 'ascii')
+            columns.append({
+                u'id': columnID,
+                u'title': column.title,
+                u'type': columnType});
+
+        return {u'columns': columns,
+                u'rows': [self.dictifyItem(row, index)
+                          for index, row in enumerate(self.items)]}
+
+
+    @expose
+    def performAction(self, name, rowIndex):
+        method = getattr(self, 'action_' + name)
+        item = self.items[rowIndex]
+        return method(item)
 
 
 
@@ -103,10 +197,11 @@ class QueryList(ThemedElement):
     Actions are supported too.
     """
     jsClass = u'Methanal.Widgets.QueryList'
-    fragmentName = 'methanal-query-list'
+    fragmentName = 'methanal-table'
 
 
     def __init__(self, rows, columns, webTranslator=None, timezone=None, **kw):
+        warn('QueryList is deprecated, use methanal.widgets.Table instead')
         super(QueryList, self).__init__(**kw)
 
         self.rows = list(rows)
