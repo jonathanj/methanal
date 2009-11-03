@@ -49,28 +49,29 @@ registerAdapter(TimeTransportable, Time, IAthenaTransportable)
 
 class AttributeColumn(object):
     """
-    Implement a mapping between Axiom attributes and the query list-based
-    L{IColumn}.
+    An L{methanal.imethanal.IColumn} provider for Axiom attributes.
+
+    @type attribute: L{axiom.attributes.SQLAttribute}
+
+    @type attributeID: C{str}
+    @param attributeID: Attribute column identifier, defaults to the attribute
+        name
     """
     implements(IColumn)
 
 
     def __init__(self, attribute, attributeID=None):
-        """
-        Create an L{AttributeColumn} from an Axiom attribute.
-
-        @param attribute: An axiom L{SQLAttribute} subclass.
-
-        @param attributeID: An optional client-side identifier for this
-            attribute.  Normally this will be this attribute's name; it isn't
-            visible to the user on the client, it's simply the client-side
-            internal identifier
-        """
         self.attribute = attribute
         if attributeID is None:
             attributeID = attribute.attrname
         self.attributeID = attributeID
+        title = getattr(self.attribute, 'doc', None)
+        if not title:
+            title = unicode(attributeID, 'ascii')
+        self.title = title
 
+
+    # IColumn
 
     def extractValue(self, model, item):
         """
