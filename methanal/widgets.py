@@ -10,6 +10,7 @@ from twisted.python.components import registerAdapter
 
 from axiom.item import SQLAttribute
 
+from nevow.inevow import IAthenaTransportable
 from nevow.tags import invisible
 from nevow.athena import expose, LiveElement
 from nevow.page import renderer
@@ -23,6 +24,26 @@ from methanal.view import (liveFormFromAttributes, containerFromAttributes,
     ObjectSelectInput, SimpleForm, FormInput, LiveForm, SubmitAction,
     ActionButton, ActionContainer)
 from methanal.model import ValueParameter
+
+
+
+class TimeTransportable(object):
+    """
+    An C{IAthenaTransportable} implementation for L{Time} instances.
+    """
+    implements(IAthenaTransportable)
+
+    jsClass = u'Methanal.Util.Time.fromTimestamp'
+
+
+    def __init__(self, time):
+        self.time = time
+
+
+    def getInitialArguments(self):
+        return [self.time.asPOSIXTimestamp() * 1000]
+
+registerAdapter(TimeTransportable, Time, IAthenaTransportable)
 
 
 
