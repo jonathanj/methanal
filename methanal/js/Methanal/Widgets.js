@@ -377,7 +377,6 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      * @return: Determine whether or not navigation should proceed
      */
     function cellClicked(self, cellNode, href) {
-        alert(cellNode + ' :: ' + href);
         return true;
     },
 
