@@ -423,7 +423,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      * @rtype: DOM node
      */
     function getCellNode(self, rowIndex, columnID) {
-        var column = self.columns[columnID];
+        var column = self._columns[columnID];
         if (column === undefined) {
             throw Methanal.Widgets.InvalidColumn(columnID);
         }
