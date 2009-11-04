@@ -60,14 +60,15 @@ class AttributeColumn(object):
     implements(IColumn)
 
 
-    def __init__(self, attribute, attributeID=None):
+    def __init__(self, attribute, attributeID=None, title=None):
         self.attribute = attribute
         if attributeID is None:
             attributeID = attribute.attrname
         self.attributeID = attributeID
-        title = getattr(self.attribute, 'doc', None)
-        if not title:
-            title = unicode(attributeID, 'ascii')
+        if title is None:
+            title = getattr(self.attribute, 'doc', None)
+            if not title:
+                title = unicode(attributeID, 'ascii')
         self.title = title
 
 
