@@ -157,6 +157,7 @@ Divmod.Class.subclass(Methanal.Widgets, 'Column').methods(
      * Construct a DOM object to represent a value for this column.
      */
     function valueToDOM(self, columnValue) {
+        columnValue = columnValue || '';
         return document.createTextNode(columnValue.toString());
     });
 
