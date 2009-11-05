@@ -532,7 +532,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      */
     function insertRow(self, index, rowData) {
         var tr = self.createRowElement(index, rowData);
-        self.rowInserted(tr.rowIndex, tr, rowData);
+        self.rowInserted(tr.sectionRowIndex, tr, rowData);
     },
 
 
