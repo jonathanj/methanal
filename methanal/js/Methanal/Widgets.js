@@ -457,7 +457,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      *
      * @rtype: DOM node
      */
-    function _createCellElement(self, rowNode, column, rowData) {
+    function createCellElement(self, rowNode, column, rowData) {
         var doc = rowNode.ownerDocument;
         var link = rowData['__links__'][column.columnID];
         var contentNode;
@@ -497,11 +497,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      *
      * @rtype: DOM node
      */
-    function _createRowElement(self, index, rowData) {
+    function createRowElement(self, index, rowData) {
         var tr = self.getBody().insertRow(index);
         var first = true;
         self.eachColumn(function (column) {
-            var cellNode = self._createCellElement(tr, column, rowData);
+            var cellNode = self.createCellElement(tr, column, rowData);
             if (first) {
                 first = false;
                 // This is for IE6's benefit.
@@ -531,7 +531,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      * @param index: Index to insert the row before, C{-1} will append the row
      */
     function insertRow(self, index, rowData) {
-        var tr = self._createRowElement(index, rowData);
+        var tr = self.createRowElement(index, rowData);
         self.rowInserted(tr.rowIndex, tr, rowData);
     },
 
@@ -557,8 +557,22 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
         self.getBody().deleteRow(rowIndex);
         self.rowRemoved(rowIndex);
     },
-    
-    
+
+
+    /**
+     * Replace all the children of a cell with new ones.
+     *
+     * This is a shorthand for L{Methanal.Widgets.Table.getCellNode} and
+     * L{Methanal.Util.replaceNodeContent}.
+     *
+     * @type  content: C{Array} of DOM nodes
+     */
+    function replaceCellContent(self, rowData, columnID, content) {
+        var cellNode = self.getCellNode(rowData.__id__, columnID);
+        Methanal.Util.replaceNodeContent(cellNode, content);
+    },
+
+
     /**
      * Populate the table.
      *
