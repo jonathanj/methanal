@@ -938,6 +938,12 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
  * A generic container for form inputs.
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
+    function __init__(self, node) {
+        Methanal.View.InputContainer.upcall(self, '__init__', node);
+        self.active = true;
+    },
+
+
     /**
      * Get the form associated with this widget.
      */
@@ -993,10 +999,11 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
      * @type active: C{boolean}
      */
     function setActive(self, active) {
+        self.active = active;
         self.node.style.display = active ? 'block' : 'none';
         Methanal.Util.addElementClass(self.node, 'dependancy-child');
-        if (self.widgetParent.setActive) {
-            self.widgetParent.setActive(active);
+        if (self.widgetParent.checkActive) {
+            self.widgetParent.checkActive();
         }
     },
 

@@ -1179,6 +1179,10 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
 
 /**
  * Tests for L{Methanal.View.InputContainer}.
+ *
+ * Be aware that these tests test containers containing multiple controls,
+ * because this sort of breaks the mold of the control testing framework these
+ * tests look slightly different.
  */
 Methanal.Tests.TestView.BaseTestTextInput.subclass(
     Methanal.Tests.TestView, 'TestFormGroup').methods(
@@ -1187,15 +1191,27 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     },
 
 
-    function createContainer(self, child) {
-        var row = Methanal.Tests.TestView.TestFormGroup.upcall(
-            self, 'createContainer', child);
-
+    /**
+     * Specially designed to accept multiple children.
+     */
+    function createContainer(self, children) {
         var group = Methanal.View.InputContainer(
             Nevow.Test.WidgetUtil.makeWidgetNode());
-        group.addChildWidget(row);
-        group.node.appendChild(row.node);
+
+        for (var i = 0; i < children.length; ++i) {
+            var row = Methanal.Tests.TestView.TestFormGroup.upcall(
+                self, 'createContainer', children[i]);
+            group.addChildWidget(row);
+            group.node.appendChild(row.node);
+        }
         return group;
+    },
+
+
+    function _createControls(self) {
+        return [
+            self.createControl({name: 'one', value: null}),
+            self.createControl({name: 'two', value: null})];
     },
 
 
@@ -1203,12 +1219,18 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
      * Any active children means the container is visible.
      */
     function test_activeChildren(self) {
-        self.testControl({value: null},
-            function (control) {
-                var group = control.widgetParent.widgetParent;
+        var controls = self._createControls();
+        self.testControls([controls],
+            function (controlsArray) {
+                var one = controlsArray[0][0];
+                var two = controlsArray[0][1];
+                var group = one.widgetParent.widgetParent;
                 self.assertIsInstanceOf(group, Methanal.View.InputContainer);
-                control.setActive(true);
-                self.assertIdentical(group.node.style.display, 'block');
+
+                one.setActive(true);
+                self.assertIdentical(group.active, true);
+                two.setActive(false);
+                self.assertIdentical(group.active, true);
             });
     },
 
@@ -1217,11 +1239,17 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
      * No active children means the container is not visible.
      */
     function test_noActiveChildren(self) {
-        self.testControl({value: null},
-            function (control) {
-                var group = control.widgetParent.widgetParent;
+        var controls = self._createControls();
+        self.testControls([controls],
+            function (controlsArray) {
+                var one = controlsArray[0][0];
+                var two = controlsArray[0][1];
+                var group = one.widgetParent.widgetParent;
                 self.assertIsInstanceOf(group, Methanal.View.InputContainer);
-                control.setActive(false);
-                self.assertIdentical(group.node.style.display, 'none');
+                one.setActive(false);
+                two.setActive(true);
+                self.assertIdentical(group.active, true);
+                two.setActive(false);
+                self.assertIdentical(group.active, false);
             });
     });
