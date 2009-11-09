@@ -68,9 +68,10 @@ Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
     /**
      * Called when the remote action method returns an error.
      */
-    function handleFailure(self, tableWidget, rowData, err) {
-        // XXX: Do something better.
-        alert('Oops: ' + err);
+    function handleFailure(self, tableWidget, row, err) {
+        // PageWidget.showErrorDialog sucks pretty badly for anything other
+        // than providing a notification that something foul is afoot.
+        tableWidget.getPageWidget().showErrorDialog('performAction', err);
     },
 
 
