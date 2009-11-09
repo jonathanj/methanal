@@ -3,6 +3,7 @@ from warnings import warn
 
 from zope.interface import implements
 
+from epsilon.structlike import record
 from epsilon.extime import FixedOffset, Time
 
 from twisted.internet.defer import maybeDeferred
@@ -131,6 +132,113 @@ class LinkColumn(object):
 
 
 
+class Row(object):
+    """
+    A L{Table} row.
+
+    @ivar id: Row identifier
+    
+    @type cells: Mapping of C{unicode} to L{Cell}
+    @ivar cells: Mapping of column identifiers to cell objects
+    """
+    def __init__(self, item, index, table):
+        self.id = index
+        self.cells = dict()
+        for column in table.columns:
+            columnID = unicode(column.attributeID, 'ascii')
+            value = column.extractValue(table, item)
+            link = column.extractLink(table, item)
+            self.cells[columnID] = Cell(value, link)
+
+
+
+class RowTransportable(record('row')):
+    """
+    An C{IAthenaTransportable} implementation for L{Row} instances.
+    """
+    implements(IAthenaTransportable)
+
+    jsClass = u'Methanal.Widgets.Row'
+
+
+    def getInitialArguments(self):
+        return [self.row.id, self.row.cells]
+
+registerAdapter(RowTransportable, Row, IAthenaTransportable)
+
+
+
+class Cell(object):
+    """
+    A L{Table} cell.
+
+    @ivar value: Cell value
+
+    @type link: C{unicode}
+    @ivar link: Hyperlink for the cell, or C{None} if the cell is not
+        hyperlinked
+    """
+    def __init__(self, value, link):
+        self.value = value
+        self.link = link
+
+
+
+class CellTransportable(record('cell')):
+    """
+    An C{IAthenaTransportable} implementation for L{Cell} instances.
+    """
+    implements(IAthenaTransportable)
+
+    jsClass = u'Methanal.Widgets.Cell'
+
+
+    def getInitialArguments(self):
+        return [self.cell.value, self.cell.link]
+
+registerAdapter(CellTransportable, Cell, IAthenaTransportable)
+
+
+
+class ColumnTransportable(record('column')):
+    """
+    An C{IAthenaTransportable} implementation for L{IColumn}.
+    """
+    implements(IAthenaTransportable)
+
+    columnTypes = {
+        'text': u'Methanal.Widgets.TextColumn',
+        'integer': u'Methanal.Widgets.IntegerColumn',
+        'boolean': u'Methanal.Widgets.BooleanColumn',
+        'timestamp': u'Methanal.Widgets.TimestampColumn'}
+
+
+    @property
+    def jsClass(self):
+        """
+        Determine the Javascript class name based on the column type.
+        """
+        return self.columnTypes.get(self.getColumnType(), 'text')
+
+
+    def getColumnType(self):
+        """
+        Get the type of a column, if it has one.
+        """
+        columnType = self.column.getType()
+        if columnType is not None:
+            columnType = unicode(columnType, 'ascii')
+        return None
+
+
+    def getInitialArguments(self):
+        columnID = unicode(self.column.attributeID, 'ascii')
+        return [columnID, self.column.title, self.getColumnType()]
+
+registerAdapter(ColumnTransportable, IColumn, IAthenaTransportable)
+
+
+
 class Table(ThemedElement):
     """
     Tabulate data with column values derived from Items.
@@ -147,20 +255,7 @@ class Table(ThemedElement):
     def __init__(self, items, columns, **kw):
         super(Table, self).__init__(**kw)
         self.items = list(items)
-        columns = (IColumn(column) for column in columns)
-        self.columns = [(unicode(column.attributeID, 'ascii'), column)
-                        for column in columns]
-
-
-    def dictifyItem(self, item, index):
-        data = {
-            u'__id__': index,
-            u'__links__': dict()}
-        links = data['__links__']
-        for columnID, column in self.columns:
-            data[columnID] = column.extractValue(self, item)
-            links[columnID] = column.extractLink(self, item)
-        return data
+        self.columns = [IColumn(column) for column in columns]
 
 
     def getInitialArguments(self):
@@ -168,19 +263,9 @@ class Table(ThemedElement):
 
 
     def getArgs(self):
-        columns = []
-        for columnID, column in self.columns:
-            columnType = column.getType()
-            if columnType is not None:
-                columnType = unicode(columnType, 'ascii')
-            columns.append({
-                u'id': columnID,
-                u'title': column.title,
-                u'type': columnType});
-
-        return {u'columns': columns,
-                u'rows': [self.dictifyItem(row, index)
-                          for index, row in enumerate(self.items)]}
+        return {u'columns': self.columns,
+                u'rows': [Row(item, index, self)
+                          for index, item in enumerate(self.items)]}
 
 
     @expose

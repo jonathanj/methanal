@@ -41,15 +41,15 @@ Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
      * Called by the C{onclick} handler created by L{toNode}, to call the
      * remote action method and dispatch the result to the relevant handler.
      */
-    function _enact(self, tableWidget, rowData) {
+    function _enact(self, tableWidget, row) {
         var d = tableWidget.callRemote(
-            'performAction', self.name, rowData.__id__);
+            'performAction', self.name, row.id);
         return d.addCallbacks(
             function (result) {
-                return self.handleSuccess(tableWidget, rowData, result);
+                return self.handleSuccess(tableWidget, row, result);
             },
             function (err) {
-                return self.handleFailure(tableWidget, rowData, err);
+                return self.handleFailure(tableWidget, row, err);
             });
     },
 
@@ -58,9 +58,9 @@ Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
      * Called when the remote action method returns successfully,
      * L{successHandler} is called, if defined.
      */
-    function handleSuccess(self, tableWidget, rowData, result) {
+    function handleSuccess(self, tableWidget, row, result) {
         if (self.successHandler) {
-            return self.successHandler(tableWidget, rowData, result);
+            return self.successHandler(tableWidget, row, result);
         }
     },
 
@@ -81,8 +81,8 @@ Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
      * @type  tableWidget: L{Methanal.Widgets.Table}
      * @param tableWidget: Parent widget
      *
-     * @param rowData: Row data to pass along to handlers when the action is
-     *     triggered
+     * @type  row: L{Methanal.Widgets.Row}
+     * @param row: Row object to pass to handlers when the action is triggered
      *
      * @type  allowEventToNavigate: C{Boolean}
      * @param allowEventToNavigate: Use the result of
@@ -91,10 +91,10 @@ Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
      *
      * @rtype: DOM node
      */
-    function toNode(self, tableWidget, rowData,
+    function toNode(self, tableWidget, row,
         allowEventToNavigate/*=undefined*/) {
         var onclick = function(evt) {
-            self._enact(tableWidget, rowData);
+            self._enact(tableWidget, row);
             var navigate = tableWidget.cellClicked(this.parentNode, this.href);
             if (allowEventToNavigate) {
                 return navigate;
@@ -118,8 +118,10 @@ Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
 
     /**
      * Determine whether to enable the action for the given row.
+     *
+     * @type  row: L{Methanal.Widgets.Row}
      */
-    function enableForRow(self, rowData) {
+    function enableForRow(self, row) {
         return true;
     });
 
@@ -128,28 +130,32 @@ Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
 /**
  * Describes a type of column.
  *
- * @type columnID: C{String}
- * @ivar columnID: Column identifier
+ * @type id: C{String}
+ * @ivar id: Column identifier
  *
  * @type title: C{String}
  * @ivar title: User-facing column title
- *
- * @type index: C{Integer}
- * @ivar index: Index of this column in the row
  */
 Divmod.Class.subclass(Methanal.Widgets, 'Column').methods(
-    function __init__(self, columnID, title, index) {
-        self.columnID = columnID;
+    function __init__(self, id, title) {
+        self.id = id;
         self.title = title;
-        self.index = index;
     },
 
 
     /**
      * Extract the value of this column from a row.
      */
-    function extractValue(self, rowData) {
-        return rowData[self.columnID];
+    function extractValue(self, row) {
+        return row.cells[self.id].value;
+    },
+
+
+    /**
+     * Extract the hyperlink of this column from a row.
+     */
+    function extractLink(self, row) {
+        return row.cells[self.id].link;
     },
 
 
@@ -210,6 +216,39 @@ Divmod.Error.subclass(Methanal.Widgets, 'InvalidColumn');
 
 
 /**
+ * Cell object for L{Methanal.Widgets.Table}.
+ *
+ * @ivar value: Cell value
+ *
+ * @type link: C{String}
+ * @ivar link: Hyperlink specific to this cell, or C{null} if this cell is not
+ *     linked
+ */
+Divmod.Class.subclass(Methanal.Widgets, 'Cell').methods(
+    function __init__(self, value, link) {
+        self.value = value;
+        self.link = link;
+    });
+
+
+
+/**
+ * Row object for L{Methanal.Widgets.Table}.
+ *
+ * @ivar id: Row identifier
+ *
+ * @type cells: Mapping of C{String} to L{Methanal.Widgets.Cell}
+ * @ivar cells: Mapping of column identifiers to cell objects
+ */
+Divmod.Class.subclass(Methanal.Widgets, 'Row').methods(
+    function __init__(self, id, cells) {
+        self.id = id;
+        self.cells = cells;
+    });
+
+
+
+/**
  * A widget for tabulated data.
  *
  * @type actions: C{Array} of L{Methanal.Widgets.Action}
@@ -228,17 +267,16 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
     function __init__(self, node, args) {
         Methanal.Widgets.Table.upcall(self, '__init__', node);
         self._columns = args.columns;
+        self._columnIndices = {};
+        self.eachColumn(function (column, index) {
+            self._columnIndices[column.id] = index;
+        });
         self._rows = args.rows;
 
         self.actions = null;
         self.defaultAction = null;
         self.defaultActionNavigates = false;
         self._cycler = Methanal.Util.cycle('odd', 'even');
-        self._columnTypes = {
-            'text': Methanal.Widgets.TextColumn,
-            'integer': Methanal.Widgets.IntegerColumn,
-            'boolean': Methanal.Widgets.BooleanColumn,
-            'timestamp': Methanal.Widgets.TimestampColumn};
     },
 
 
@@ -247,33 +285,6 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      */
     function _hasActions(self) {
         return self.actions && self.actions.length > 0;
-    },
-
-
-    /**
-     * Build a mapping of column identifiers to column objects, and an ordered
-     * C{Array} of column identifiers.
-     *
-     * @raises Methanal.Widgets.UnknownColumnType: If
-     *     L{Methanal.Widgets.Column.type} is not a recognised column type,
-     *     additional type handlers can be registered with L{registerColumnType}
-     */
-    function _buildColumns(self) {
-        var columns = {};
-        var columnIDs = [];
-
-        for (var i = 0; i < self._columns.length; ++i) {
-            var column = self._columns[i];
-            var columnClass = self._columnTypes[column.type];
-            if (columnClass === undefined) {
-                throw Methanal.Widgets.UnknownColumnType(column.type);
-            }
-            columns[column.id] = columnClass(column.id, column.title, i);
-            columnIDs.push(column.id);
-        }
-
-        self._columnIDs = columnIDs;
-        self._columns = columns;
     },
 
 
@@ -303,7 +314,6 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
 
 
     function nodeInserted(self) {
-        self._buildColumns();
         self._tableNode = self.node.getElementsByTagName('table')[0];
         self._rebuildHeaders();
 
@@ -316,19 +326,14 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
 
 
     /**
-     * Register a column type handler.
-     */
-    function registerColumnType(self, columnType, columnClass) {
-        self._columnTypes[columnType] = columnClass;
-    },
-
-
-    /**
      * Apply a function to each L{Methanal.Widgets.Column}.
+     *
+     * C{func} is given two parameters: L{Methanal.Widgets.Column} and the
+     * column index.
      */
     function eachColumn(self, func) {
-        for (var i = 0; i < self._columnIDs.length; ++i) {
-            func(self._columns[self._columnIDs[i]]);
+        for (var i = 0; i < self._columns.length; ++i) {
+            func(self._columns[i], i);
         }
     },
 
@@ -344,10 +349,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      * @type  node: DOM node
      * @param node: Row element node
      *
-     * @type  rowData: C{object} mapping C{String} to C{String}
-     * @param rowData: Mapping of column identifiers to values
+     * @type  row: L{Methanal.Widgets.Row}
      */
-    function rowInserted(self, index, node, rowData) {
+    function rowInserted(self, index, node, row) {
         if (node !== null) {
             Methanal.Util.addElementClass(node, self._cycler());
         }
@@ -423,11 +427,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      * @rtype: DOM node
      */
     function getCellNode(self, rowIndex, columnID) {
-        var column = self._columns[columnID];
-        if (column === undefined) {
+        var columnIndex = self._columnIndices[columnID];
+        if (columnIndex === undefined) {
             throw Methanal.Widgets.InvalidColumn(columnID);
         }
-        return self.getRowNode(rowIndex).cells[column.index];
+        return self.getRowNode(rowIndex).cells[columnIndex];
     },
 
 
@@ -436,9 +440,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      * the action is valid and enabled for the given row, otherwise return
      * C{null}.
      */
-    function _makeActionNode(self, action, rowData, allowEventToNavigate) {
-        if (action && action.enableForRow(rowData)) {
-            return action.toNode(self, rowData, allowEventToNavigate);
+    function _makeActionNode(self, action, row, allowEventToNavigate) {
+        if (action && action.enableForRow(row)) {
+            return action.toNode(self, row, allowEventToNavigate);
         }
         return null;
     },
@@ -457,31 +461,28 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      *
      * @rtype: DOM node
      */
-    function createCellElement(self, rowNode, column, rowData) {
+    function createCellElement(self, rowNode, column, row) {
         var doc = rowNode.ownerDocument;
-        var link = rowData['__links__'][column.columnID];
+        var link = column.extractLink(row);
         var contentNode;
-
-        function onclick(evt) {
+        var onclick = function onclick(evt) {
             return self.cellClicked(this.parentNode, this.href);
-        }
-
-        var clickHandler = onclick;
+        };
 
         if (link) {
             contentNode = doc.createElement('a');
             contentNode.href = link;
             var actionNode = self._makeActionNode(
-                self.defaultAction, rowData, self.defaultActionNavigates);
+                self.defaultAction, row, self.defaultActionNavigates);
             if (actionNode) {
-                clickHandler = actionNode.onclick;
+                onclick = actionNode.onclick;
             }
         } else {
             contentNode = doc.createElement('span');
         }
-        contentNode.onclick = clickHandler;
+        contentNode.onclick = onclick;
 
-        var columnValue = column.extractValue(rowData);
+        var columnValue = column.extractValue(row);
         var content = column.valueToDOM(columnValue);
         Methanal.Util.replaceNodeContent(contentNode, [content]);
         var td = rowNode.insertCell(-1);
@@ -497,11 +498,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      *
      * @rtype: DOM node
      */
-    function createRowElement(self, index, rowData) {
+    function createRowElement(self, index, row) {
         var tr = self.getBody().insertRow(index);
         var first = true;
         self.eachColumn(function (column) {
-            var cellNode = self.createCellElement(tr, column, rowData);
+            var cellNode = self.createCellElement(tr, column, row);
             if (first) {
                 first = false;
                 // This is for IE6's benefit.
@@ -512,7 +513,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
         if (self._hasActions()) {
             var td = tr.insertCell(-1);
             for (var i = 0; i < self.actions.length; ++i) {
-                var node = self._makeActionNode(self.actions[i], rowData);
+                var node = self._makeActionNode(self.actions[i], row);
                 td.appendChild(node);
             }
         }
@@ -529,18 +530,22 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      *
      * @type  index: C{Integer}
      * @param index: Index to insert the row before, C{-1} will append the row
+     *
+     * @type  row: L{Methanal.Widgets.Row}
      */
-    function insertRow(self, index, rowData) {
-        var tr = self.createRowElement(index, rowData);
-        self.rowInserted(tr.sectionRowIndex, tr, rowData);
+    function insertRow(self, index, row) {
+        var tr = self.createRowElement(index, row);
+        self.rowInserted(tr.sectionRowIndex, tr, row);
     },
 
 
     /**
      * Append a row.
+     *
+     * @type  row: L{Methanal.Widgets.Row}
      */
-    function appendRow(self, rowData) {
-        self.insertRow(-1, rowData);
+    function appendRow(self, row) {
+        self.insertRow(-1, row);
     },
 
 
@@ -565,10 +570,14 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      * This is a shorthand for L{Methanal.Widgets.Table.getCellNode} and
      * L{Methanal.Util.replaceNodeContent}.
      *
+     * @type  row: L{Methanal.Widgets.Row}
+     *
+     * @type  columnID: C{String}
+     *
      * @type  content: C{Array} of DOM nodes
      */
-    function replaceCellContent(self, rowData, columnID, content) {
-        var cellNode = self.getCellNode(rowData.__id__, columnID);
+    function replaceCellContent(self, row, columnID, content) {
+        var cellNode = self.getCellNode(row.id, columnID);
         Methanal.Util.replaceNodeContent(cellNode, content);
     },
 
