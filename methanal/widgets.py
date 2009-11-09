@@ -218,7 +218,10 @@ class ColumnTransportable(record('column')):
         """
         Determine the Javascript class name based on the column type.
         """
-        return self.columnTypes.get(self.getColumnType(), 'text')
+        columnType = self.getColumnType()
+        if columnType is None:
+            columnType = 'text'
+        return self.columnTypes.get(columnType)
 
 
     def getColumnType(self):
@@ -228,7 +231,7 @@ class ColumnTransportable(record('column')):
         columnType = self.column.getType()
         if columnType is not None:
             columnType = unicode(columnType, 'ascii')
-        return None
+        return columnType
 
 
     def getInitialArguments(self):
