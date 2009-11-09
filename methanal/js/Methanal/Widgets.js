@@ -82,13 +82,13 @@ Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
      * @param tableWidget: Parent widget
      *
      * @param rowData: Row data to pass along to handlers when the action is
-     *     triggered 
-     *     
+     *     triggered
+     *
      * @type  allowEventToNavigate: C{Boolean}
      * @param allowEventToNavigate: Use the result of
      *     L{Methanal.Widgets.Table.cellClicked} to control navigation,
      *     otherwise use L{allowNavigate}
-     * 
+     *
      * @rtype: DOM node
      */
     function toNode(self, tableWidget, rowData,
@@ -151,8 +151,8 @@ Divmod.Class.subclass(Methanal.Widgets, 'Column').methods(
     function extractValue(self, rowData) {
         return rowData[self.columnID];
     },
-    
-    
+
+
     /**
      * Construct a DOM object to represent a value for this column.
      */
@@ -300,7 +300,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
             insertCell(tr, 'Actions');
         }
     },
-    
+
 
     function nodeInserted(self) {
         self._buildColumns();
@@ -591,7 +591,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
     function clear(self) {
         Methanal.Util.removeNodeContent(self.getBody());
     },
-    
+
 
     /**
      * Clear the table and show a placeholder.
