@@ -218,25 +218,18 @@ class ColumnTransportable(record('column')):
         """
         Determine the Javascript class name based on the column type.
         """
-        columnType = self.getColumnType()
+        columnType = self.column.getType()
         if columnType is None:
             columnType = 'text'
         return self.columnTypes.get(columnType)
 
 
-    def getColumnType(self):
-        """
-        Get the type of a column, if it has one.
-        """
+    def getInitialArguments(self):
+        columnID = unicode(self.column.attributeID, 'ascii')
         columnType = self.column.getType()
         if columnType is not None:
             columnType = unicode(columnType, 'ascii')
-        return columnType
-
-
-    def getInitialArguments(self):
-        columnID = unicode(self.column.attributeID, 'ascii')
-        return [columnID, self.column.title, self.getColumnType()]
+        return [columnID, self.column.title, columnType]
 
 registerAdapter(ColumnTransportable, IColumn, IAthenaTransportable)
 
