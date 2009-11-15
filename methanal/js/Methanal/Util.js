@@ -673,18 +673,17 @@ Methanal.Util.Time.fromDate = function fromDate(dateObj) {
  *
  * @rtype: L{Methanal.Util.Time}
  */
-Methanal.Util.Time.fromTimestamp =
-function fromTimestamp(timestamp, timezoneOffset) {
-    var t = Methanal.Util.Time();
-    t._timestamp = timestamp;
-    if (timezoneOffset) {
-        timezoneOffset *= 60 * 1000;
-    } else {
-        timezoneOffset = 0;
-    }
-    t._timezoneOffset = timezoneOffset;
-    return t;
-};
+Methanal.Util.Time.subclass(Methanal.Util.Time, 'fromTimestamp').methods(
+    function __init__(self, timestamp, timezoneOffset/*=undefined*/) {
+        Methanal.Util.Time.fromTimestamp.upcall(self, '__init__');
+        self._timestamp = timestamp;
+        if (timezoneOffset) {
+            timezoneOffset *= 60 * 1000;
+        } else {
+            timezoneOffset = 0;
+        }
+        self._timezoneOffset = timezoneOffset;
+    });
 
 
 

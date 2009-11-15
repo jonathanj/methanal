@@ -16,13 +16,44 @@ class IColumn(Interface):
         """)
 
 
+    title = Attribute(
+        """
+        C{unicode} text for a human-readable column title.
+        """)
+
+
     def extractValue(model, item):
         """
-        @type model: L{methanal.widgets.QueryList}
+        Extract a value for the column from an Item.
 
-        @param item: L{axiom.item.Item} from which to extract column value
+        @type model: L{methanal.widgets.Table}
 
-        @return: The underlying value for this column
+        @type  item: L{axiom.item.Item}
+        @param item: Item from which to extract a value
+
+        @return: Underlying value for this column
+        """
+
+
+    def extractLink(model, item):
+        """
+        Extract a URI for the column from an Item.
+
+        @type model: L{methanal.widgets.Table}
+
+        @type  item: L{axiom.item.Item}
+        @param item: Item from which to extract a URI
+
+        @rtype: C{unicode}
+        @return: A URI somehow relevant for this column, or C{None}
+        """
+
+
+    def getType():
+        """
+        Get a name identifying the type of data this column contains.
+
+        @rtype: C{str}
         """
 
 

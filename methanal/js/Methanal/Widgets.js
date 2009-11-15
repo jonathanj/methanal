@@ -6,6 +6,621 @@
 
 
 /**
+ * An action that can be performed on a single row of a L{Table} widget.
+ *
+ * @type name: C{String}
+ * @ivar name: Internal name, used on the server-side to find the action method
+ *
+ * @type displayName: C{String}
+ * @ivar displayName: User-facing name
+ *
+ * @type successHandler: C{function}
+ * @ivar successHandler: If defined, called when the remote action method
+ *     returns successfully, taking the same arguments as L{handleSuccess}
+ *
+ * @type icon: C{String}
+ * @ivar icon: If defined, specifies a URL to an image to display as an icon
+ *     alongside L{displayName}
+ *
+ * @type allowNavigate: C{Boolean}
+ * @ivar allowNavigate: Should clicking this action allow navigation to
+ *     proceed? Defaults to C{false}
+ */
+Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
+    function __init__(self, name, displayName, successHandler/*=undefined*/,
+        icon/*=undefined*/, allowNavigate/*=undefined*/) {
+        self.name = name;
+        self.displayName = displayName;
+        self.successHandler = successHandler;
+        self.icon = icon;
+        self.allowNavigate = allowNavigate || false;
+    },
+
+
+    /**
+     * Called by the C{onclick} handler created by L{toNode}, to call the
+     * remote action method and dispatch the result to the relevant handler.
+     */
+    function _enact(self, tableWidget, row) {
+        var d = tableWidget.callRemote(
+            'performAction', self.name, row.id);
+        return d.addCallbacks(
+            function (result) {
+                return self.handleSuccess(tableWidget, row, result);
+            },
+            function (err) {
+                return self.handleFailure(tableWidget, row, err);
+            });
+    },
+
+
+    /**
+     * Called when the remote action method returns successfully,
+     * L{successHandler} is called, if defined.
+     */
+    function handleSuccess(self, tableWidget, row, result) {
+        if (self.successHandler) {
+            return self.successHandler(tableWidget, row, result);
+        }
+    },
+
+
+    /**
+     * Called when the remote action method returns an error.
+     */
+    function handleFailure(self, tableWidget, row, err) {
+        // PageWidget.showErrorDialog sucks pretty badly for anything other
+        // than providing a notification that something foul is afoot.
+        tableWidget.getPageWidget().showErrorDialog('performAction', err);
+    },
+
+
+    /**
+     * Create a DOM node, representing this action, that will trigger when
+     * clicked.
+     *
+     * @type  tableWidget: L{Methanal.Widgets.Table}
+     * @param tableWidget: Parent widget
+     *
+     * @type  row: L{Methanal.Widgets.Row}
+     * @param row: Row object to pass to handlers when the action is triggered
+     *
+     * @type  allowEventToNavigate: C{Boolean}
+     * @param allowEventToNavigate: Use the result of
+     *     L{Methanal.Widgets.Table.cellClicked} to control navigation,
+     *     otherwise use L{allowNavigate}
+     *
+     * @rtype: DOM node
+     */
+    function toNode(self, tableWidget, row,
+        allowEventToNavigate/*=undefined*/) {
+        var onclick = function(evt) {
+            self._enact(tableWidget, row);
+            var navigate = tableWidget.cellClicked(this.parentNode, this.href);
+            if (allowEventToNavigate) {
+                return navigate;
+            }
+            return self.allowNavigate;
+        };
+
+        var T = Methanal.Util.DOMBuilder(tableWidget.node.ownerDocument);
+
+        var content = [];
+        if (self.icon) {
+            content.push(T('img', {'class': 'table-action-icon',
+                                   'src': self.icon}));
+        }
+        content.push(self.displayName);
+        var node = T('a', {'href': '#'}, content);
+        node.onclick = onclick;
+        return node;
+    },
+
+
+    /**
+     * Determine whether to enable the action for the given row.
+     *
+     * @type  row: L{Methanal.Widgets.Row}
+     */
+    function enableForRow(self, row) {
+        return true;
+    });
+
+
+
+/**
+ * Describes a type of column.
+ *
+ * @type id: C{String}
+ * @ivar id: Column identifier
+ *
+ * @type title: C{String}
+ * @ivar title: User-facing column title
+ */
+Divmod.Class.subclass(Methanal.Widgets, 'Column').methods(
+    function __init__(self, id, title) {
+        self.id = id;
+        self.title = title;
+    },
+
+
+    /**
+     * Extract the value of this column from a row.
+     */
+    function extractValue(self, row) {
+        return row.cells[self.id].value;
+    },
+
+
+    /**
+     * Extract the hyperlink of this column from a row.
+     */
+    function extractLink(self, row) {
+        return row.cells[self.id].link;
+    },
+
+
+    /**
+     * Construct a DOM object to represent a value for this column.
+     */
+    function valueToDOM(self, columnValue) {
+        columnValue = columnValue || '';
+        return document.createTextNode(columnValue.toString());
+    });
+
+
+
+/**
+ * Column representing text values.
+ */
+Methanal.Widgets.Column.subclass(Methanal.Widgets, 'TextColumn');
+
+
+
+/**
+ * Column representing integer values.
+ */
+Methanal.Widgets.Column.subclass(Methanal.Widgets, 'IntegerColumn');
+
+
+
+/**
+ * Column representing boolean values.
+ */
+Methanal.Widgets.Column.subclass(Methanal.Widgets, 'BooleanColumn');
+
+
+
+/**
+ * Column representing timestamp values.
+ */
+Methanal.Widgets.Column.subclass(Methanal.Widgets, 'TimestampColumn').methods(
+    function valueToDOM(self, columnValue) {
+        return Methanal.Widgets.TimestampColumn.upcall(
+            self, 'valueToDOM', columnValue.asHumanly());
+    });
+
+
+
+/**
+ * An unknown column type was encountered.
+ */
+Divmod.Error.subclass(Methanal.Widgets, 'UnknownColumnType');
+
+
+
+/**
+ * An invalid column identifier was given.
+ */
+Divmod.Error.subclass(Methanal.Widgets, 'InvalidColumn');
+
+
+
+/**
+ * Cell object for L{Methanal.Widgets.Table}.
+ *
+ * @ivar value: Cell value
+ *
+ * @type link: C{String}
+ * @ivar link: Hyperlink specific to this cell, or C{null} if this cell is not
+ *     linked
+ */
+Divmod.Class.subclass(Methanal.Widgets, 'Cell').methods(
+    function __init__(self, value, link) {
+        self.value = value;
+        self.link = link;
+    });
+
+
+
+/**
+ * Row object for L{Methanal.Widgets.Table}.
+ *
+ * @ivar id: Row identifier
+ *
+ * @type cells: Mapping of C{String} to L{Methanal.Widgets.Cell}
+ * @ivar cells: Mapping of column identifiers to cell objects
+ */
+Divmod.Class.subclass(Methanal.Widgets, 'Row').methods(
+    function __init__(self, id, cells) {
+        self.id = id;
+        self.cells = cells;
+    });
+
+
+
+/**
+ * A widget for tabulated data.
+ *
+ * @type actions: C{Array} of L{Methanal.Widgets.Action}
+ * @ivar actions: Available row actions, or C{null}
+ *
+ * @type defaultAction: L{Methanal.Widgets.Action}
+ * @ivar defaultAction: An action to use when clicking any linked cell of a row,
+ *     or C{null}
+ *
+ * @type defaultActionNavigates: C{Boolean}
+ * @ivar defaultActionNavigates: Does clicking the default action invoke the
+ *     normal navigation logic (determined by L{cellClicked} or
+ *     L{Methanal.Widgets.Action.allowNavigate})? Defaults to C{false}
+ */
+Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
+    function __init__(self, node, args) {
+        Methanal.Widgets.Table.upcall(self, '__init__', node);
+        self._columns = args.columns;
+        self._columnIndices = {};
+        self.eachColumn(function (column, index) {
+            self._columnIndices[column.id] = index;
+        });
+        self._rows = args.rows;
+
+        self.actions = null;
+        self.defaultAction = null;
+        self.defaultActionNavigates = false;
+        self._cycler = Methanal.Util.cycle('odd', 'even');
+    },
+
+
+    /**
+     * Does this table have any additional actions associated with it?
+     */
+    function _hasActions(self) {
+        return self.actions && self.actions.length > 0;
+    },
+
+
+    /**
+     * Rebuild the table header elements.
+     */
+    function _rebuildHeaders(self) {
+        var doc = self.node.ownerDocument;
+
+        self._tableNode.deleteTHead();
+        var thead = self._tableNode.createTHead();
+        var tr = self._tableNode.tHead.insertRow(0);
+
+        function insertCell(rowNode, title) {
+            var td = tr.insertCell(-1);
+            Methanal.Util.replaceNodeText(td, title);
+        };
+
+        self.eachColumn(function (column) {
+            insertCell(tr, column.title);
+        });
+
+        if (self._hasActions()) {
+            insertCell(tr, 'Actions');
+        }
+    },
+
+
+    function nodeInserted(self) {
+        self._tableNode = self.node.getElementsByTagName('table')[0];
+        self._rebuildHeaders();
+
+        if (self._rows.length > 0) {
+            self.populate(self._rows);
+        } else {
+            self.empty();
+        }
+    },
+
+
+    /**
+     * Apply a function to each L{Methanal.Widgets.Column}.
+     *
+     * C{func} is given two parameters: L{Methanal.Widgets.Column} and the
+     * column index.
+     */
+    function eachColumn(self, func) {
+        for (var i = 0; i < self._columns.length; ++i) {
+            func(self._columns[i], i);
+        }
+    },
+
+
+    /**
+     * Event callback called after a row is inserted into the QueryList.
+     *
+     * The base implementation performs row zebra striping.
+     *
+     * @type  index: C{Integer}
+     * @param index: Index of the row in the table
+     *
+     * @type  node: DOM node
+     * @param node: Row element node
+     *
+     * @type  row: L{Methanal.Widgets.Row}
+     */
+    function rowInserted(self, index, node, row) {
+        if (node !== null) {
+            Methanal.Util.addElementClass(node, self._cycler());
+        }
+    },
+
+
+    /**
+     * Event callback called after a row is removed from the QueryList.
+     *
+     * @type  index: C{Integer}
+     * @param index: Index of the row in the table
+     */
+    function rowRemoved(self, index) {
+    },
+
+
+    /**
+     * Event callback called when a cell is clicked.
+     *
+     * @type  cellNode: DOM node
+     * @param cellNode: Table cell node that was clicked
+     *
+     * @type  href: C{String}
+     * @param href: The C{href} attribute of the clicked anchor element
+     *
+     * @rtype:  C{Boolean}
+     * @return: Determine whether or not navigation should proceed
+     */
+    function cellClicked(self, cellNode, href) {
+        return true;
+    },
+
+
+    /**
+     * Get the DOM node for the body of the QueryList.
+     */
+    function getBody(self) {
+        return self._tableNode.tBodies[0];
+    },
+
+
+    /**
+     * Get the DOM collection that represents the QueryList's rows.
+     */
+    function getRows(self) {
+        return self.getBody().rows;
+    },
+
+
+    /**
+     * Get the DOM node of a particular row.
+     *
+     * @type  rowIndex: C{Integer}
+     *
+     * @rtype: DOM node
+     */
+    function getRowNode(self, rowIndex) {
+        return self.getRows()[rowIndex];
+    },
+
+
+    /**
+     * Get the DOM node of a particular cell in a row.
+     *
+     * @type  rowIndex: C{Integer}
+     *
+     * @type  columnID: C{String}
+     * @param columnID: Column identifier
+     *
+     * @raise Methanal.Widgets.InvalidColumn: If L{columnID} does not identify
+     *     a column
+     *
+     * @rtype: DOM node
+     */
+    function getCellNode(self, rowIndex, columnID) {
+        var columnIndex = self._columnIndices[columnID];
+        if (columnIndex === undefined) {
+            throw Methanal.Widgets.InvalidColumn(columnID);
+        }
+        return self.getRowNode(rowIndex).cells[columnIndex];
+    },
+
+
+    /**
+     * Create a DOM node for a given L{Methanal.Widgets.Action}, but only if
+     * the action is valid and enabled for the given row, otherwise return
+     * C{null}.
+     */
+    function _makeActionNode(self, action, row, allowEventToNavigate) {
+        if (action && action.enableForRow(row)) {
+            return action.toNode(self, row, allowEventToNavigate);
+        }
+        return null;
+    },
+
+
+    /**
+     * Create a DOM node for a table cell.
+     *
+     * If a link is specified, an anchor element is created. If a default
+     * action has been specified for the table and a link is specified, the
+     * default action is attached to the cell.
+     *
+     * If L{defaultActionNavigates} is C{true}, then navigation behaviour
+     * is specified by the return value of L{cellClicked}; otherwise
+     * L{defaultAction.allowNavigate} is used.
+     *
+     * @rtype: DOM node
+     */
+    function createCellElement(self, rowNode, column, row) {
+        var doc = rowNode.ownerDocument;
+        var link = column.extractLink(row);
+        var contentNode;
+        var onclick = function onclick(evt) {
+            return self.cellClicked(this.parentNode, this.href);
+        };
+
+        if (link) {
+            contentNode = doc.createElement('a');
+            contentNode.href = link;
+            var actionNode = self._makeActionNode(
+                self.defaultAction, row, self.defaultActionNavigates);
+            if (actionNode) {
+                onclick = actionNode.onclick;
+            }
+        } else {
+            contentNode = doc.createElement('span');
+        }
+        contentNode.onclick = onclick;
+
+        var columnValue = column.extractValue(row);
+        var content = column.valueToDOM(columnValue);
+        Methanal.Util.replaceNodeContent(contentNode, [content]);
+        var td = rowNode.insertCell(-1);
+        td.appendChild(contentNode);
+        return td;
+    },
+
+
+    /**
+     * Create a DOM node for a row and all its cells.
+     *
+     * An additional column is created if the table has any actions.
+     *
+     * @rtype: DOM node
+     */
+    function createRowElement(self, index, row) {
+        var tr = self.getBody().insertRow(index);
+        var first = true;
+        self.eachColumn(function (column) {
+            var cellNode = self.createCellElement(tr, column, row);
+            if (first) {
+                first = false;
+                // This is for IE6's benefit.
+                Methanal.Util.addElementClass(cellNode, 'first-child');
+            }
+        });
+
+        if (self._hasActions()) {
+            var td = tr.insertCell(-1);
+            for (var i = 0; i < self.actions.length; ++i) {
+                var node = self._makeActionNode(self.actions[i], row);
+                td.appendChild(node);
+            }
+        }
+
+        return tr;
+    },
+
+
+    /**
+     * Insert a row.
+     *
+     * After a row has been successfully inserted, L{rowInserted} is called
+     * with the index, DOM node and row data.
+     *
+     * @type  index: C{Integer}
+     * @param index: Index to insert the row before, C{-1} will append the row
+     *
+     * @type  row: L{Methanal.Widgets.Row}
+     */
+    function insertRow(self, index, row) {
+        var tr = self.createRowElement(index, row);
+        self.rowInserted(tr.sectionRowIndex, tr, row);
+    },
+
+
+    /**
+     * Append a row.
+     *
+     * @type  row: L{Methanal.Widgets.Row}
+     */
+    function appendRow(self, row) {
+        self.insertRow(-1, row);
+    },
+
+
+    /**
+     * Remove a row.
+     *
+     * After a row has been successfully removed, L{rowRemoved} is called
+     * with the index.
+     *
+     * @type  rowIndex: C{Integer}
+     * @param rowIndex: Index of the row to remove
+     */
+    function removeRow(self, rowIndex) {
+        self.getBody().deleteRow(rowIndex);
+        self.rowRemoved(rowIndex);
+    },
+
+
+    /**
+     * Replace all the children of a cell with new ones.
+     *
+     * This is a shorthand for L{Methanal.Widgets.Table.getCellNode} and
+     * L{Methanal.Util.replaceNodeContent}.
+     *
+     * @type  row: L{Methanal.Widgets.Row}
+     *
+     * @type  columnID: C{String}
+     *
+     * @type  content: C{Array} of DOM nodes
+     */
+    function replaceCellContent(self, row, columnID, content) {
+        var cellNode = self.getCellNode(row.id, columnID);
+        Methanal.Util.replaceNodeContent(cellNode, content);
+    },
+
+
+    /**
+     * Populate the table.
+     *
+     * @param rows: C{Array} of row data objects
+     */
+    function populate(self, rows) {
+        for (var i = 0; i < rows.length; ++i) {
+            self.appendRow(rows[i]);
+        }
+    },
+
+
+    /**
+     * Clear the table body.
+     */
+    function clear(self) {
+        Methanal.Util.removeNodeContent(self.getBody());
+    },
+
+
+    /**
+     * Clear the table and show a placeholder.
+     */
+    function empty(self) {
+        self.clear();
+        var tr = self.getBody().insertRow(-1);
+        Methanal.Util.addElementClass(tr, 'methanal-table-empty-row');
+
+        var td = tr.insertCell(-1);
+        td.colSpan = self._tableNode.tHead.rows[0].cells.length;
+        Methanal.Util.replaceNodeText(td, 'No items to display');
+    });
+
+
+
+/**
+ * XXX: This is deprecated, use Methanal.Widgets.Table instead.
+ *
  * A widget that displays data tabulated according to a set of columns.
  *
  * @type _columnIDs: C{Array}
@@ -46,6 +661,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
      * @param args.rows: See L{_rows}
      */
     function __init__(self, node, args) {
+        Divmod.msg('QueryList is deprecated, use Methanal.Widgets.Table.')
         Methanal.Widgets.QueryList.upcall(self, '__init__', node);
 
         self._hasActions = self.actions && self.actions.length > 0;
