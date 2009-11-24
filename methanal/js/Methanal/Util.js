@@ -340,7 +340,7 @@ Methanal.Util.repr = function repr(o) {
 Methanal.Util.rjust = function rjust(s, width, padding/*= " "*/) {
     padding = padding || ' ';
     for (var i = s.length; i < width; ++i) {
-        s = padding[0] + s;
+        s = padding.charAt(0) + s;
     }
     return s;
 };
