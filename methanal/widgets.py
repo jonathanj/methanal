@@ -239,10 +239,9 @@ class Table(ThemedElement):
     """
     Tabulate data with column values derived from Items.
 
-    @type items: C{list} of C{axiom.item.Item}
+    @type items: C{sequence} of C{axiom.item.Item}
 
-    @type columns: C{list} of C{(unicode, methanal.imethanal.IColumn)}
-    @ivar columns: A sequence of C{(columnID, column)}
+    @type columns: C{sequence} of C{methanal.imethanal.IColumn}
     """
     jsClass = u'Methanal.Widgets.Table'
     fragmentName = 'methanal-table'
