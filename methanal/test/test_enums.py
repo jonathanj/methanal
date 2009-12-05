@@ -4,6 +4,8 @@ from methanal.imethanal import IEnumeration
 from methanal import enums, errors
 # Adapter registration side-effect.
 from methanal import view
+# To quell Pyflakes' fears.
+view
 
 
 
