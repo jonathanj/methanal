@@ -1,6 +1,5 @@
 from twisted.python import log
 from twisted.python.failure import Failure
-from twisted.python.util import mergeFunctionMetadata
 
 
 
