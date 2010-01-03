@@ -651,3 +651,151 @@ class ModalDialogForm(LiveForm):
             actions = ActionContainer(
                 actions=[SubmitAction(name=u'OK'), CancelAction()])
         super(ModalDialogForm, self).__init__(actions=actions, **kw)
+
+
+
+class TabView(ThemedElement):
+    """
+    A tab container, visually displayed as a horizontal tab bar.
+
+    Only one sub-container can be visible at a time.
+
+    @type tabs: C{list} of L{Tab}
+    @ivar tabs: Sequence of tab widgets to manage.
+
+    @type topLevel: C{bool}
+    @ivar topLevel: Is this a top-level TabView? Top-level TabViews will use
+        the fragment part of the current URL to track which tab is selected,
+        this behaviour supercedes L{Tab.selected}.
+    """
+    fragmentName = 'methanal-tab-view'
+    jsClass = u'Methanal.Widgets.TabView'
+
+
+    def __init__(self, tabs, topLevel=False, **kw):
+        super(TabView, self).__init__(**kw)
+        self.tabs = tabs
+        self.topLevel = topLevel;
+
+
+    def getInitialArguments(self):
+        tabIDs = dict()
+        for tab in self.tabs:
+            if tab.id in tabIDs:
+                raise ValueError(
+                    '%r is a duplicate identifier in %r' % (tab.id, self))
+            tabIDs[tab.id] = True
+        return [tabIDs, self.topLevel]
+
+
+    @renderer
+    def tabContents(self, req, tag):
+        def _tabs():
+            for tab in self.tabs:
+                tab.setFragmentParent(self)
+                yield tab
+
+        return tag[_tabs()]
+
+
+
+class Tab(ThemedElement):
+    """
+    A content container, intended to be passed to L{TabView}.
+
+    @type title: C{unicode}
+    @ivar title: Title of the container, used by L{TabView} when constructing
+        the tab list.
+
+    @ivar contentFactory: C{callable} taking no arguments that returns a widget
+        to use for the tab content
+
+    @type selected: C{bool}
+    @ivar selected: Is this container to be selected initially? Defaults to
+        C{False}.
+
+    @type id: C{unicode}
+    @ivar id: Unique identifier for this container.
+    """
+    fragmentName = 'methanal-tab'
+
+
+    def __init__(self, id, title, contentFactory, selected=False, **kw):
+        super(Tab, self).__init__(**kw)
+
+        self.id = id
+        self.title = title
+        self.contentFactory = contentFactory
+        self.selected = selected
+
+
+    def getInitialArguments(self):
+        return [getArgsDict(self)]
+
+
+    def getArgs(self):
+        return {u'id': self.id,
+                u'title': self.title,
+                u'selected': self.selected}
+
+
+    @expose
+    def getContent(self):
+        content = self.contentFactory()
+        content.setFragmentParent(self)
+        return content
+
+
+    @renderer
+    def tabContent(self, req, tag):
+        return tag
+
+
+
+class StaticTab(Tab):
+    """
+    Static content tab container.
+
+    Content is inserted at render time and doesn't change or reload.
+    """
+    jsClass = u'Methanal.Widgets.StaticTab'
+
+    
+    def __init__(self, content=None, **kw):
+        """
+        @type  content: C{nevow.athena.LiveElement}
+        @param content: Optional static content to use. Either C{content} or
+            L{contentFactory} must be specified.
+        """
+        if content is not None:
+            kw['contentFactory'] = lambda: content
+        super(StaticTab, self).__init__(**kw)
+
+
+    @renderer
+    def tabContent(self, req, tag):
+        return tag[self.getContent()]
+
+
+
+class DynamicTab(Tab):
+    """
+    Dynamic content tab container.
+
+    Content is only requested, from the server, and inserted once the tab
+    widget has been inserted into the document on the client side.
+    """
+    jsClass = u'Methanal.Widgets.DynamicTab'
+
+
+
+class DemandTab(Tab):
+    """
+    On-demand content tab container.
+
+    Content is only requested, from the server, and inserted when the tab is
+    selected. Selecting the tab always retrieves new content; selecting the tab
+    before a previous fetch attempt has completed will result in that data
+    being discarded and a new fetch occuring.
+    """
+    jsClass = u'Methanal.Widgets.DemandTab'

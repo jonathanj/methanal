@@ -1314,3 +1314,402 @@ Methanal.View.LiveForm.subclass(Methanal.Widgets, 'ModalDialogForm').methods(
         self.widgetParent.close();
         return false;
     });
+
+
+
+/**
+ * An unknown tab identifier was specified.
+ */
+Divmod.Error.subclass(Methanal.Widgets, 'UnknownTab');
+
+
+
+/**
+ * A tab container, visually displayed as a horizontal tab bar.
+ *
+ * @ivar tabIDs: Mapping of L{Tab.id}, used conceptually as a set, used for
+ *     tracking tab loading.
+ *
+ * @type topLevel: C{Boolean}
+ * @ivar topLevel: Is this a top-level TabView? Top-level TabViews will use
+ *     the fragment part of the current URL to track which tab is selected,
+ *     this behaviour supercedes L{Tab.selected}.
+ *
+ * @type fullyLoaded: C{Boolean}
+ * @ivar fullyLoaded: Have all the tabs finished loading?
+ *
+ * @ivar _labels: Mapping of L{Tab.id} to DOM nodes of the tab labels.
+ */
+Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
+    function __init__(self, node, tabIDs, topLevel) {
+        Methanal.Widgets.TabView.upcall(self, '__init__', node);
+        self.tabIDs = tabIDs;
+        self.topLevel = topLevel;
+        if (self.topLevel) {
+            self._idToSelect = self._getTabIDFromLocation();
+        }
+        self._labels = {};
+        self._tabs = {};
+        self.fullyLoaded = false;
+        self.throbber = Methanal.Util.Throbber(self, 'inline');
+        self.throbber.start();
+    },
+
+
+    /**
+     * Extract the identifier of the selected tab from the current location.
+     *
+     * @rtype: C{String}
+     * @return: The identifier of the selected tab, or C{undefined} if no usable
+     *     information is found in the current location.
+     */
+    function _getTabIDFromLocation(self) {
+        if (window.location.hash) {
+            var identifier = window.location.hash.substring(1);
+            var parts = identifier.split(':');
+            if (parts[0] == 'tab') {
+                return parts[1];
+            }
+        }
+    },
+
+
+    /**
+     * Get a L{Methanal.Widgets.Tab} instance for a given tab identifier.
+     */
+    function getTab(self, id) {
+        var tab = self._tabs[id];
+        if (tab === undefined) {
+            throw new Methanal.Widgets.UnknownTab(
+                Methanal.Util.repr(id) + ' is an unknown tab identifier');
+        }
+        return tab;
+    },
+
+
+    function getFirstVisibleTab(self) {
+        for (var i = 0; i < self.childWidgets.length; ++i) {
+            var tab = self.childWidgets[i];
+            if (tab.visible) {
+                return tab;
+            }
+        }
+
+        throw new Methanal.Widgets.UnknownTab('No visible tabs');
+    },
+
+
+    /**
+     * Begin managing a new L{Tab} widget.
+     *
+     * A new label is created for C{tab}, based on L{Tab.title}, and an
+     * C{onclick} handler attached.
+     */
+    function appendTab(self, tab) {
+        function onclick(node) {
+            self.selectTab(tab);
+        }
+
+        var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+        var label = D('li', {'class': 'methanal-tab-label'}, [
+            D('a', {}, [tab.title])]);
+        label.onclick = onclick;
+
+        var labelClassName = tab.getLabelClassName();
+        if (labelClassName) {
+            Methanal.Util.addElementClass(label, labelClassName);
+        }
+
+        self._labels[tab.id] = label;
+        self._tabs[tab.id] = tab;
+        self.nodeById('labels').appendChild(label);
+
+        // If this tab's identifier matches the one we're supposed to select,
+        // do it. Otherwise select this tab if its "selected" attribute is true
+        // and no tab selection has been made yet.
+        if (tab.id == self._idToSelect) {
+            self._tabToSelect = tab;
+        } else if (self._tabToSelect === undefined && tab.selected) {
+            self._tabToSelect = tab;
+        }
+    },
+
+
+    /**
+     * Select a tab.
+     *
+     * If this is a top-level TabView, the newly selected tab is tracked.
+     */
+    function selectTab(self, tab) {
+        for (var i = 0; i < self.childWidgets.length; ++i) {
+            self.childWidgets[i].deselect();
+        }
+        for (var id in self._labels) {
+            Methanal.Util.removeElementClass(
+                self._labels[id], 'selected-tab-label');
+        }
+        var labelNode = self._labels[tab.id];
+        Methanal.Util.addElementClass(labelNode, 'selected-tab-label');
+        tab.select();
+
+        if (self.topLevel) {
+            window.location.hash = 'tab:' + tab.id;
+        }
+
+        if (!self.fullyLoaded) {
+            self._tabToSelect = self._idToSelect = null;
+        }
+    },
+
+
+    /**
+     * Make the specified tab visible.
+     *
+     * If this is the first tab to be made visible, it is selected.
+     */
+    function showTab(self, tab) {
+        var labelNode = self._labels[tab.id];
+        labelNode.style.display = 'inline';
+        // If this is the only tab about to be visible, select it.
+        try {
+            self.getFirstVisibleTab();
+        } catch (e) {
+            if (!(e instanceof Methanal.Widgets.UnknownTab)) {
+                throw e;
+            }
+            self.selectTab(self);
+        }
+        tab.visible = true;
+    },
+
+
+    /**
+     * Hide the specified tab.
+     *
+     * The tab label is hidden for the given tab; if the specified tab is also
+     * the selected tab, the first visible tab will be selected.
+     */
+    function hideTab(self, tab) {
+        var labelNode = self._labels[tab.id];
+        labelNode.style.display = 'none';
+        tab.visible = false;
+        // If we're hiding the selected tab, select the first visible tab.
+        if (tab.selected) {
+            try {
+                self.selectTab(self.getFirstVisibleTab());
+            } catch (e) {
+                if (!(e instanceof Methanal.Widgets.UnknownTab)) {
+                    throw e;
+                }
+            }
+        }
+    },
+
+
+    /**
+     * Report a tab as having finished loading.
+     *
+     * Once all tabs in L{tabIDs} have reported in, loading of the TabView is
+     * finalised by calling L{_finishLoading}.
+     */
+    function loadedUp(self, tab) {
+        self.appendTab(tab);
+
+        delete self.tabIDs[tab.id];
+        for (var id in self.tabIDs) {
+            return;
+        }
+
+        self._finishLoading();
+    },
+
+
+    /**
+     * Finalise TabView loading.
+     */
+    function _finishLoading(self) {
+        self.fullyLoaded = true;
+        self.throbber.stop();
+        if (self._tabToSelect === undefined && self.childWidgets.length > 0) {
+            self._tabToSelect = self.childWidgets[0];
+        }
+        if (self._tabToSelect) {
+            self.selectTab(self._tabToSelect);
+        }
+    });
+
+
+
+/**
+ * A content container, intended to be passed to L{TabView}.
+ *
+ * @type id: C{String}
+ * @ivar id: Unique identifier for this container.
+ *
+ * @type title: C{String}
+ * @ivar title: Title of the container, used by L{TabView} when constructing
+ *     the tab list.
+ *
+ * @type selected: C{Boolean}
+ * @ivar selected: Is this container to be selected initially? Defaults to
+ *     C{False}.
+ *
+ * @type visible: C{Boolean}
+ * @ivar visible: Is this container visible?
+ */
+Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Tab').methods(
+    function __init__(self, node, args) {
+        Methanal.Widgets.Tab.upcall(self, '__init__', node);
+        self.id = args.id;
+        self.title = args.title;
+        self.selected = args.selected;
+        self.visible = true;
+        self._cancelFetch = function() {};
+        self._currentWidget = undefined;
+    },
+
+
+    function nodeInserted(self) {
+        self.widgetParent.loadedUp(self);
+    },
+
+
+    /**
+     * Get the class name to use for this tab's label.
+     *
+     * @rtype: C{String}
+     * @return: Class name to use, or C{undefined} if there is none.
+     */
+    function getLabelClassName(self) {
+    },
+
+
+    /**
+     * Set the tab content.
+     *
+     * @type content: DOM node
+     */
+    function _setContent(self, content) {
+        Methanal.Util.replaceNodeContent(self.nodeById('content'), [content]);
+    },
+
+
+    /**
+     * Show a placeholder in the tab content area.
+     */
+    function showPlaceholder(self) {
+        var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+        var placeholder = D('div', {'class': 'placeholder'}, []);
+        self._setContent(placeholder);
+    },
+
+
+    /**
+     * Fetch the latest tab content from the server.
+     *
+     * If a fetch is already in progress it's result is discarded and a new
+     * fetch takes place.
+     */
+    function fetchContent(self) {
+        self.showPlaceholder();
+
+        if (self._currentWidget !== undefined) {
+            self._currentWidget.detach();
+            self._currentWidget = undefined;
+        }
+        self._cancelFetch();
+
+        var abortFetch = false;
+        self._cancelFetch = function() {
+            abortFetch = true;
+        };
+
+        var d = self.callRemote('getContent');
+        d.addCallback(function (widgetInfo) {
+            return self.addChildWidgetFromWidgetInfo(widgetInfo);
+        });
+        d.addCallback(function (widget) {
+            if (abortFetch) {
+                return widget.detach();
+            } else {
+                self._setContent(widget.node);
+                self._currentWidget = widget;
+                Methanal.Util.nodeInserted(widget);
+            }
+        });
+        return d;
+    },
+
+
+    /**
+     * Apply selection styles.
+     */
+    function _applySelection(self) {
+        var fn = Methanal.Util.addElementClass;
+        if (!self.selected) {
+            fn = Methanal.Util.removeElementClass;
+        }
+        fn(self.node, 'selected-tab');
+    },
+
+
+    /**
+     * Deselect the tab.
+     */
+    function deselect(self) {
+        self.selected = false;
+        self._applySelection();
+    },
+
+
+    /**
+     * Select the tab.
+     */
+    function select(self) {
+        self.selected = true;
+        self._applySelection();
+    });
+
+
+
+/**
+ * Static content tab container.
+ *
+ * Content is inserted at render time and doesn't change or reload.
+ */
+Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'StaticTab');
+
+
+
+/**
+ * Dynamic content tab container.
+ *
+ * Content is only requested, from the server, and inserted once the tab
+ * widget has been inserted into the document on the client side.
+ */
+Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DynamicTab').methods(
+    function nodeInserted(self) {
+        Methanal.Widgets.DemandTab.upcall(self, 'nodeInserted');
+        self.fetchContent();
+    });
+
+
+
+/**
+ * On-demand content tab container.
+ *
+ * Content is only requested, from the server, and inserted when the tab is
+ * selected. Selecting the tab always retrieves new content; selecting the tab
+ * before a previous fetch attempt has completed will result in that data being
+ * discarded and a new fetch occuring.
+ */
+Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DemandTab').methods(
+    function getLabelClassName(self) {
+        return 'methanal-dynamic-tab';
+    },
+
+
+    function select(self) {
+        Methanal.Widgets.DemandTab.upcall(self, 'select');
+        self.fetchContent();
+    });
