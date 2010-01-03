@@ -137,7 +137,7 @@ class Row(object):
     A L{Table} row.
 
     @ivar id: Row identifier
-    
+
     @type cells: Mapping of C{unicode} to L{Cell}
     @ivar cells: Mapping of column identifiers to cell objects
     """
@@ -760,7 +760,7 @@ class StaticTab(Tab):
     """
     jsClass = u'Methanal.Widgets.StaticTab'
 
-    
+
     def __init__(self, content=None, **kw):
         """
         @type  content: C{nevow.athena.LiveElement}
