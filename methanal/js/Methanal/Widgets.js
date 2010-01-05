@@ -1387,6 +1387,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
     },
 
 
+    /**
+     * Get the first visible tab.
+     *
+     * @raise Methanal.Widgets.UnknownTab: If there are no visible tabs.
+     */
     function getFirstVisibleTab(self) {
         for (var i = 0; i < self.childWidgets.length; ++i) {
             var tab = self.childWidgets[i];
