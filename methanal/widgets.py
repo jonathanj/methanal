@@ -667,6 +667,9 @@ class TabView(ThemedElement):
     @ivar topLevel: Is this a top-level TabView? Top-level TabViews will use
         the fragment part of the current URL to track which tab is selected,
         this behaviour supercedes L{Tab.selected}.
+
+    @type _tabIDs: C{set}
+    @ivar _tabIDs: Collection of unique tab IDs currently being managed.
     """
     fragmentName = 'methanal-tab-view'
     jsClass = u'Methanal.Widgets.TabView'
@@ -674,18 +677,43 @@ class TabView(ThemedElement):
 
     def __init__(self, tabs, topLevel=False, **kw):
         super(TabView, self).__init__(**kw)
-        self.tabs = tabs
+        self._tabIDs = set()
+        self.tabs = []
         self.topLevel = topLevel;
+
+        for tab in tabs:
+            self._manageTab(tab)
+
+
+    def _manageTab(self, tab):
+        """
+        Begin managing a L{Tab} widget.
+
+        @raise ValueError: If C{tab.id} is already being managed.
+        """
+        if tab.id in self._tabIDs:
+            raise ValueError(
+                '%r is a duplicate tab identifier in %r' % (tab.id, self))
+        self._tabIDs.add(tab.id)
+        self.tabs.append(tab)
+
+
+    def appendTab(self, tab):
+        """
+        Append a L{Tab} widget.
+
+        The tab widget is passed to the client side and appended there.
+
+        @return: A C{Deferred} that fires when the widget has been inserted on
+            the client side.
+        """
+        self._manageTab(tab)
+        tab.setFragmentParent(self)
+        return self.callRemote('_appendTabFromServer', tab)
 
 
     def getInitialArguments(self):
-        tabIDs = dict()
-        for tab in self.tabs:
-            if tab.id in tabIDs:
-                raise ValueError(
-                    '%r is a duplicate identifier in %r' % (tab.id, self))
-            tabIDs[tab.id] = True
-        return [tabIDs, self.topLevel]
+        return [dict.fromkeys(self._tabIDs, True), self.topLevel]
 
 
     @renderer

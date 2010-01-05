@@ -1394,8 +1394,23 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
                 return tab;
             }
         }
-
         throw new Methanal.Widgets.UnknownTab('No visible tabs');
+    },
+
+
+    /**
+     * Client-side handler for appending a tab from the server-side.
+     */
+    function _appendTabFromServer(self, widgetInfo) {
+        self.throbber.start();
+        d = self.addChildWidgetFromWidgetInfo(widgetInfo);
+        d.addCallback(function (widget) {
+            self.tabIDs[widget.id] = true;
+            self.node.appendChild(widget.node);
+            self.loadedUp(widget);
+            return null;
+        });
+        return d;
     },
 
 
@@ -1528,8 +1543,12 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      * Finalise TabView loading.
      */
     function _finishLoading(self) {
-        self.fullyLoaded = true;
         self.throbber.stop();
+        if (self.fullyLoaded) {
+            return;
+        }
+
+        self.fullyLoaded = true;
         if (self._tabToSelect === undefined && self.childWidgets.length > 0) {
             self._tabToSelect = self.childWidgets[0];
         }
