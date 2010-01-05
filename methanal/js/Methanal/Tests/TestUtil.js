@@ -612,7 +612,7 @@ Divmod.UnitTest.TestCase.subclass(
      */
     function test_create(self) {
         var throbber = self._createThrobber();
-        self.assertIdentical(throbber._node.name, 'foo');
+        self.assertIdentical(throbber.node.name, 'foo');
     },
 
 
@@ -623,9 +623,9 @@ Divmod.UnitTest.TestCase.subclass(
     function test_startStop(self) {
         var throbber = self._createThrobber();
         throbber.start();
-        self.assertIdentical(throbber._node.style.visibility, 'visible');
+        self.assertIdentical(throbber.node.style.visibility, 'visible');
         throbber.stop();
-        self.assertIdentical(throbber._node.style.visibility, 'hidden');
+        self.assertIdentical(throbber.node.style.visibility, 'hidden');
     },
 
 
@@ -636,11 +636,11 @@ Divmod.UnitTest.TestCase.subclass(
     function test_toggleDisplay(self) {
         var throbber = self._createThrobber('foo');
         throbber.start();
-        self.assertIdentical(throbber._node.style.visibility, 'visible');
-        self.assertIdentical(throbber._node.style.display, 'foo');
+        self.assertIdentical(throbber.node.style.visibility, 'visible');
+        self.assertIdentical(throbber.node.style.display, 'foo');
         throbber.stop();
-        self.assertIdentical(throbber._node.style.visibility, 'hidden');
-        self.assertIdentical(throbber._node.style.display, 'none');
+        self.assertIdentical(throbber.node.style.visibility, 'hidden');
+        self.assertIdentical(throbber.node.style.display, 'none');
     });
 
 
