@@ -1412,7 +1412,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         d.addCallback(function (widget) {
             self.tabIDs[widget.id] = true;
             self.node.appendChild(widget.node);
-            self.loadedUp(widget);
+            Methanal.Util.nodeInserted(widget);
             return null;
         });
         return d;
