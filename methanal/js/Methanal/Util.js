@@ -382,8 +382,8 @@ Methanal.Util.divmod = function divmod(x, y) {
  * @ivar toggleDisplay: When defined, specifies the C{style.display} attribute
  *     value used when making the throbber visible
  *
- * @type _node: DOM node
- * @ivar _node: DOM node of the throbber graphic
+ * @type node: DOM node
+ * @ivar node: DOM node of the throbber graphic
  */
 Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
     /**
@@ -392,8 +392,11 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      * @type  widget: L{Nevow.Athena.Widget}
      * @param widget: The widget containing the throbber node
      */
-    function __init__(self, widget, toggleDisplay) {
-        self._node = widget.nodeById('throbber');
+    function __init__(self, widget, toggleDisplay, node/*=undefined*/) {
+        if (node === undefined) {
+            node = widget.nodeById('throbber');
+        }
+        self.node = node;
         self.toggleDisplay = toggleDisplay;
     },
 
@@ -402,9 +405,9 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      * Display the throbber.
      */
     function start(self) {
-        self._node.style.visibility = 'visible';
+        self.node.style.visibility = 'visible';
         if (self.toggleDisplay !== undefined) {
-            self._node.style.display = self.toggleDisplay;
+            self.node.style.display = self.toggleDisplay;
         }
     },
 
@@ -413,9 +416,9 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      * Hide the throbber.
      */
     function stop(self) {
-        self._node.style.visibility = 'hidden';
+        self.node.style.visibility = 'hidden';
         if (self.toggleDisplay !== undefined) {
-            self._node.style.display = 'none';
+            self.node.style.display = 'none';
         }
     });
 

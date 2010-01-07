@@ -462,3 +462,71 @@ button.roll-up {
     padding: 0;
     font-weight: normal;
 }
+
+.placeholder {
+    height: 32px;
+    background: url(/static/Methanal/images/long-throbber.gif) no-repeat center center;
+    padding: 1em 0;
+}
+
+/**
+ * Tab view widget.
+ */
+
+.methanal-tab-view {
+    margin: 1em 0;
+}
+
+.methanal-tab-view .methanal-tab-labels {
+    background: #e0f1ff;
+    color: #185280;
+    list-style: none;
+    margin: 0;
+    padding: 0.5em 0;
+    border-bottom: 1px solid #247dc2;
+}
+
+.methanal-tab-view .methanal-tab-label {
+    cursor: pointer;
+    display: inline;
+    list-style: none;
+}
+
+.methanal-tab-view .methanal-tab-label a {
+    padding: 0.5em 1em;
+}
+
+.methanal-tab-view .methanal-dynamic-tab a {
+    background: #f2e0ff;
+}
+
+.methanal-tab-view .methanal-tab-label a:hover {
+    background: #247dc2;
+    color: white;
+}
+
+.methanal-tab-view .selected-tab-label a,
+.methanal-tab-view .selected-tab-label a:hover {
+    background: white;
+    color: black;
+}
+
+.methanal-tab-view .selected-tab-label a {
+    position: relative;
+    top: 1px;
+    padding-top: 0.8em;
+    border: 1px solid #247dc2;
+    border-bottom: none;
+}
+
+.methanal-tab-view .methanal-tab-content {
+    border: 1px solid #247dc2;
+    border-top: none;
+    display: none;
+    clear: left;
+    padding: 1em;
+}
+
+.methanal-tab-view .selected-tab {
+    display: block;
+}
