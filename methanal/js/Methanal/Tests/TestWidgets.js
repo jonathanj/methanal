@@ -1,7 +1,72 @@
+// import Nevow.Test.WidgetUtil
 // import Methanal.Tests.Util
 // import Methanal.Widgets
 // import Methanal.Util
 
+
+
+Methanal.Widgets.Table.subclass(
+    Methanal.Tests.TestWidgets, 'MockTable').methods(
+    function __init__(self, args) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        Methanal.Tests.TestWidgets.MockTable.upcall(
+            self, '__init__', node, args);
+        var tableNode = document.createElement('table');
+        tableNode.appendChild(document.createElement('thead'));
+        tableNode.appendChild(document.createElement('tbody'));
+        node.appendChild(tableNode);
+        document.body.appendChild(node);
+    });
+
+
+
+Methanal.Widgets.Action.subclass(
+    Methanal.Tests.TestWidgets, 'DisabledAction').methods(
+        function enableForRow(self, row) {
+            return false;
+        });
+
+
+
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestWidgets, 'TableTest').methods(
+    function createTable(self, columnValues, actions, defaultAction) {
+        var cells = {};
+        var columns = [];
+        for (var columnID in columnValues) {
+            var values = columnValues[columnID];
+            columns.push(values.type(columnID, 'title'));
+            cells[columnID] = Methanal.Widgets.Cell(values.value, values.link);
+        }
+        var rows = [Methanal.Widgets.Row(0, cells)];
+        var args = {'columns': columns, 'rows': rows};
+        var table = Methanal.Tests.TestWidgets.MockTable(args);
+        table.actions = actions || null;
+        table.defaultAction = defaultAction || null;
+        Methanal.Util.nodeInserted(table);
+        return table;
+    },
+
+
+    function test_createTableWithEnabledAction(self) {
+        var columnValues = {
+            'col1': {type: Methanal.Widgets.BooleanColumn,
+                     value: false,
+                     link: null}};
+        var actions = [Methanal.Widgets.Action('foo', 'Foo')];
+        var table = self.createTable(columnValues, actions);
+    },
+
+
+    function test_createTableWithDisabledAction(self) {
+        var columnValues = {
+            'col1': {type: Methanal.Widgets.BooleanColumn,
+                     value: false,
+                     link: null}};
+        var actions = [Methanal.Tests.TestWidgets.DisabledAction('foo',
+                                                                 'Foo')];
+        var table = self.createTable(columnValues, actions);
+    });
 
 
 /**
