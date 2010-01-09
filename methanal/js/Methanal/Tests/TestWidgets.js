@@ -5,18 +5,18 @@
 
 
 
-Methanal.Widgets.Table.subclass(
-    Methanal.Tests.TestWidgets, 'MockTable').methods(
-    function __init__(self, args) {
-        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
-        Methanal.Tests.TestWidgets.MockTable.upcall(
-            self, '__init__', node, args);
-        var tableNode = document.createElement('table');
-        tableNode.appendChild(document.createElement('thead'));
-        tableNode.appendChild(document.createElement('tbody'));
-        node.appendChild(tableNode);
-        document.body.appendChild(node);
-    });
+//Methanal.Widgets.Table.subclass(
+//    Methanal.Tests.TestWidgets, 'MockTable').methods(
+//    function __init__(self, args) {
+//        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+//        Methanal.Tests.TestWidgets.MockTable.upcall(
+//            self, '__init__', node, args);
+//        var tableNode = document.createElement('table');
+//        tableNode.appendChild(document.createElement('thead'));
+//        tableNode.appendChild(document.createElement('tbody'));
+//        node.appendChild(tableNode);
+//        document.body.appendChild(node);
+//    });
 
 
 
@@ -38,11 +38,13 @@ Methanal.Tests.Util.TestCase.subclass(
             columns.push(values.type(columnID, 'title'));
             cells[columnID] = Methanal.Widgets.Cell(values.value, values.link);
         }
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var rows = [Methanal.Widgets.Row(0, cells)];
         var args = {'columns': columns, 'rows': rows};
-        var table = Methanal.Tests.TestWidgets.MockTable(args);
+        var table = Methanal.Widgets.Table(node, args);
         table.actions = actions || null;
         table.defaultAction = defaultAction || null;
+        document.body.appendChild(node);
         Methanal.Util.nodeInserted(table);
         return table;
     },
