@@ -1,25 +1,14 @@
 // import Nevow.Test.WidgetUtil
-// import Methanal.Tests.Util
 // import Methanal.Widgets
 // import Methanal.Util
+// import Methanal.Tests.Util
+// import Methanal.Tests.MockBrowser
 
 
 
-//Methanal.Widgets.Table.subclass(
-//    Methanal.Tests.TestWidgets, 'MockTable').methods(
-//    function __init__(self, args) {
-//        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
-//        Methanal.Tests.TestWidgets.MockTable.upcall(
-//            self, '__init__', node, args);
-//        var tableNode = document.createElement('table');
-//        tableNode.appendChild(document.createElement('thead'));
-//        tableNode.appendChild(document.createElement('tbody'));
-//        node.appendChild(tableNode);
-//        document.body.appendChild(node);
-//    });
-
-
-
+/**
+ * A L{Methanal.Widgets.Action} that returns C{false} for C{enableForRow}.
+ */
 Methanal.Widgets.Action.subclass(
     Methanal.Tests.TestWidgets, 'DisabledAction').methods(
         function enableForRow(self, row) {
@@ -28,9 +17,27 @@ Methanal.Widgets.Action.subclass(
 
 
 
+/**
+ * Tests for L{Methanal.Widgets.Table}.
+ */
 Methanal.Tests.Util.TestCase.subclass(
     Methanal.Tests.TestWidgets, 'TableTest').methods(
-    function createTable(self, columnValues, actions, defaultAction) {
+    /**
+     * Create a L{Methanal.Wigets.Table} widget.
+     *
+     * @param columnValues: Mapping of column names to mappings of C{'type'},
+     *     C{'value'} and C{'link'}, used for creating cells.
+     *
+     * @type  actions: C{Array} of L{Methanal.Widgets.Action}
+     * @param actions: Optional table actions.
+     *
+     * @type  defaultAction: L{Methanal.Widgets.Action}
+     * @param defaultAction: Optional default table action.
+     *
+     * @rtype: C{Methanal.Widgets.Table}
+     */
+    function createTable(self, columnValues, actions/*=undefined*/,
+        defaultAction/*=undefined*/) {
         var cells = {};
         var columns = [];
         for (var columnID in columnValues) {
@@ -40,16 +47,80 @@ Methanal.Tests.Util.TestCase.subclass(
         }
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var rows = [Methanal.Widgets.Row(0, cells)];
-        var args = {'columns': columns, 'rows': rows};
+        var args = {
+            'columns': columns,
+            'rows': rows};
         var table = Methanal.Widgets.Table(node, args);
         table.actions = actions || null;
         table.defaultAction = defaultAction || null;
+        var tableNode = Methanal.Tests.Util.makeWidgetChildNode(
+            table, 'table');
         document.body.appendChild(node);
         Methanal.Util.nodeInserted(table);
         return table;
     },
 
 
+    /**
+     * Get an C{Array} of DOM nodes for a table's actions.
+     */
+    function _getActionNodes(self, table) {
+        var rows = table.getBody().rows;
+        self.assertIdentical(rows.length > 0, true,
+            'Table has no rows.');
+        var cells = rows[0].cells;
+        if (cells.length < table._columns.length + 1) {
+            throw new Error('No actions column.');
+        }
+        var actionsCell = cells[table._columns.length/* + 1 - 1*/];
+        return actionsCell.getElementsByTagName('a');
+    },
+
+
+    /**
+     * Assert that C{table} has action DOM nodes that match an C{Array} of
+     * L{Methanal.Widgets.Action}.
+     */
+    function assertHasActions(self, table, actions) {
+        var actionDisplayNames = [];
+        for (var i = 0; i < actions.length; ++i) {
+            actionDisplayNames.push(actions[i].displayName);
+        }
+        actionDisplayNames.sort();
+
+        var anchors = self._getActionNodes(table);
+        self.assertIdentical(anchors.length, actions.length,
+            'Number of action nodes does not match number of actions.');
+
+        var textValues = []
+        for (var i = 0; i < anchors.length; ++i) {
+            var children = anchors[i].childNodes;
+            for (var j = 0; j < children.length; ++j) {
+                if (children[j].nodeType == children[j].TEXT_NODE) {
+                    textValues.push(children[j].nodeValue);
+                    break;
+                }
+            }
+        }
+        textValues.sort();
+
+        self.assertArraysEqual(actionDisplayNames, textValues);
+    },
+
+
+    /**
+     * Assert that C{table} has no action DOM nodes.
+     */
+    function assertHasNoActions(self, table) {
+        var anchors = self._getActionNodes(table);
+        self.assertIdentical(anchors.length, 0,
+            'Table has ' + anchors.length + ' actions, expected 0.');
+    },
+
+
+    /**
+     * Create a table with actions.
+     */
     function test_createTableWithEnabledAction(self) {
         var columnValues = {
             'col1': {type: Methanal.Widgets.BooleanColumn,
@@ -57,17 +128,25 @@ Methanal.Tests.Util.TestCase.subclass(
                      link: null}};
         var actions = [Methanal.Widgets.Action('foo', 'Foo')];
         var table = self.createTable(columnValues, actions);
+
+        self.assertHasActions(table, actions);
     },
 
 
+    /**
+     * Create a table with actions that are disabled. An "actions" column
+     * should still appear, in this case.
+     */
     function test_createTableWithDisabledAction(self) {
         var columnValues = {
             'col1': {type: Methanal.Widgets.BooleanColumn,
                      value: false,
                      link: null}};
-        var actions = [Methanal.Tests.TestWidgets.DisabledAction('foo',
-                                                                 'Foo')];
+        var actions = [
+            Methanal.Tests.TestWidgets.DisabledAction('foo', 'Foo')];
         var table = self.createTable(columnValues, actions);
+
+        self.assertHasNoActions(table);
     });
 
 
