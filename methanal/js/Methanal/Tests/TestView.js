@@ -9,32 +9,6 @@
 
 
 /**
- * Create a new child DOM element for a widget.
- *
- * @type  widget: L{Nevow.Athena.Widget}
- * @param widget: Parent widget
- *
- * @type  tagName: C{String}
- * @param tagName: Element tag name
- *
- * @type  id: C{String}
- * @param id: Node ID
- *
- * @rtype: DOM element
- */
-Methanal.Tests.TestView.makeWidgetChildNode =
-function makeWidgetChildNode(widget, tagName, id) {
-    var node = document.createElement(tagName);
-    if (id) {
-        node.id = widget.translateNodeId(id);
-    }
-    widget.node.appendChild(node);
-    return node;
-};
-
-
-
-/**
  * L{Methanal.View.LiveForm} mock implementation.
  */
 Methanal.View.LiveForm.subclass(
@@ -46,7 +20,7 @@ Methanal.View.LiveForm.subclass(
         Methanal.Tests.TestView.MockLiveForm.upcall(
             self, '__init__', node, viewOnly, controlNames);
 
-        var makeWidgetChildNode = Methanal.Tests.TestView.makeWidgetChildNode;
+        var makeWidgetChildNode = Methanal.Tests.Util.makeWidgetChildNode;
         makeWidgetChildNode(self, 'span', 'form-error');
 
         var actions = Methanal.View.ActionContainer(
@@ -172,7 +146,7 @@ Methanal.Tests.Util.TestCase.subclass(
     function createContainer(self, child) {
         var row = Methanal.View.FormRow(
             Nevow.Test.WidgetUtil.makeWidgetNode());
-        Methanal.Tests.TestView.makeWidgetChildNode(row, 'span', 'error-text')
+        Methanal.Tests.Util.makeWidgetChildNode(row, 'span', 'error-text')
 
         row.addChildWidget(child);
         row.node.appendChild(child.node);
@@ -302,7 +276,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = self.controlType(node, args);
         node.appendChild(document.createElement('select'));
-        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
         return control;
     },
 
@@ -471,7 +445,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = Methanal.View.MultiSelectInput(node, args);
         node.appendChild(document.createElement('select'));
-        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
 
         // Monkey-patch the "onChange" handler to fail the test if it is
         // called.
@@ -540,9 +514,9 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = self.controlType(node, args);
         node.appendChild(document.createElement('input'));
-        Methanal.Tests.TestView.makeWidgetChildNode(
+        Methanal.Tests.Util.makeWidgetChildNode(
             control, 'span', 'displayValue')
-        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
         return control;
     });
 
@@ -738,9 +712,9 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = controlType(node, args);
         node.appendChild(document.createElement('input'));
-        Methanal.Tests.TestView.makeWidgetChildNode(
+        Methanal.Tests.Util.makeWidgetChildNode(
             control, 'span', 'displayValue')
-        Methanal.Tests.TestView.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
         return control;
     },
 
@@ -1105,7 +1079,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     function createControl(self, args) {
         var control = Methanal.Tests.TestView.TestVerifiedPasswordInput.upcall(
             self, 'createControl', args);
-        Methanal.Tests.TestView.makeWidgetChildNode(
+        Methanal.Tests.Util.makeWidgetChildNode(
             control, 'input', 'confirmPassword');
         return control;
     },
