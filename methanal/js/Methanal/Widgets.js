@@ -517,7 +517,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
             var td = tr.insertCell(-1);
             for (var i = 0; i < self.actions.length; ++i) {
                 var node = self._makeActionNode(self.actions[i], row);
-                td.appendChild(node);
+                if (node !== null) {
+                    td.appendChild(node);
+                }
             }
         }
 

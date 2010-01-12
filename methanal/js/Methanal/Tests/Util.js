@@ -52,3 +52,29 @@ Divmod.Class.subclass(Methanal.Tests.Util, 'MockWidget').methods(
         }
         return node;
     });
+
+
+
+/**
+ * Create a new child DOM element for a widget.
+ *
+ * @type  widget: L{Nevow.Athena.Widget}
+ * @param widget: Parent widget
+ *
+ * @type  tagName: C{String}
+ * @param tagName: Element tag name
+ *
+ * @type  id: C{String}
+ * @param id: Node ID
+ *
+ * @rtype: DOM element
+ */
+Methanal.Tests.Util.makeWidgetChildNode =
+function makeWidgetChildNode(widget, tagName, id) {
+    var node = document.createElement(tagName);
+    if (id) {
+        node.id = widget.translateNodeId(id);
+    }
+    widget.node.appendChild(node);
+    return node;
+};
