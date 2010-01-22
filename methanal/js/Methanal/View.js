@@ -1730,11 +1730,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'RadioGroupInput').methods(
     function setValue(self, value) {
         var radios = self.getRadioNodes();
         for (var radioValue in radios) {
-            if (radioValue == value) {
-                radios[radioValue].checked = true;
-            } else {
-                radios[radioValue].checked = false;
-            }
+            radios[radioValue].checked = radioValue == value;
         }
     },
 
