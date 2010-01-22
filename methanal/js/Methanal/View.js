@@ -1705,6 +1705,52 @@ Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
 
 
 /**
+ * Group of radio button inputs.
+ */
+Methanal.View.FormInput.subclass(Methanal.View, 'RadioGroupInput').methods(
+    function getInputNode(self) {
+        return self.getRadioNodes()[0];
+    },
+
+
+    /**
+     * Get a mapping of radio values to radio DOM nodes.
+     */
+    function getRadioNodes(self) {
+        var inputs = {};
+        var nodes = self.node.getElementsByTagName('input');
+        for (var i = 0; i < nodes.length; ++i) {
+            var node = nodes[i];
+            inputs[node.value] = node;
+        }
+        return inputs;
+    },
+
+
+    function setValue(self, value) {
+        var radios = self.getRadioNodes();
+        for (var radioValue in radios) {
+            if (radioValue == value) {
+                radios[radioValue].checked = true;
+            } else {
+                radios[radioValue].checked = false;
+            }
+        }
+    },
+
+
+    function getValue(self) {
+        var radios = self.getRadioNodes();
+        for (var value in radios) {
+            if (radios[value].checked == true) {
+                return value;
+            }
+        }
+    });
+
+
+
+/**
  * Multi-checkbox input.
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
