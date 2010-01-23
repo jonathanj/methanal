@@ -6,7 +6,7 @@ from epsilon.extime import Time
 
 from twisted.python.components import registerAdapter
 
-from axiom.attributes import text, integer, timestamp
+from axiom.attributes import text, integer, timestamp, boolean
 
 from nevow.page import renderer
 from nevow.athena import expose
@@ -1057,6 +1057,7 @@ class AutoItemView(ItemView):
 
 
 _inputTypes = {
+    boolean:    lambda env: CheckboxInput,
     text:       lambda env: TextInput,
     integer:    lambda env: IntegerInput,
     timestamp:  lambda env:
