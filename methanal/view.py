@@ -1046,7 +1046,7 @@ class AutoItemView(ItemView):
         @type env: C{dict}
         @param env: Additional parameters to pass when creating inputs
         """
-        super(AutoItemView, **kw)
+        super(AutoItemView, self).__init__(**kw)
 
         if env is None:
             env = {}
