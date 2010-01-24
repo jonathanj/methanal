@@ -1,4 +1,5 @@
 from twisted.trial.unittest import TestCase
+from twisted.python.versions import Version
 
 from axiom.store import Store
 from axiom.item import Item
@@ -7,7 +8,7 @@ from axiom.dependency import installOn
 
 from xmantissa.website import WebSite
 
-from methanal import errors
+from methanal import errors, model
 from methanal.model import (Model, ItemModel, constraint, Value, Enum, List,
     loadFromItem)
 from methanal.view import (LiveForm, FormGroup, ItemView, GroupInput,
@@ -327,3 +328,42 @@ class ModelTests(TestCase):
         model.attach(p1, p2)
         self.assertIdentical(model.params['foo'], p1)
         self.assertIdentical(model.params['bar'], p2)
+
+
+
+class DeprecatedAttributesTests(TestCase):
+    """
+    Tests for deprecated attributes in L{methanal.model}.
+    """
+    version020 = Version('methanal', 0, 2, 0)
+
+    def assertDeprecated(self, obj, name, version):
+        """
+        Assert that the attribute C{name} on C{obj} was deprecated in
+        C{version}, by testing whether a deprecation warning was issued.
+        """
+        getattr(obj, name)
+        warningsShown = self.flushWarnings([
+            self.assertDeprecated])
+        self.assertEquals(len(warningsShown), 1)
+        self.assertIdentical(warningsShown[0]['category'], DeprecationWarning)
+
+
+    def test_valueParameter(self):
+        self.assertDeprecated(model, 'ValueParameter', self.version020)
+
+
+    def test_listParameter(self):
+        self.assertDeprecated(model, 'ListParameter', self.version020)
+
+
+    def test_enumerationParameter(self):
+        self.assertDeprecated(model, 'EnumerationParameter', self.version020)
+
+
+    def test_decimalParameter(self):
+        self.assertDeprecated(model, 'DecimalParameter', self.version020)
+
+
+    def test_storeIDParameter(self):
+        self.assertDeprecated(model, 'StoreIDParameter', self.version020)

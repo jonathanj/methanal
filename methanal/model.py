@@ -1,3 +1,6 @@
+from twisted.python.deprecate import deprecatedModuleAttribute
+from twisted.python.versions import Version
+
 from axiom import attributes
 
 from nevow.util import Expose
@@ -91,10 +94,6 @@ class Value(object):
             raise errors.ConstraintError(error)
         return self.value
 
-# XXX: backwards compat, deprecate this
-# XXX: see http://twistedmatrix.com/trac/ticket/3937 for doing this
-ValueParameter = Value
-
 
 
 class List(Value):
@@ -111,8 +110,6 @@ class List(Value):
         except TypeError:
             if value is not None:
                 return u'Value is not an iterable'
-
-ListParameter = List
 
 
 
@@ -137,8 +134,6 @@ class Enum(Value):
         """
         if value not in self.values:
             return u'Value not present in enumeration'
-
-EnumerationParameter = Enum
 
 
 
@@ -201,8 +196,6 @@ class DecimalValue(Value):
         kw.setdefault('decimalPlaces', attr.decimalPlaces)
         return super(DecimalValue, cls).fromAttr(attr, **kw)
 
-DecimalParameter = DecimalValue
-
 
 
 class ForeignRef(Value):
@@ -218,8 +211,6 @@ class ForeignRef(Value):
     def fromAttr(cls, attr, store, **kw):
         return super(ForeignRef, cls).fromAttr(
             attr, itemType=attr.reftype, store=store, **kw)
-
-StoreIDParameter = ForeignRef
 
 
 
@@ -291,7 +282,7 @@ _paramTypes = {
     attributes.integer:   Value,
     attributes.text:      Value,
     attributes.boolean:   Value,
-    attributes.textlist:  ListParameter,
+    attributes.textlist:  List,
     attributes.timestamp: Value}
 
 def paramFromAttribute(store, attr, value, name=None):
@@ -307,10 +298,10 @@ def paramFromAttribute(store, attr, value, name=None):
                                   doc=doc,
                                   model=model)
     elif isinstance(attr, attributes.AbstractFixedPointDecimal):
-        return DecimalParameter(name=name,
-                                value=value,
-                                doc=doc,
-                                decimalPlaces=attr.decimalPlaces)
+        return DecimalValue(name=name,
+                            value=value,
+                            doc=doc,
+                            decimalPlaces=attr.decimalPlaces)
     else:
         factory = _paramTypes.get(type(attr))
         if factory:
@@ -497,3 +488,30 @@ def loadFromItem(model, item):
     """
     for name, param in model.params.iteritems():
         param.value = getattr(item, name)
+
+
+
+ValueParameter = Value
+deprecatedModuleAttribute(
+    Version('methanal', 0, 2, 0),
+    'use methanal.model.Value instead', __name__, 'ValueParameter')
+
+ListParameter = List
+deprecatedModuleAttribute(
+    Version('methanal', 0, 2, 0),
+    'use methanal.model.List instead', __name__, 'ListParameter')
+
+EnumerationParameter = Enum
+deprecatedModuleAttribute(
+    Version('methanal', 0, 2, 0),
+    'use methanal.model.Enum instead', __name__, 'EnumerationParameter')
+
+DecimalParameter = DecimalValue
+deprecatedModuleAttribute(
+    Version('methanal', 0, 2, 0),
+    'use methanal.model.DecimalValue instead', __name__, 'DecimalParameter')
+
+StoreIDParameter = ForeignRef
+deprecatedModuleAttribute(
+    Version('methanal', 0, 2, 0),
+    'use methanal.model.ForeignRefinstead', __name__, 'StoreIDParameter')
