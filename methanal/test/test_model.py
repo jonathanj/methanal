@@ -1,5 +1,8 @@
 from twisted.trial.unittest import TestCase
 from twisted.python.versions import Version
+from twisted.python.deprecate import _getDeprecationWarningString
+from twisted.python.deprecate import DEPRECATION_WARNING_FORMAT
+
 
 from axiom.store import Store
 from axiom.item import Item
@@ -337,6 +340,17 @@ class DeprecatedAttributesTests(TestCase):
     """
     version020 = Version('methanal', 0, 2, 0)
 
+
+    def _getWarningString(self, obj, name, version):
+        """
+        Create the warning string used by deprecated attributes.
+        """
+        return _getDeprecationWarningString(
+            obj.__name__ + '.' + name,
+            version,
+            DEPRECATION_WARNING_FORMAT + ': ')
+
+
     def assertDeprecated(self, obj, name, version):
         """
         Assert that the attribute C{name} on C{obj} was deprecated in
@@ -347,6 +361,8 @@ class DeprecatedAttributesTests(TestCase):
             self.assertDeprecated])
         self.assertEquals(len(warningsShown), 1)
         self.assertIdentical(warningsShown[0]['category'], DeprecationWarning)
+        self.assertIn(self._getWarningString(obj, name, version),
+                      warningsShown[0]['message'])
 
 
     def test_valueParameter(self):
