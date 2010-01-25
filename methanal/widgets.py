@@ -24,7 +24,7 @@ from methanal.util import getArgsDict
 from methanal.view import (liveFormFromAttributes, containerFromAttributes,
     ObjectSelectInput, SimpleForm, FormInput, LiveForm, SubmitAction,
     ActionButton, ActionContainer)
-from methanal.model import ValueParameter
+from methanal.model import Value
 
 
 
@@ -589,8 +589,7 @@ class SimpleLookup(Lookup):
 
         super(SimpleLookup, self).__init__(form=form, **kw)
 
-        form.model.params['__results'] = ValueParameter(name='__results',
-                                                        doc=u'Result')
+        form.model.params['__results'] = Value(name='__results', doc=u'Result')
 
         values = [(o, self.describer(o)) for o in self.objects]
         ObjectSelectInput(parent=form, name='__results', values=values)
