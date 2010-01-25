@@ -366,20 +366,42 @@ class DeprecatedAttributesTests(TestCase):
 
 
     def test_valueParameter(self):
+        """
+        L{methanal.model.ValueParameter} is deprecated.
+        """
         self.assertDeprecated(model, 'ValueParameter', self.version020)
 
 
     def test_listParameter(self):
+        """
+        L{methanal.model.ListParameter} is deprecated.
+        """
         self.assertDeprecated(model, 'ListParameter', self.version020)
 
 
     def test_enumerationParameter(self):
+        """
+        L{methanal.model.EnumerationParameter} is deprecated.
+        """
         self.assertDeprecated(model, 'EnumerationParameter', self.version020)
 
 
     def test_decimalParameter(self):
+        """
+        L{methanal.model.DecimalParameter} is deprecated.
+        """
         self.assertDeprecated(model, 'DecimalParameter', self.version020)
 
 
     def test_storeIDParameter(self):
+        """
+        L{methanal.model.StoreIDParameter} is deprecated.
+        """
         self.assertDeprecated(model, 'StoreIDParameter', self.version020)
+
+
+    def test_multiEnumerationParameter(self):
+        """
+        L{methanal.model.MultiEnumerationParameter} is deprecated.
+        """
+        self.assertDeprecated(model, 'MultiEnumerationParameter', self.version020)

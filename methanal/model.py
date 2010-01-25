@@ -137,7 +137,7 @@ class Enum(Value):
 
 
 
-class MultiEnumerationParameter(Enum):
+class MultiEnum(Enum):
     """
     A multi-value enumeration model parameter.
     """
@@ -515,3 +515,8 @@ StoreIDParameter = ForeignRef
 deprecatedModuleAttribute(
     Version('methanal', 0, 2, 0),
     'use methanal.model.ForeignRefinstead', __name__, 'StoreIDParameter')
+
+MultiEnumerationParameter = MultiEnum
+deprecatedModuleAttribute(
+    Version('methanal', 0, 2, 0),
+    'use methanal.model.MultiEnum', __name__, 'MultiEnumerationParameter')
