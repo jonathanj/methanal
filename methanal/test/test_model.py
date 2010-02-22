@@ -13,7 +13,7 @@ from xmantissa.website import WebSite
 
 from methanal import errors, model
 from methanal.model import (Model, ItemModel, constraint, Value, Enum, List,
-    loadFromItem)
+    loadFromItem, paramFromAttribute)
 from methanal.view import (LiveForm, FormGroup, ItemView, GroupInput,
     IntegerInput)
 
@@ -78,6 +78,11 @@ class _DummyChildItem(Item):
 
 class _DummyParentItem(Item):
     r = reference(reftype=_DummyChildItem, doc=u'dummy reference')
+
+
+
+class _BrokenReference(Item):
+    r = reference()
 
 
 
@@ -213,6 +218,15 @@ class AutoSchemaTests(TestCase):
         model.process()
         self.assertIdentical(dummyParent.r, dummyChild)
         self.assertEquals(dummyChild.i, 6)
+
+
+    def test_noRefType(self):
+        """
+        Attempting to automatically synthesise a model for an Item with a
+        C{reference} attribute with no C{'reftype'} raises C{ValueError}.
+        """
+        brokenParent = _BrokenReference(store=self.store)
+        self.assertRaises(ValueError, ItemModel, brokenParent)
 
 
 
