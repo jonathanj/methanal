@@ -636,7 +636,8 @@ Methanal.View.FormAction.subclass(Methanal.View, 'ActionButton').methods(
  */
 Methanal.View.ActionButton.subclass(Methanal.View, 'SubmitAction').methods(
     function invoke(self) {
-        return self.getForm().submit();
+        // Allow form submission to proceed and let the "onsubmit" handler run.
+        return true;
     });
 
 
