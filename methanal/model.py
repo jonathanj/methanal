@@ -301,6 +301,8 @@ def paramFromAttribute(store, attr, value, name=None):
         name = attr.attrname
 
     if isinstance(attr, attributes.reference):
+        if attr.reftype is None:
+            raise ValueError('%r has no reference type' % (attr,))
         model = ItemModel(itemClass=attr.reftype, store=store)
         return ReferenceParameter(name=name,
                                   value=value,
