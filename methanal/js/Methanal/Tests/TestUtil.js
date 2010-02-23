@@ -599,11 +599,12 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
 Divmod.UnitTest.TestCase.subclass(
     Methanal.Tests.TestUtil, 'TestThrobber').methods(
     function _createThrobber(self, toggleDisplay) {
-        var idNodes = {
-            'throbber': Methanal.Tests.Util.MockNode('foo')};
-        var widget = Methanal.Tests.Util.MockWidget(idNodes);
-        var throbber = Methanal.Util.Throbber(widget, toggleDisplay);
-        return throbber;
+        var widget = Nevow.Athena.Widget(
+            Nevow.Test.WidgetUtil.makeWidgetNode());
+        var throbberNode = Methanal.Tests.Util.makeWidgetChildNode(
+            widget, 'img', 'throbber');
+        document.body.appendChild(widget.node);
+        return Methanal.Util.Throbber(widget, toggleDisplay);
     },
 
 
@@ -612,7 +613,7 @@ Divmod.UnitTest.TestCase.subclass(
      */
     function test_create(self) {
         var throbber = self._createThrobber();
-        self.assertIdentical(throbber.node.name, 'foo');
+        self.assertIdentical(throbber.node.tagName, 'IMG');
     },
 
 
