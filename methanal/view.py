@@ -92,6 +92,7 @@ class ResetAction(ActionButton):
     L{LiveForm} action for resetting a form's controls.
     """
     jsClass = u'Methanal.View.ResetAction'
+    allowViewOnly = True
     defaultName = u'Reset'
     type = 'reset'
 

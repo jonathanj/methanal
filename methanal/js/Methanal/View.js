@@ -783,10 +783,6 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * Reset form inputs to their initial values.
      */
     function reset(self) {
-        // XXX: Use the DOM function to reset for values that might not
-        // otherwise be reset, like password confirmations etc. Ideally
-        // each control's reset method should take care of these.
-        self.node.reset();
         for (var name in self.controls) {
             self.getControl(name).reset();
         }
@@ -1670,6 +1666,14 @@ Methanal.View.TextInput.subclass(
     },
 
 
+    function reset(self) {
+        Methanal.View.PrePopulatingTextInput.upcall(self, 'reset');
+        var targetControl = self.getTargetControl();
+        targetControl.setValue(self.inputNode.value);
+        targetControl.onChange(targetControl.inputNode);
+    },
+
+
     /**
      * Get the instance of the target control.
      */
@@ -1699,6 +1703,11 @@ Methanal.View.TextInput.subclass(
  * Checkbox input.
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
+    function setValue(self, value) {
+        self.inputNode.checked = !!value;
+    },
+
+
     function getValue(self) {
         return self.inputNode.checked;
     });
@@ -1755,6 +1764,12 @@ Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
  * A dropdown input.
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.SelectInput.upcall(self, '__init__', node, args);
+        self._placeholderInserted = false;
+    },
+
+
     /**
      * Create an C{option} DOM node.
      *
@@ -1778,9 +1793,17 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      * Insert a placeholder C{option} node.
      */
     function _insertPlaceholder(self) {
-        var optionNode = self.insert(
-            '', self.label, self.inputNode.options[0] || null);
+        if (self._placeholderInserted) {
+            return;
+        }
+
+        var before = self.inputNode.getElementsByTagName('optgroup')[0];
+        if (before === undefined) {
+            before = self.inputNode.options[0];
+        }
+        var optionNode = self.insert('', self.label, before || null);
         Methanal.Util.addElementClass(optionNode, 'embedded-label');
+        self._placeholderInserted = true;
     },
 
 
@@ -1807,7 +1830,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
             if (before !== null) {
                 // In browsers before IE8, the second argument to "add" is an
                 // *index*. Great, thanks IE!
-                index = before.index;
+
+                // The index of an OPTGROUP is always -1, great.
+                index = before.tagName == 'OPTGROUP' ? 0 : before.index;
             }
             self.inputNode.add(optionNode, index);
         }
@@ -2209,6 +2234,12 @@ Methanal.View.TextInput.subclass(
     function nodeInserted(self) {
         self._confirmPasswordNode = self.nodeById('confirmPassword');
         Methanal.View.VerifiedPasswordInput.upcall(self, 'nodeInserted');
+    },
+
+
+    function reset(self) {
+        Methanal.View.VerifiedPasswordInput.upcall(self, 'reset');
+        self._confirmPasswordNode.value = self.inputNode.value;
     },
 
 
