@@ -1,5 +1,6 @@
 // import Divmod.Runtime
 // import Divmod.UnitTest
+// import Nevow.Test.WidgetUtil
 
 
 
@@ -17,40 +18,6 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.Util, 'TestCase').methods(
         var repr = Methanal.Util.repr;
         self.assertIdentical(true, instance instanceof type,
             repr(instance) + ' is not an instance of ' + repr(type));
-    });
-
-
-
-/**
- * A mock of a DOM node.
- */
-Divmod.Class.subclass(Methanal.Tests.Util, 'MockNode').methods(
-    function __init__(self, name) {
-        self.name = name;
-        self.style = {};
-    });
-
-
-
-/**
- * A mock of L{Nevow.Athena.Widget}.
- */
-Divmod.Class.subclass(Methanal.Tests.Util, 'MockWidget').methods(
-    function __init__(self, idNodes) {
-        self.node = Methanal.Tests.Util.MockNode('widget');
-        if (!idNodes) {
-            idNodes = {};
-        }
-        self._idNodes = idNodes;
-    },
-
-
-    function nodeById(self, id) {
-        var node = self._idNodes[id];
-        if (!node) {
-            throw Divmod.Runtime.NodeNotFound('Node not found');
-        }
-        return node;
     });
 
 
