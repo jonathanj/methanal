@@ -1699,6 +1699,11 @@ Methanal.View.TextInput.subclass(
  * Checkbox input.
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
+    function setValue(self, value) {
+        self.inputNode.checked = value !== undefined && value !== null;
+    },
+
+
     function getValue(self) {
         return self.inputNode.checked;
     });
