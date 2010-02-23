@@ -1760,6 +1760,12 @@ Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
  * A dropdown input.
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.SelectInput.upcall(self, '__init__', node, args);
+        self._placeholderInserted = false;
+    },
+
+
     /**
      * Create an C{option} DOM node.
      *
@@ -1783,9 +1789,17 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      * Insert a placeholder C{option} node.
      */
     function _insertPlaceholder(self) {
-        var optionNode = self.insert(
-            '', self.label, self.inputNode.options[0] || null);
+        if (self._placeholderInserted) {
+            return;
+        }
+
+        var before = self.inputNode.getElementsByTagName('optgroup')[0];
+        if (before === undefined) {
+            before = self.inputNode.options[0];
+        }
+        var optionNode = self.insert('', self.label, before || null);
         Methanal.Util.addElementClass(optionNode, 'embedded-label');
+        self._placeholderInserted = true;
     },
 
 
@@ -1812,7 +1826,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
             if (before !== null) {
                 // In browsers before IE8, the second argument to "add" is an
                 // *index*. Great, thanks IE!
-                index = before.index;
+
+                // The index of an OPTGROUP is always -1, great.
+                index = before.tagName == 'OPTGROUP' ? 0 : before.index;
             }
             self.inputNode.add(optionNode, index);
         }
