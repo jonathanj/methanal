@@ -561,6 +561,8 @@ class ItemViewBaseTests(unittest.TestCase):
     """
     Tests for L{methanal.view.ItemViewBase}.
     """
+    viewType = view.ItemViewBase
+
     def setUp(self):
         self.store = Store()
         self.item = TestItem(store=self.store)
@@ -568,9 +570,9 @@ class ItemViewBaseTests(unittest.TestCase):
 
     def test_createWithItem(self):
         """
-        Create an ItemViewBase with an axiom Item instance.
+        Create an item view with an axiom Item instance.
         """
-        iv = view.ItemViewBase(item=self.item)
+        iv = self.viewType(item=self.item)
         self.assertIdentical(iv.store, self.store)
         self.assertIdentical(iv.itemClass, type(self.item))
         self.assertIdentical(iv.original, self.item)
@@ -578,27 +580,79 @@ class ItemViewBaseTests(unittest.TestCase):
 
     def test_createWithItemClass(self):
         """
-        Create an ItemViewBase with an axiom Item type and store, an exception
+        Create an item view with an axiom Item type and store, an exception
         is raised if the C{store} parameter is not given.
         """
-        iv = view.ItemViewBase(itemClass=type(self.item), store=self.store)
+        iv = self.viewType(itemClass=type(self.item), store=self.store)
         self.assertIdentical(iv.store, self.store)
         self.assertIdentical(iv.itemClass, type(self.item))
         self.assertIdentical(iv.original, type(self.item))
 
-        self.assertRaises(ValueError,
-            view.ItemViewBase, itemClass=type(self.item))
+        self.assertRaises(ValueError, self.viewType, itemClass=type(self.item))
 
 
     def test_customModelFactory(self):
         """
-        Creating an ItemViewBase subclass with a custom model factory.
+        Creating an item view subclass with a custom model factory.
         """
         class TestModel(ItemModel):
             pass
 
-        class CustomItemView(view.ItemViewBase):
+        class CustomItemView(self.viewType):
             modelFactory = TestModel
 
         iv = CustomItemView(item=self.item)
         self.assertTrue(isinstance(iv.model, TestModel))
+
+
+
+class ItemViewTests(ItemViewBaseTests):
+    """
+    Tests for L{methanal.view.ItemView}.
+    """
+    viewType = view.ItemView
+
+    def test_invoke(self):
+        """
+        Invoking an item view will set the attributes on the underlying item to
+        the invoked values for the available inputs.
+        """
+        iv = self.viewType(item=self.item)
+        # Without inputs, invoking the item view won't do anything.
+        view.TextInput(parent=iv, name='foo')
+        view.CheckboxInput(parent=iv, name='bar')
+        iv.invoke({'foo': u'hello',
+                   'bar': False})
+
+        item = iv.item
+        self.assertIdentical(item, self.item)
+        self.assertEquals(item.foo, u'hello')
+        self.assertEquals(item.bar, False)
+
+
+    def test_invokeWithItemClass(self):
+        """
+        Invoking an item view, without a concrete underlying item, will create
+        the item, with the invoked values, when invoked.
+        """
+        iv = self.viewType(
+            store=self.store, itemClass=type(self.item), switchInPlace=True)
+        self.assertIdentical(iv.item, None)
+        # Without inputs, invoking the item view won't do anything.
+        view.TextInput(parent=iv, name='foo')
+        view.CheckboxInput(parent=iv, name='bar')
+        iv.invoke({'foo': u'hello',
+                   'bar': False})
+
+        item = iv.item
+        self.assertNotIdentical(item, None)
+        self.assertEquals(item.foo, u'hello')
+        self.assertEquals(item.bar, False)
+
+
+
+class AutoItemViewTests(ItemViewTests):
+    """
+    Tests for L{methanal.view.AutoItemView}.
+    """
+    viewType = view.AutoItemView

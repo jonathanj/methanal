@@ -6,7 +6,7 @@ from epsilon.extime import Time
 
 from twisted.python.components import registerAdapter
 
-from axiom.attributes import text, integer, timestamp
+from axiom.attributes import text, integer, timestamp, boolean
 
 from nevow.page import renderer
 from nevow.athena import expose
@@ -83,6 +83,7 @@ class SubmitAction(ActionButton):
     """
     jsClass = u'Methanal.View.SubmitAction'
     defaultName = u'Submit'
+    type = 'submit'
 
 
 
@@ -91,6 +92,7 @@ class ResetAction(ActionButton):
     L{LiveForm} action for resetting a form's controls.
     """
     jsClass = u'Methanal.View.ResetAction'
+    allowViewOnly = True
     defaultName = u'Reset'
     type = 'reset'
 
@@ -1122,7 +1124,7 @@ class AutoItemView(ItemView):
         @type env: C{dict}
         @param env: Additional parameters to pass when creating inputs
         """
-        super(AutoItemView, **kw)
+        super(AutoItemView, self).__init__(**kw)
 
         if env is None:
             env = {}
@@ -1133,6 +1135,7 @@ class AutoItemView(ItemView):
 
 
 _inputTypes = {
+    boolean:    lambda env: CheckboxInput,
     text:       lambda env: TextInput,
     integer:    lambda env: IntegerInput,
     timestamp:  lambda env:

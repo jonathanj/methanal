@@ -1,4 +1,8 @@
 from twisted.trial.unittest import TestCase
+from twisted.python.versions import Version
+from twisted.python.deprecate import _getDeprecationWarningString
+from twisted.python.deprecate import DEPRECATION_WARNING_FORMAT
+
 
 from axiom.store import Store
 from axiom.item import Item
@@ -7,9 +11,9 @@ from axiom.dependency import installOn
 
 from xmantissa.website import WebSite
 
-from methanal import errors
+from methanal import errors, model
 from methanal.model import (Model, ItemModel, constraint, Value, Enum, List,
-    loadFromItem)
+    loadFromItem, paramFromAttribute)
 from methanal.view import (LiveForm, FormGroup, ItemView, GroupInput,
     IntegerInput)
 
@@ -74,6 +78,11 @@ class _DummyChildItem(Item):
 
 class _DummyParentItem(Item):
     r = reference(reftype=_DummyChildItem, doc=u'dummy reference')
+
+
+
+class _BrokenReference(Item):
+    r = reference()
 
 
 
@@ -211,6 +220,15 @@ class AutoSchemaTests(TestCase):
         self.assertEquals(dummyChild.i, 6)
 
 
+    def test_noRefType(self):
+        """
+        Attempting to automatically synthesise a model for an Item with a
+        C{reference} attribute with no C{'reftype'} raises C{ValueError}.
+        """
+        brokenParent = _BrokenReference(store=self.store)
+        self.assertRaises(ValueError, ItemModel, brokenParent)
+
+
 
 class _DummyControl(object):
     invoked = 0
@@ -327,3 +345,77 @@ class ModelTests(TestCase):
         model.attach(p1, p2)
         self.assertIdentical(model.params['foo'], p1)
         self.assertIdentical(model.params['bar'], p2)
+
+
+
+class DeprecatedAttributesTests(TestCase):
+    """
+    Tests for deprecated attributes in L{methanal.model}.
+    """
+    version020 = Version('methanal', 0, 2, 0)
+
+
+    def _getWarningString(self, obj, name, version):
+        """
+        Create the warning string used by deprecated attributes.
+        """
+        return _getDeprecationWarningString(
+            obj.__name__ + '.' + name,
+            version,
+            DEPRECATION_WARNING_FORMAT + ': ')
+
+
+    def assertDeprecated(self, obj, name, version):
+        """
+        Assert that the attribute C{name} on C{obj} was deprecated in
+        C{version}, by testing whether a deprecation warning was issued.
+        """
+        getattr(obj, name)
+        warningsShown = self.flushWarnings([
+            self.assertDeprecated])
+        self.assertEquals(len(warningsShown), 1)
+        self.assertIdentical(warningsShown[0]['category'], DeprecationWarning)
+        self.assertIn(self._getWarningString(obj, name, version),
+                      warningsShown[0]['message'])
+
+
+    def test_valueParameter(self):
+        """
+        L{methanal.model.ValueParameter} is deprecated.
+        """
+        self.assertDeprecated(model, 'ValueParameter', self.version020)
+
+
+    def test_listParameter(self):
+        """
+        L{methanal.model.ListParameter} is deprecated.
+        """
+        self.assertDeprecated(model, 'ListParameter', self.version020)
+
+
+    def test_enumerationParameter(self):
+        """
+        L{methanal.model.EnumerationParameter} is deprecated.
+        """
+        self.assertDeprecated(model, 'EnumerationParameter', self.version020)
+
+
+    def test_decimalParameter(self):
+        """
+        L{methanal.model.DecimalParameter} is deprecated.
+        """
+        self.assertDeprecated(model, 'DecimalParameter', self.version020)
+
+
+    def test_storeIDParameter(self):
+        """
+        L{methanal.model.StoreIDParameter} is deprecated.
+        """
+        self.assertDeprecated(model, 'StoreIDParameter', self.version020)
+
+
+    def test_multiEnumerationParameter(self):
+        """
+        L{methanal.model.MultiEnumerationParameter} is deprecated.
+        """
+        self.assertDeprecated(model, 'MultiEnumerationParameter', self.version020)
