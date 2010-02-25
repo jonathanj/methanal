@@ -753,6 +753,79 @@ registerAdapter(ListEnumeration, list, IEnumeration)
 
 
 
+class ObjectValueMixin(object):
+    """
+    Mixin for allowing values of choice inputs to be arbitrary Python objects.
+
+    @type _objects: C{dict} mapping C{int} to C{object}
+    @ivar _objects: Mapping of object identities to objects
+    """
+    def __init__(self, values, **kw):
+        """
+        Initialise the choice input.
+
+        @type values: C{iterable} of C{(obj, unicode)}
+        @param values: An iterable of C{(object, description)} pairs
+        """
+        self._objects = objects = {}
+        objectIDs = []
+        for obj, desc in values:
+            value = id(obj)
+            objects[value] = obj
+            objectIDs.append((value, desc))
+        super(ObjectValueMixin, self).__init__(values=objectIDs, **kw)
+
+
+    def getValue(self):
+        value = super(ObjectValueMixin, self).getValue()
+        if value is None:
+            return u''
+        return unicode(id(value))
+
+
+    def invoke(self, data):
+        try:
+            objID = int(data[self.param.name])
+        except (ValueError, TypeError):
+            value = None
+        else:
+            value = self._objects.get(objID)
+        self.param.value = value
+
+
+
+class ObjectMultiValueMixin(ObjectValueMixin):
+    """
+    Mixin for allowing values of multi-choice inputs to be arbitrary
+    Python objects.
+
+    @type _objects: C{dict} mapping C{int} to C{object}
+    @ivar _objects: Mapping of object identities to objects
+    """
+    def getValue(self):
+        value = super(ObjectValueMixin, self).getValue() or []
+        for i, v in enumerate(value):
+            if v is None:
+                value[i] = u''
+            else:
+                value[i] = unicode(id(v))
+        return value
+
+
+    def invoke(self, data):
+        self.param.value = []
+        value = data[self.param.name] or []
+        for v in value:
+            try:
+                objID = int(v)
+            except:
+                v = None
+            else:
+                v = self._objects.get(objID)
+            self.param.value.append(v)
+
+
+
 class RadioGroupInput(ChoiceInput):
     """
     Group of radio button inputs.
@@ -776,12 +849,26 @@ class RadioGroupInput(ChoiceInput):
 
 
 
+class ObjectRadioGroupInput(ObjectValueMixin, RadioGroupInput):
+    """
+    Radio group input for arbitrary Python objects.
+    """
+
+
+
 class MultiCheckboxInput(ChoiceInput):
     """
     Multiple-checkboxes input.
     """
     fragmentName = 'methanal-multicheck-input'
     jsClass = u'Methanal.View.MultiCheckboxInput'
+
+
+
+class ObjectMultiCheckboxInput(ObjectMultiValueMixin, MultiCheckboxInput):
+    """
+    Multiple-checkboxes input for arbitrary Python objects.
+    """
 
 
 
@@ -837,44 +924,10 @@ class IntegerSelectInput(IntegerValueMixin, SelectInput):
 
 
 
-class ObjectSelectInput(SelectInput):
+class ObjectSelectInput(ObjectValueMixin, SelectInput):
     """
     Choice input for arbitrary Python objects.
-
-    @type _objects: C{dict} mapping C{int} to C{object}
-    @ivar _objects: Mapping of object identities to objects
     """
-    def __init__(self, values, **kw):
-        """
-        Initialise the select input.
-
-        @type values: C{iterable} of C{(obj, unicode)}
-        @param values: An iterable of C{(object, description)} pairs
-        """
-        self._objects = objects = {}
-        selectValues = []
-        for obj, desc in values:
-            value = id(obj)
-            objects[value] = obj
-            selectValues.append((value, desc))
-        super(ObjectSelectInput, self).__init__(values=selectValues, **kw)
-
-
-    def getValue(self):
-        value = super(ObjectSelectInput, self).getValue()
-        if value is None:
-            return u''
-        return unicode(id(value))
-
-
-    def invoke(self, data):
-        try:
-            objID = int(data[self.param.name])
-        except (ValueError, TypeError):
-            value = None
-        else:
-            value = self._objects.get(objID)
-        self.param.value = value
 
 
 

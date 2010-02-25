@@ -1742,6 +1742,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'RadioGroupInput').methods(
                 return value;
             }
         }
+        return '';
     });
 
 
