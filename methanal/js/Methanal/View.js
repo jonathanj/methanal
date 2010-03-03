@@ -1671,11 +1671,14 @@ Methanal.View.TextInput.subclass(
         try {
             var targetControl = self.getTargetControl();
         } catch (e) {
-            /* If the target control input node does not yet exist in the DOM,
-             * then we do not need to, and indeed cannot, reset its value along
-             * with this control's value.
-             */
-            return;
+            if (e instanceof Methanal.View.MissingControlError) {
+                /* If the target control input node does not yet exist in the DOM,
+                 * then we do not need to, and indeed cannot, reset its value along
+                 * with this control's value.
+                 */
+                return;
+            }
+            throw e;
         }
         targetControl.setValue(self.inputNode.value);
         targetControl.onChange(targetControl.inputNode);
