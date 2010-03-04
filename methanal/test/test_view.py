@@ -1,5 +1,11 @@
 from datetime import datetime
 from decimal import Decimal
+try:
+    import xml.etree.ElementTree as etree
+    # Appease pyflakes.
+    etree
+except ImportError:
+    import elementtree.ElementTree as etree
 
 from twisted.trial import unittest
 
@@ -38,16 +44,28 @@ class MockParent(object):
 
 
 
-def renderWidget(widget):
+def renderWidget(widget, debug=False):
     """
     Flatten and render a widget.
 
-    @rtype: C{Deferred} -> C{str}
-    @return: A deferred that fires with the flattened output
+    @rtype: C{Deferred} -> C{ElementTree}
+    @return: A deferred that fires with the parsed flattened output.
     """
+    def parse(result):
+        return etree.ElementTree(
+            etree.fromstring('<widget>' + result + '</widget>'))
+
+    def printIt(result):
+        print result
+        return result
+
     page = athena.LivePage(docFactory=loaders.stan(widget))
     widget.setFragmentParent(page)
-    return renderLivePage(page)
+    d = renderLivePage(page)
+    if debug:
+        d.addCallback(printIt)
+    d.addCallback(parse)
+    return d
 
 
 
@@ -63,10 +81,25 @@ class LiveFormTests(unittest.TestCase):
         """
         The actions of a LiveForm are rendered according to the given actions.
         """
-        def verifyRendering(result):
-            # XXX: This is not the best thing ever.
-            self.assertIn('<div id="athenaid:1-actions"', result)
-            self.assertIn('Submit</button>', result)
+        def verifyRendering(tree):
+            # Oh where, oh where has my little library gone?
+            # Oh where, oh where can it be?
+            # With real XPath support and functionality.
+            # Oh where, oh where can it be?
+            candidates = tree.findall('//form/div')
+            actionsNode = None
+            id = 'athenaid:%d-actions' % (self.form._athenaID,)
+            for node in candidates:
+                if node.get('id') == id:
+                    actionsNode = node
+                    break
+
+            self.assertNotIdentical(
+                actionsNode, None, 'Could not find the form actions node')
+
+            button = actionsNode.find('.//button')
+            self.assertEquals(button.get('type'), 'submit')
+            self.assertEquals(button.text.strip(), 'Submit')
 
         return renderWidget(self.form).addCallback(verifyRendering)
 
@@ -396,12 +429,17 @@ class GroupedSelectInputTests(ChoiceInputTests):
 
         control = self.createControl(dict(values=values))
 
-        def verifyRendering(result):
-            for group, subvalues in values:
-                self.assertIn('<optgroup label="%s">' % (group,), result)
-                for value, desc in subvalues:
-                    elem = '<option value="%s">%s</option>' % (value, desc)
-                    self.assertIn(elem, result)
+        def verifyRendering(tree):
+            groupNodes = tree.findall('//select/optgroup')
+            self.assertEquals(len(groupNodes), len(values))
+            for groupNode, (group, subvalues) in zip(groupNodes, values):
+                self.assertEquals(groupNode.get('label'), group)
+
+                optionNodes = groupNode.findall('option')
+                self.assertEquals(len(optionNodes), len(subvalues))
+                for optionNode, (value, desc) in zip(optionNodes, subvalues):
+                    self.assertEquals(optionNode.get('value'), value)
+                    self.assertEquals(optionNode.text.strip(), desc)
 
         return renderWidget(control).addCallback(verifyRendering)
 
@@ -514,8 +552,9 @@ class CheckboxInputTests(FormInputTests):
         control = self.createControl(dict())
         control.parent.param.value = False
 
-        def verifyRendering(result):
-            self.assertNotIn('checked="checked"', result)
+        def verifyRendering(tree):
+            input = tree.find('//input')
+            self.assertIdentical(input.get('checked'), None)
 
         return renderWidget(control).addCallback(verifyRendering)
 
@@ -527,8 +566,9 @@ class CheckboxInputTests(FormInputTests):
         control = self.createControl(dict())
         control.parent.param.value = True
 
-        def verifyRendering(result):
-            self.assertIn('checked="checked"', result)
+        def verifyRendering(tree):
+            input = tree.find('//input')
+            self.assertEquals(input.get('checked'), 'checked')
 
         return renderWidget(control).addCallback(verifyRendering)
 
@@ -541,8 +581,9 @@ class CheckboxInputTests(FormInputTests):
         control = self.createControl(dict(inlineLabel=u'HELLO WORLD'))
         control.parent.param.value = True
 
-        def verifyRendering(result):
-            self.assertIn('HELLO WORLD</label>', result)
+        def verifyRendering(tree):
+            input = tree.find('//input')
+            self.assertEquals(input.tail.strip(), 'HELLO WORLD')
 
         return renderWidget(control).addCallback(verifyRendering)
 
