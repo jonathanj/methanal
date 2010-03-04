@@ -1668,7 +1668,18 @@ Methanal.View.TextInput.subclass(
 
     function reset(self) {
         Methanal.View.PrePopulatingTextInput.upcall(self, 'reset');
-        var targetControl = self.getTargetControl();
+        try {
+            var targetControl = self.getTargetControl();
+        } catch (e) {
+            if (e instanceof Methanal.View.MissingControlError) {
+                /* If the target control input node does not yet exist in the DOM,
+                 * then we do not need to, and indeed cannot, reset its value along
+                 * with this control's value.
+                 */
+                return;
+            }
+            throw e;
+        }
         targetControl.setValue(self.inputNode.value);
         targetControl.onChange(targetControl.inputNode);
     },
