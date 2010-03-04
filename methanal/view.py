@@ -835,7 +835,6 @@ class RadioGroupInput(ChoiceInput):
     fragmentName = 'methanal-radio-input'
     jsClass = u'Methanal.View.RadioGroupInput'
 
-
     @renderer
     def options(self, req, tag):
         """
