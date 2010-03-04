@@ -766,6 +766,43 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 control.onChange(control.inputNode);
                 self.assertIdentical(targetControl.getValue(), 'hello*world*');
             });
+    },
+
+
+    /**
+     * Resetting a L{PrePopulatingTextInput} resets the target control with the
+     * L{PrePopulatingTextInput}'s value too.
+     */
+    function test_reset(self) {
+        var control = self.createControl({
+            value: 'foo',
+            targetControlName: self.targetControlName});
+        var targetControl = self.createTargetControl(
+            Methanal.View.TextInput, {
+                name: self.targetControlName,
+                value: 'bar'});
+        self.testControls([control, targetControl],
+            function (controls) {
+                self.assertIdentical(targetControl.getValue(), 'bar');
+                control.reset();
+                self.assertIdentical(targetControl.getValue(), 'foo');
+            });
+    },
+
+
+    /**
+     * Resetting a L{PrePopulatingTextInput} with an invalid target control
+     * only resets the L{PrePopulatingTextInput}'s value without throwing any
+     * exceptions.
+     */
+    function test_resetMissingTargetControl(self) {
+        self.testControl({value: 'foo', targetControlName: 'doesnotexist'},
+            function (control) {
+                control.setValue('bar');
+                self.assertIdentical(control.getValue(), 'bar');
+                control.reset();
+                self.assertIdentical(control.getValue(), 'foo');
+            });
     });
 
 
