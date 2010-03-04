@@ -884,6 +884,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             T('div', {'class': 'methanal-submit-error-message'}, [
                 self.formatFailure(failure)])]);
         self._formErrorNode.style.display = 'block';
+        self._formErrorNode.scrollIntoView();
     },
 
 
