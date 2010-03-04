@@ -474,7 +474,7 @@ Methanal.Tests.TestView.TestSelectInput.subclass(
     function setUp(self) {
         self.controlType = Methanal.View.IntegerSelectInput;
     },
-    
+
 
     /**
      * L{Methanal.View.SelectInput.getValue} returns the input node's C{value}
@@ -1044,7 +1044,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     function setUp(self) {
         self.controlType = Methanal.View.VerifiedPasswordInput;
     },
-    
+
 
     /**
      * Assert that C{password}, and optionally C{confirmPassword}, are a good
@@ -1100,8 +1100,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertBadPassword(control, '', '');
             });
     },
-    
-    
+
+
     /**
      * Changing the password strength criteria results in different validation
      * criteria for the control.
@@ -1225,5 +1225,65 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertIdentical(group.active, true);
                 two.setActive(false);
                 self.assertIdentical(group.active, false);
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.RadioGroupInput}.
+ */
+Methanal.Tests.TestView.FormInputTestCase.subclass(
+    Methanal.Tests.TestView, 'TestRadioGroupInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.RadioGroupInput;
+    },
+
+
+    function createControl(self, args) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var control = self.controlType(node, args);
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'input').value = '42';
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'input').value = '13';
+        return control;
+    },
+
+
+    /**
+     * L{RadioGroupInput.getValue} never returns undefined.
+     */
+    function test_getValueNoSelection(self) {
+        self.testControl({value: null},
+            function (control) {
+                self.assertNotIdentical(control.getValue(), undefined);
+            });
+    },
+
+
+    /**
+     * L{RadioGroupInput.getValue} returns the value of the first selected
+     * input.
+     */
+    function test_getValueNoSelection(self) {
+        function getRadioNode(widget, index) {
+            return widget.node.getElementsByTagName('input')[index];
+        }
+
+        self.testControl({value: null},
+            function (control) {
+                getRadioNode(control, 0).checked = true;
+                self.assertIdentical(control.getValue(), '42');
+            });
+        self.testControl({value: null},
+            function (control) {
+                getRadioNode(control, 1).checked = true;
+                self.assertIdentical(control.getValue(), '13');
+            });
+        self.testControl({value: null},
+            function (control) {
+                getRadioNode(control, 0).checked = true;
+                getRadioNode(control, 1).checked = true;
+                self.assertIdentical(control.getValue(), '42');
             });
     });

@@ -538,6 +538,35 @@ class ObjectSelectInputTests(ChoiceInputTestsMixin, FormInputTests):
 
 
 
+class RadioGroupInputTests(ChoiceInputTests):
+    """
+    Tests for L{methanal.view.RadioGroupInput}.
+    """
+    controlType = view.RadioGroupInput
+
+
+    def test_renderOptions(self):
+        """
+        The options of a GroupedSelectInput are rendered according to the given
+        values.
+        """
+        values = [(u'foo', u'Foo'),
+                  (u'bar', u'Bar')]
+
+        control = self.createControl(dict(values=values))
+
+        def verifyRendering(tree):
+            inputs = tree.findall('//input')
+            self.assertEquals(len(values), len(inputs))
+            for input, (value, desc) in zip(inputs, values):
+                self.assertEquals(input.get('name'), self.name)
+                self.assertEquals(input.get('value'), value)
+                self.assertEquals(input.tail.strip(), desc)
+
+        return renderWidget(control).addCallback(verifyRendering)
+
+
+
 class CheckboxInputTests(FormInputTests):
     """
     Tests for L{methanal.view.CheckboxInput}.
