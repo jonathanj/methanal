@@ -11,7 +11,7 @@ from axiom.dependency import installOn
 
 from xmantissa.website import WebSite
 
-from methanal import errors, mmodel
+from methanal import errors, model as mmodel
 from methanal.model import (Model, ItemModel, constraint, Value, Enum, List,
     loadFromItem)
 from methanal.view import (LiveForm, FormGroup, ItemView, GroupInput,
