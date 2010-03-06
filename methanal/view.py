@@ -5,6 +5,8 @@ from decimal import Decimal
 from epsilon.extime import Time
 
 from twisted.python.components import registerAdapter
+from twisted.python.versions import Version
+from twisted.python.deprecate import deprecated
 
 from axiom.attributes import text, integer, timestamp, boolean
 
@@ -618,24 +620,17 @@ class DateInput(TextInput):
 
 
 
-class IntegerValueMixin(object):
+class IntegerInput(TextInput):
     """
-    Mixin to convert parameter values to C{int} when a value is present, or
-    the empty string when the value is C{None}.
+    Integer input.
     """
+    jsClass = u'Methanal.View.IntegerInput'
+
     def getValue(self):
         value = self.param.value
         if value is None:
             return u''
         return int(value)
-
-
-
-class IntegerInput(IntegerValueMixin, TextInput):
-    """
-    Integer input.
-    """
-    jsClass = u'Methanal.View.IntegerInput'
 
 
 
@@ -755,6 +750,87 @@ registerAdapter(ListEnumeration, list, IEnumeration)
 
 
 
+class _ObjectChoiceMixinBase(object):
+    """
+    Common base class for L{ObjectChoiceMixin} and L{ObjectMultiChoiceMixin}.
+
+    @type _objects: C{dict} mapping C{int} to C{object}
+    @ivar _objects: Mapping of object identities to objects.
+    """
+    def __init__(self, values, **kw):
+        """
+        Initialise the choice input.
+
+        @type values: C{iterable} of C{(obj, unicode)}
+        @param values: An iterable of C{(object, description)} pairs
+        """
+        self._objects = objects = {}
+        objectIDs = []
+        for obj, desc in values:
+            value = id(obj)
+            objects[value] = obj
+            objectIDs.append((value, desc))
+        super(_ObjectChoiceMixinBase, self).__init__(values=objectIDs, **kw)
+
+
+    def encodeValue(self, value):
+        """
+        Encode a Python object's identifier as text.
+
+        @rtype: C{unicode}
+        @return: Text representation of C{value}'s identifier, or the empty
+            string if C{value} is C{None}.
+        """
+        if value is None:
+            return u''
+        return unicode(id(value))
+
+
+    def decodeValue(self, encodedValue):
+        """
+        Decode a text identifier into a Python object.
+
+        @return: Object represented by C{encodedValue}, or C{None} if
+            C{encodeValue} is not a valid identifier.
+        """
+        try:
+            objID = int(encodedValue)
+        except (ValueError, TypeError):
+            value = None
+        else:
+            value = self._objects.get(objID)
+        return value
+
+
+
+class ObjectChoiceMixin(_ObjectChoiceMixinBase):
+    """
+    A mixin for supporting arbitrary Python objects in a L{ChoiceInput}.
+    """
+    def getValue(self):
+        value = super(ObjectChoiceMixin, self).getValue()
+        return self.encodeValue(value)
+
+
+    def invoke(self, data):
+        self.param.value = self.decodeValue(data[self.param.name])
+
+
+
+class ObjectMultiChoiceMixin(_ObjectChoiceMixinBase):
+    """
+    A mixin for supporting many arbitrary Python objects in a L{ChoiceInput}.
+    """
+    def getValue(self):
+        values = super(ObjectMultiChoiceMixin, self).getValue()
+        return map(self.encodeValue, values)
+
+
+    def invoke(self, data):
+        self.param.value = map(self.decodeValue, data[self.param.name])
+
+
+
 class RadioGroupInput(ChoiceInput):
     """
     Group of radio button inputs.
@@ -777,12 +853,26 @@ class RadioGroupInput(ChoiceInput):
 
 
 
+class ObjectRadioGroupInput(ObjectChoiceMixin, RadioGroupInput):
+    """
+    Variant of L{RadioGroupInput} for arbitrary Python objects.
+    """
+
+
+
 class MultiCheckboxInput(ChoiceInput):
     """
     Multiple-checkboxes input.
     """
     fragmentName = 'methanal-multicheck-input'
     jsClass = u'Methanal.View.MultiCheckboxInput'
+
+
+
+class ObjectMultiCheckboxInput(ObjectMultiChoiceMixin, MultiCheckboxInput):
+    """
+    Variant of L{MultiCheckboxInput} for arbitrary Python objects.
+    """
 
 
 
@@ -795,12 +885,35 @@ class SelectInput(ChoiceInput):
 
 
 
+class ObjectSelectInput(ObjectChoiceMixin, SelectInput):
+    """
+    Variant of L{SelectInput} for arbitrary Python objects.
+    """
+
+
+
+class IntegerSelectInput(ObjectSelectInput):
+    """
+    Depecated. Use L{ObjectSelectInput}.
+    """
+    __init__ = deprecated(Version('methanal', 0, 2, 0))(
+        ObjectSelectInput.__init__)
+
+
+
 class MultiSelectInput(ChoiceInput):
     """
     Multiple-selection list box input.
     """
     fragmentName = 'methanal-multiselect-input'
     jsClass = u'Methanal.View.MultiSelectInput'
+
+
+
+class ObjectMultiSelectInput(ObjectMultiChoiceMixin, MultiSelectInput):
+    """
+    Variant of L{MultiSelectInput} for arbitrary Python objects.
+    """
 
 
 
@@ -830,52 +943,10 @@ class GroupedSelectInput(SelectInput):
 
 
 
-class IntegerSelectInput(IntegerValueMixin, SelectInput):
+class ObjectGroupedSelectInput(ObjectChoiceMixin, SelectInput):
     """
-    Dropdown input backed by integer values.
+    Variant of L{GroupedSelectInput} for arbitrary Python objects.
     """
-    jsClass = u'Methanal.View.IntegerSelectInput'
-
-
-
-class ObjectSelectInput(SelectInput):
-    """
-    Choice input for arbitrary Python objects.
-
-    @type _objects: C{dict} mapping C{int} to C{object}
-    @ivar _objects: Mapping of object identities to objects
-    """
-    def __init__(self, values, **kw):
-        """
-        Initialise the select input.
-
-        @type values: C{iterable} of C{(obj, unicode)}
-        @param values: An iterable of C{(object, description)} pairs
-        """
-        self._objects = objects = {}
-        selectValues = []
-        for obj, desc in values:
-            value = id(obj)
-            objects[value] = obj
-            selectValues.append((value, desc))
-        super(ObjectSelectInput, self).__init__(values=selectValues, **kw)
-
-
-    def getValue(self):
-        value = super(ObjectSelectInput, self).getValue()
-        if value is None:
-            return u''
-        return unicode(id(value))
-
-
-    def invoke(self, data):
-        try:
-            objID = int(data[self.param.name])
-        except (ValueError, TypeError):
-            value = None
-        else:
-            value = self._objects.get(objID)
-        self.param.value = value
 
 
 

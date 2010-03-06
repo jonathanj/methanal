@@ -467,45 +467,6 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
 
 
 /**
- * Tests for L{Methanal.View.IntegerSelectInput}.
- */
-Methanal.Tests.TestView.TestSelectInput.subclass(
-    Methanal.Tests.TestView, 'TestIntegerSelectInput').methods(
-    function setUp(self) {
-        self.controlType = Methanal.View.IntegerSelectInput;
-    },
-
-
-    /**
-     * L{Methanal.View.SelectInput.getValue} returns the input node's C{value}
-     * attribute or C{null} when the attribute is C{null} or empty.
-     */
-    function test_getValue(self) {
-        self.testControl({value: ''},
-            function (control) {
-                self.assertIdentical(control.getValue(), null);
-            });
-
-        self.testControl({value: null},
-            function (control) {
-                self.assertIdentical(control.getValue(), null);
-            });
-
-        self.testControl({value: ''},
-            function (control) {
-                control.append('v1', 'd1');
-                control.inputNode.value = 'v1';
-                self.assertIdentical(control.getValue(), undefined);
-
-                control.append('1', 'd1');
-                control.inputNode.value = '1';
-                self.assertIdentical(control.getValue(), 1);
-            });
-    });
-
-
-
-/**
  * Common control creation for L{Methanal.View.TextInput} inputs.
  */
 Methanal.Tests.TestView.FormInputTestCase.subclass(

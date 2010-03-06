@@ -1929,20 +1929,6 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
 
 
 
-/**
- * A dropdown input whose options' values are integers.
- */
-Methanal.View.SelectInput.subclass(Methanal.View, 'IntegerSelectInput').methods(
-    function getValue(self) {
-        var value = Methanal.View.IntegerSelectInput.upcall(self, 'getValue');
-        if (value === null) {
-            return null;
-        }
-        return Methanal.Util.strToInt(value);
-    });
-
-
-
 Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
     /**
      * Get all selected C{option}'s values.
