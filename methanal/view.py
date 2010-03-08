@@ -755,6 +755,28 @@ registerAdapter(ListEnumeration, list, IEnumeration)
 
 
 
+class RadioGroupInput(ChoiceInput):
+    """
+    Group of radio button inputs.
+    """
+    fragmentName = 'methanal-radio-input'
+    jsClass = u'Methanal.View.RadioGroupInput'
+
+    @renderer
+    def options(self, req, tag):
+        """
+        Render all available options.
+        """
+        option = tag.patternGenerator('option')
+        for value, description in self.values.asPairs():
+            o = option()
+            o.fillSlots('name', self.name)
+            o.fillSlots('value', value)
+            o.fillSlots('description', description)
+            yield o
+
+
+
 class MultiCheckboxInput(ChoiceInput):
     """
     Multiple-checkboxes input.

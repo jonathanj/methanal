@@ -5,6 +5,21 @@
 
 
 /**
+ * Build a mapping of input node values to DOM nodes.
+ */
+Methanal.View.buildInputNodeMapping = function buildInputNodeMapping(node) {
+    var inputs = {};
+    var nodes = node.getElementsByTagName('input');
+    for (var i = 0; i < nodes.length; ++i) {
+        var node = nodes[i];
+        inputs[node.value] = node;
+    }
+    return inputs;
+}
+
+
+
+/**
  * Validator / dependency handler.
  *
  * @type handlerID: C{Integer}
@@ -1726,42 +1741,66 @@ Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
 
 
 /**
- * Multi-checkbox input.
+ * Base class for widgets that rely on multiple homogeneous inputs.
  */
-Methanal.View.FormInput.subclass(Methanal.View, 'MultiCheckboxInput').methods(
+Methanal.View.FormInput.subclass(Methanal.View, 'MultiInputBase').methods(
     function getInputNode(self) {
-        return self.getCheckboxNodes()[0];
+        return self.getInputNodes()[0];
     },
 
 
     /**
-     * Get a mapping of checkbox values to checkbox DOM nodes.
+     * Get a mapping of input values to input DOM nodes.
      */
-    function getCheckboxNodes(self) {
-        var inputs = {};
-        var nodes = self.node.getElementsByTagName('input');
-        for (var i = 0; i < nodes.length; ++i) {
-            var node = nodes[i];
-            inputs[node.value] = node;
+    function getInputNodes(self) {
+        return Methanal.View.buildInputNodeMapping(self.node);
+    });
+
+
+
+/**
+ * Group of radio button inputs.
+ */
+Methanal.View.MultiInputBase.subclass(Methanal.View, 'RadioGroupInput').methods(
+    function setValue(self, value) {
+        var nodes = self.getInputNodes();
+        for (var name in nodes) {
+            nodes[name].checked = name == value;
         }
-        return inputs;
     },
 
 
+    function getValue(self) {
+        var nodes = self.getInputNodes();
+        for (var name in nodes) {
+            if (nodes[name].checked == true) {
+                return name;
+            }
+        }
+        return '';
+    });
+
+
+
+/**
+ * Multi-checkbox input.
+ */
+Methanal.View.MultiInputBase.subclass(
+    Methanal.View, 'MultiCheckboxInput').methods(
     function setValue(self, values) {
         values = Methanal.Util.StringSet(values);
-        var checkboxes = self.getCheckboxNodes();
-        for (var name in checkboxes) {
-            checkboxes[name].checked = values.contains(name);
+        var inputs = self.getInputNodes();
+        for (var name in inputs) {
+            inputs[name].checked = values.contains(name);
         }
     },
 
 
     function getValue(self) {
         var values = [];
-        var checkboxes = self.getCheckboxNodes();
-        for (var name in checkboxes) {
-            var node = checkboxes[name];
+        var nodes = self.getInputNodes();
+        for (var name in nodes) {
+            var node = nodes[name];
             if (node.checked) {
                 values.push(name);
             }
