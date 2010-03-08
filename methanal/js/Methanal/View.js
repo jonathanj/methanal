@@ -1789,9 +1789,9 @@ Methanal.View.MultiInputBase.subclass(
     Methanal.View, 'MultiCheckboxInput').methods(
     function setValue(self, values) {
         values = Methanal.Util.StringSet(values);
-        var checkboxes = self.getCheckboxNodes();
-        for (var name in checkboxes) {
-            checkboxes[name].checked = values.contains(name);
+        var inputs = self.getInputNodes();
+        for (var name in inputs) {
+            inputs[name].checked = values.contains(name);
         }
     },
 
