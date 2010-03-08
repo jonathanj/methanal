@@ -1740,6 +1740,9 @@ Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
 
 
 
+/**
+ * Base class for widgets that rely on multiple homogeneous inputs.
+ */
 Methanal.View.FormInput.subclass(Methanal.View, 'MultiInputBase').methods(
     function getInputNode(self) {
         return self.getInputNodes()[0];

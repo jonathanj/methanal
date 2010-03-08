@@ -1302,25 +1302,118 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
      * L{RadioGroupInput.getValue} returns the value of the first selected
      * input.
      */
-    function test_getValueNoSelection(self) {
-        function getRadioNode(widget, index) {
+    function test_getValue(self) {
+        function getInputNode(widget, index) {
             return widget.node.getElementsByTagName('input')[index];
         }
 
         self.testControl({value: null},
             function (control) {
-                getRadioNode(control, 0).checked = true;
+                getInputNode(control, 0).checked = true;
                 self.assertIdentical(control.getValue(), '42');
             });
         self.testControl({value: null},
             function (control) {
-                getRadioNode(control, 1).checked = true;
+                getInputNode(control, 1).checked = true;
                 self.assertIdentical(control.getValue(), '13');
             });
         self.testControl({value: null},
             function (control) {
-                getRadioNode(control, 0).checked = true;
-                getRadioNode(control, 1).checked = true;
+                getInputNode(control, 0).checked = true;
+                getInputNode(control, 1).checked = true;
                 self.assertIdentical(control.getValue(), '42');
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.MultiCheckboxInput}.
+ */
+Methanal.Tests.TestView.FormInputTestCase.subclass(
+    Methanal.Tests.TestView, 'TestMultiCheckboxInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.MultiCheckboxInput;
+    },
+
+
+    function createControl(self, args) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var control = self.controlType(node, args);
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'input').value = '42';
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'input').value = '13';
+        return control;
+    },
+
+
+    /**
+     * L{MultiCheckboxInput.setValue} sets the checked state on all inputs to
+     * match the given value.
+     */
+    function test_setValue(self) {
+        self.testControl({value: null},
+            function (control) {
+                self.assertArraysEqual(control.getValue(), []);
+            });
+
+        self.testControl({value: ['42']},
+            function (control) {
+                self.assertArraysEqual(control.getValue(), ['42']);
+            });
+
+        self.testControl({value: ['13', '42']},
+            function (control) {
+                self.assertArraysEqual(control.getValue(), ['42', '13']);
+            });
+    },
+
+
+    /**
+     * L{MultiCheckboxInput.setValue} ignores values that do not correlate with
+     * any checkbox control.
+     */
+    function test_badSetValue(self) {
+        self.testControl({value: '1'},
+            function (control) {
+                self.assertArraysEqual(control.getValue(), []);
+            });
+
+        self.testControl({value: ['foo']},
+            function (control) {
+                self.assertArraysEqual(control.getValue(), []);
+            });
+
+        self.testControl({value: ['foo', '42']},
+            function (control) {
+                self.assertArraysEqual(control.getValue(), ['42']);
+            });
+    },
+
+
+    /**
+     * L{MultiCheckboxInput.getValue} returns the values of all selected
+     * options.
+     */
+    function test_getValue(self) {
+        function getInputNode(widget, index) {
+            return widget.node.getElementsByTagName('input')[index];
+        }
+
+        self.testControl({value: null},
+            function (control) {
+                getInputNode(control, 0).checked = true;
+                self.assertArraysEqual(control.getValue(), ['42']);
+            });
+        self.testControl({value: null},
+            function (control) {
+                getInputNode(control, 1).checked = true;
+                self.assertArraysEqual(control.getValue(), ['13']);
+            });
+        self.testControl({value: null},
+            function (control) {
+                getInputNode(control, 0).checked = true;
+                getInputNode(control, 1).checked = true;
+                self.assertArraysEqual(control.getValue(), ['42', '13']);
             });
     });
