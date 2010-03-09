@@ -1,0 +1,1 @@
+IntegerSelectInput.setValue now accounts for the auto-coercion most browsers apply to the "select" node's "value" attribute.

@@ -1,0 +1,1 @@
+Fix broken DOM manipulation for SelectInput on Internet Explorer.

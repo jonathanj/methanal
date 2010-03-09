@@ -1,0 +1,1 @@
+Correctly deal with IEnumeration objects in GroupedSelectInput.

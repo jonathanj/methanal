@@ -1,4 +1,2 @@
-from twisted.python.versions import Version
-version = Version('methanal', 0, 1, 0)
-
+from methanal._version import version
 __all__ = ['version']
