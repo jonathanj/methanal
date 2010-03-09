@@ -894,10 +894,10 @@ class ObjectSelectInput(ObjectChoiceMixin, SelectInput):
 
 class IntegerSelectInput(ObjectSelectInput):
     """
-    Depecated. Use L{ObjectSelectInput}.
+    Deprecated. Use L{ObjectSelectInput}.
     """
-    __init__ = deprecated(Version('methanal', 0, 2, 0))(
-        ObjectSelectInput.__init__)
+IntegerSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 0))(
+    IntegerSelectInput.__init__)
 
 
 
