@@ -107,7 +107,7 @@ class LiveFormTests(unittest.TestCase):
 
 class FormInputTests(unittest.TestCase):
     """
-    Test for L{methanal.view.FormInput}.
+    Tests for L{methanal.view.FormInput}.
 
     Also serves as the base class for other input tests.
 
@@ -372,6 +372,125 @@ class ChoiceInputTestsMixin(object):
 
 
 
+class ObjectChoiceTestsMixin(ChoiceInputTestsMixin):
+    """
+    Mixin for L{methanal.view.ChoiceInput}s that support arbitrary Python
+    objects.
+    """
+    values = [
+        (object(), u'Foo'),
+        (object(), u'Bar'),
+        (None,     u'Baz')]
+
+    createArgs = [
+        dict(values=values)]
+
+    def test_choiceValues(self):
+        """
+        L{ChoiceInput}s that support arbitrary Python objects maintain a
+        mapping of object identities (stored as text) to objects, and use the
+        object identites for enumeration values.
+        """
+        control = self.createControl(dict(values=self.values))
+        expectedValues = [(id(obj), desc) for obj, desc in self.values]
+        self.assertEquals(control.values.asPairs(), expectedValues)
+
+
+    def test_encodeDecodeValue(self):
+        """
+        L{_ObjectChoiceMixinBase.encodeValue} and
+        L{_ObjectChoiceMixinBase.decodeValue} are symmetric.
+        """
+        control = self.createControl(dict(values=self.values))
+        for obj, desc in self.values:
+            self.assertIdentical(
+                control.decodeValue(control.encodeValue(obj)), obj)
+
+
+    def test_getValue(self):
+        """
+        Object-enabled L{ChoiceInput}s return an encoded object identity from
+        their C{getValue} method.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        for obj, desc in self.values:
+            param.value = obj
+            self.assertEquals(
+                control.getValue(),
+                control.encodeValue(obj))
+
+
+    def test_invoke(self):
+        """
+        Object-enabled L{ChoiceInput}s set their parameter value to the
+        corresponding real object when invoked with an encoded object identity.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        pairs = [(obj, value)
+                 for (obj, desc), (value, desc)
+                 in zip(self.values, control.values.asPairs())]
+        for obj, value in pairs:
+            data = {param.name: value}
+            control.invoke(data)
+            self.assertIdentical(param.value, obj)
+
+
+
+class ObjectMultiChoiceTestsMixin(ObjectChoiceTestsMixin):
+    """
+    Mixin for L{methanal.view.ChoiceInput}s that support many arbitrary Python
+    objects.
+    """
+    def test_getValue(self):
+        """
+        Multiple-object-enabled L{ChoiceInput}s return many encoded object
+        identities from their C{getValue} method.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        for obj, desc in self.values:
+            param.value = [obj]
+            self.assertEquals(
+                control.getValue(),
+                [control.encodeValue(obj)])
+
+        obj1, obj2 = [self.values[0][0], self.values[1][0]]
+        param.value = [obj1, obj2]
+        self.assertEquals(
+            control.getValue(),
+            [control.encodeValue(obj1), control.encodeValue(obj2)])
+
+
+    def test_invoke(self):
+        """
+        Multiple-object-enabled L{ChoiceInput}s set their parameter value to
+        many corresponding real objects when invoked with encoded object
+        identities.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        pairs = [(obj, value)
+                 for (obj, desc), (value, desc)
+                 in zip(self.values, control.values.asPairs())]
+        for obj, value in pairs:
+            data = {param.name: [value]}
+            control.invoke(data)
+            self.assertEquals(param.value, [obj])
+
+        obj1, obj2 = [pairs[0][0], pairs[1][0]]
+        value1, value2 = [pairs[0][1], pairs[1][1]]
+        data = {param.name: [value1, value2]}
+        control.invoke(data)
+        self.assertEquals(param.value, [obj1, obj2])
+
+
+
 class ChoiceInputTests(ChoiceInputTestsMixin, FormInputTests):
     """
     Tests for L{methanal.view.ChoiceInput}.
@@ -445,96 +564,39 @@ class GroupedSelectInputTests(ChoiceInputTests):
 
 
 
-class IntegerSelectInputTests(ChoiceInputTests):
+class ObjectGroupedSelectInputTests(ObjectChoiceTestsMixin, FormInputTests):
+    """
+    Tests for L{methanal.view.ObjectGroupedSelectInput}.
+    """
+    controlType = view.ObjectGroupedSelectInput
+
+
+
+class ObjectSelectInputTests(ObjectChoiceTestsMixin, FormInputTests):
+    """
+    Tests for L{methanal.view.ObjectSelectInput}.
+    """
+    controlType = view.ObjectSelectInput
+
+
+
+class IntegerSelectInputTests(ObjectSelectInputTests):
     """
     Tests for L{methanal.view.IntegerSelectInput}.
     """
     controlType = view.IntegerSelectInput
 
-
-    def test_getValue(self):
-        """
-        L{methanal.view.IntegerSelectInput.getValue} retrieves an empty string in the
-        C{None} case and an C{int} in the case where a value exists.
-        """
-        values = [
-            (1, u'Foo'),
-            (2, u'Bar')]
-        control = self.createControl(dict(values=values))
-        param = control.parent.param
-
-        param.value = u'1'
-        self.assertTrue(isinstance(control.getValue(), int))
-        self.assertEquals(control.getValue(), 1)
-        param.value = 1
-        self.assertTrue(isinstance(control.getValue(), int))
-        self.assertEquals(control.getValue(), 1)
-
-
-
-class ObjectSelectInputTests(ChoiceInputTestsMixin, FormInputTests):
-    """
-    Test for L{methanal.view.ObjectSelectInput}.
-    """
-    controlType = view.ObjectSelectInput
-
     values = [
-        (int, u'Foo'),
-        (str, u'Bar')]
-
-    createArgs = [
-        dict(values=values)]
+        (1, u'Foo'),
+        (2, u'Bar')]
 
 
-    def test_choiceValues(self):
-        """
-        ObjectSelectInput provides C{(int, unicode)} pairs to ChoiceInput
-        and maintains a mapping of object identities to objects.
-        """
-        control = self.createControl(dict(values=self.values))
 
-        _objects = control._objects
-        self.assertIdentical(_objects.get(id(int)), int)
-        self.assertIdentical(_objects.get(id(str)), str)
-
-        self.assertEquals(control.values.asPairs(), [
-            (id(int), u'Foo'),
-            (id(str), u'Bar')])
-
-
-    def test_getValue(self):
-        """
-        L{methanal.view.ObjectSelectInput.getValue} retrieves an empty string
-        in the C{None} case and a C{unicode} string representing an object
-        identity in the case where a value exists.
-        """
-        control = self.createControl(dict(values=self.values))
-        param = control.parent.param
-
-        param.value = int
-        self.assertEquals(control.getValue(), unicode(id(int)))
-
-        param.value = None
-        self.assertEquals(control.getValue(), u'')
-
-
-    def test_invoke(self):
-        """
-        L{methanal.view.ObjectSelectInput.invoke} sets the parameter value to
-        C{None} in the C{None} (or unknown object identity) case and a Python
-        object, representing the object with the specified identity, in the
-        case where a value exists.
-        """
-        control = self.createControl(dict(values=self.values))
-        param = control.parent.param
-
-        data = {param.name: unicode(id(int))}
-        control.invoke(data)
-        self.assertIdentical(param.value, int)
-
-        data = {param.name: u''}
-        control.invoke(data)
-        self.assertIdentical(param.value, None)
+class ObjectMultiSelectInputTests(ObjectMultiChoiceTestsMixin, FormInputTests):
+    """
+    Tests for L{methanal.view.ObjectMultiSelectInput}.
+    """
+    controlType = view.ObjectMultiSelectInput
 
 
 
@@ -564,6 +626,14 @@ class RadioGroupInputTests(ChoiceInputTests):
                 self.assertEquals(input.tail.strip(), desc)
 
         return renderWidget(control).addCallback(verifyRendering)
+
+
+
+class ObjectRadioGroupInputTests(ObjectChoiceTestsMixin, FormInputTests):
+    """
+    Tests for L{methanal.view.ObjectRadioGroupInput}.
+    """
+    controlType = view.ObjectRadioGroupInput
 
 
 
