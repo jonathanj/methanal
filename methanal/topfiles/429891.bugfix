@@ -1,0 +1,1 @@
+SelectInput now inserts a placeholder when attempting to set the value to a nonexistent option, instead of incorrectly selecting the first option.

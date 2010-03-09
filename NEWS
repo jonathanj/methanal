@@ -1,0 +1,64 @@
+Methanal 0.2.0 (2010-03-09)
+===================================
+
+Features
+--------
+ - Manipulating a QueryList from the client-side now requires much
+   less boilerplate code. (#429708)
+ - Time.asHumanly now defaults to 12-hour time formats. (#435912)
+ - A modal dialog widget capable of containing any widget has been
+   introduced. (#436924)
+ - LiveForm actions are now fully customizable without having to
+   replace the template or subclass and override parts of LiveForm.
+   (#438688)
+ - Widgets for filtering text input and pre-populating other inputs
+   have been introduced. (#440958)
+ - A tabbed container widget has been introduced, supporting a
+   multitude of different tab behaviours including "pushing" tabs to
+   the client. (#444453)
+ - A verifying password widget has been introduced. (#444737)
+ - It is now possible to reset a LiveForm in a way that will reset
+   each input according to its own special needs. (#449575)
+ - QueryList has been deprecated in favour of a new Table widget which
+   is more flexible and robust. (#461931)
+ - A radio button group input has been introduced. (#511223)
+ - Defining a ChoiceInput that supports arbitrary Python objects is
+   now much easier. (#531830)
+
+Bugfixes
+--------
+ - Upcall correctly in Methanal.Util.Throbber. (#429572)
+ - SelectInput now inserts a placeholder when attempting to set the
+   value to a nonexistent option, instead of incorrectly selecting the
+   first option. (#429891)
+ - Fix broken DOM manipulation for SelectInput on Internet Explorer.
+   (#436859)
+ - FormGroups will now be hidden when all of their children are
+   hidden. (#438325)
+ - Correctly deal with IEnumeration objects in GroupedSelectInput.
+   (#439686)
+ - TextInput based controls now update their "display value" after
+   initializing. (#439729)
+ - Use UTC time for Methanal.Util.Time instead of local time.
+   (#443270)
+ - Fix broken instantiation of PrePopulatingTextInputs. (#449718)
+ - IntegerSelectInput.setValue now accounts for the auto-coercion most
+   browsers apply to the "select" node's "value" attribute. (#456304)
+ - Prevent hiding parent containers if any child container is set
+   inactive regardless of other child containers. (#476249)
+ - Displaying a false value in Column objects is no longer broken.
+   (#491989)
+ - Prevent trying to append null nodes to the DOM when table actions
+   return false from "enableForRow". (#504887)
+ - Fix instantiation of AutoItemViews. (#510222)
+ - Pressing the "enter" key in a form once again triggers the submit
+   action. (#523051)
+ - Resetting a PrePopulatingTextInput does not attempt to reset the
+   target control if it is not yet available. (#528606)
+
+Other
+-----
+ - #415389, #433629, #433984, #435317, #435922, #435929, #439301,
+   #440878, #450164, #450257, #491998, #510226, #510230
+
+
