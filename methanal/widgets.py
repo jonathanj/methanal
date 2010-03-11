@@ -1,3 +1,6 @@
+"""
+Utility widgets designed to operate outside of forms.
+"""
 import time
 from warnings import warn
 
@@ -60,7 +63,6 @@ class AttributeColumn(object):
     """
     implements(IColumn)
 
-
     def __init__(self, attribute, attributeID=None, title=None):
         self.attribute = attribute
         if attributeID is None:
@@ -121,7 +123,6 @@ class LinkColumn(object):
     """
     implements(IColumn)
 
-
     def __init__(self, column, extractLink):
         self._column = column
         self.extractLink = extractLink
@@ -160,7 +161,6 @@ class RowTransportable(record('row')):
 
     jsClass = u'Methanal.Widgets.Row'
 
-
     def getInitialArguments(self):
         return [self.row.id, self.row.cells]
 
@@ -192,7 +192,6 @@ class CellTransportable(record('cell')):
 
     jsClass = u'Methanal.Widgets.Cell'
 
-
     def getInitialArguments(self):
         return [self.cell.value, self.cell.link]
 
@@ -211,7 +210,6 @@ class ColumnTransportable(record('column')):
         'integer': u'Methanal.Widgets.IntegerColumn',
         'boolean': u'Methanal.Widgets.BooleanColumn',
         'timestamp': u'Methanal.Widgets.TimestampColumn'}
-
 
     @property
     def jsClass(self):
@@ -279,7 +277,6 @@ class QueryList(ThemedElement):
     """
     jsClass = u'Methanal.Widgets.QueryList'
     fragmentName = 'methanal-table'
-
 
     def __init__(self, rows, columns, webTranslator=None, timezone=None, **kw):
         warn('QueryList is deprecated, use methanal.widgets.Table instead')
@@ -373,7 +370,6 @@ class FilterList(ThemedElement):
     """
     jsClass = u'Methanal.Widgets.FilterList'
     fragmentName = 'methanal-filter-list'
-
 
     def __init__(self, form, resultWidget, title, **kw):
         """
@@ -488,7 +484,6 @@ class SimpleFilterList(FilterList):
 class Rollup(ThemedElement):
     jsClass = u'Methanal.Widgets.Rollup'
 
-
     def __init__(self, fragmentParent=None, label=None):
         super(Rollup, self).__init__(fragmentParent=fragmentParent)
         self.label = label or u''
@@ -523,7 +518,6 @@ class Rollup(ThemedElement):
 class SimpleRollup(Rollup):
     fragmentName = 'methanal-simple-rollup'
 
-
     def __init__(self, content=None, **kw):
         super(SimpleRollup, self).__init__(**kw)
         self.content = content
@@ -549,7 +543,6 @@ class SimpleRollup(Rollup):
 class Lookup(FormInput):
     fragmentName = 'methanal-lookup'
     jsClass = u'Methanal.Widgets.Lookup'
-
 
     def __init__(self, form, populator, describer, objects=None, **kw):
         if objects is None:
@@ -609,7 +602,6 @@ class ModalDialog(ThemedElement):
     jsClass = u'Methanal.Widgets.ModalDialog'
     fragmentName = 'methanal-modal-dialog'
 
-
     def __init__(self, title, content, **kw):
         super(ModalDialog, self).__init__(**kw)
         self.title = title
@@ -644,7 +636,6 @@ class ModalDialogForm(LiveForm):
     """
     jsClass = u'Methanal.Widgets.ModalDialogForm'
 
-
     def __init__(self, actions=None, **kw):
         if actions is None:
             actions = ActionContainer(
@@ -659,8 +650,8 @@ class TabView(ThemedElement):
 
     Only one sub-container can be visible at a time.
 
-    @type tabs: C{list} of L{Tab}
-    @ivar tabs: Sequence of tab widgets to manage.
+    @type tabs: C{list} of L{methanal.widgets.Tab}
+    @ivar tabs: Tabs to manage.
 
     @type topLevel: C{bool}
     @ivar topLevel: Is this a top-level TabView? Top-level TabViews will use
@@ -787,7 +778,6 @@ class StaticTab(Tab):
     """
     jsClass = u'Methanal.Widgets.StaticTab'
 
-
     def __init__(self, content=None, **kw):
         """
         @type  content: C{nevow.athena.LiveElement}
@@ -823,6 +813,6 @@ class DemandTab(Tab):
     Content is only requested, from the server, and inserted when the tab is
     selected. Selecting the tab always retrieves new content; selecting the tab
     before a previous fetch attempt has completed will result in that data
-    being discarded and a new fetch occuring.
+    being discarded and a new fetch occurring.
     """
     jsClass = u'Methanal.Widgets.DemandTab'
