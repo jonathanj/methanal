@@ -660,26 +660,57 @@ class TabView(ThemedElement):
 
     @type _tabIDs: C{set}
     @ivar _tabIDs: Collection of unique tab IDs currently being managed.
+
+    @type _tabGroups: C{dict} mapping C{unicode} to
+        L{methanal.widgets.TabGroup}
+    @ivar _tabGroups: Mapping of tab group identifiers to tab groups.
     """
     fragmentName = 'methanal-tab-view'
     jsClass = u'Methanal.Widgets.TabView'
 
-
     def __init__(self, tabs, topLevel=False, **kw):
+        """
+        @type  tabs: C{list} of L{methanal.widgets.Tab} or
+            L{methanal.widgets.TabGroup}.
+        @param tabs: Tab or tab groups to manage.
+        """
         super(TabView, self).__init__(**kw)
         self._tabIDs = set()
+        self._tabGroups = {}
         self.tabs = []
-        self.topLevel = topLevel;
+        self.topLevel = topLevel
 
-        for tab in tabs:
-            self._manageTab(tab)
+        for tabOrGroup in tabs:
+            if isinstance(tabOrGroup, TabGroup):
+                self._manageGroup(tabOrGroup)
+                for tab in tabOrGroup.tabs:
+                    self._manageTab(tab)
+            else:
+                self._manageTab(tabOrGroup)
+
+
+    def _manageGroup(self, group):
+        """
+        Begin managing a L{methanal.widgets.TabGroup}.
+
+        Tabs contained in a group are B{not} managed, L{_manageTab} should be
+        called for each tab.
+
+        @raise ValueError: If the group's identifier matches one that is
+            already being managed.
+        """
+        if group.id in self._tabGroups:
+            raise ValueError('%r is a duplicate tab group identifier in %r' % (
+                group.id, self))
+        self._tabGroups[group.id] = group
 
 
     def _manageTab(self, tab):
         """
         Begin managing a L{Tab} widget.
 
-        @raise ValueError: If C{tab.id} is already being managed.
+        @raise ValueError: If the tab's identifier matches one that is already
+            being managed.
         """
         if tab.id in self._tabIDs:
             raise ValueError(
@@ -692,18 +723,44 @@ class TabView(ThemedElement):
         """
         Append a L{Tab} widget.
 
-        The tab widget is passed to the client side and appended there.
-
         @return: A C{Deferred} that fires when the widget has been inserted on
             the client side.
         """
-        self._manageTab(tab)
-        tab.setFragmentParent(self)
-        return self.callRemote('_appendTabFromServer', tab)
+        return self.appendTabs([tab])
+
+
+    def appendTabs(self, tabs):
+        """
+        Append many L{methanal.widgets.Tab} widgets.
+
+        All tab widgets are passed to the client side and appended there, and
+        added to the relevant groups.
+
+        @return: A C{Deferred} that fires when the widgets have been inserted on
+            the client side.
+        """
+        for tab in tabs:
+            self._manageTab(tab)
+            tab.setFragmentParent(self)
+        return self.callRemote('_appendTabsFromServer', tabs, self._tabGroups)
+
+
+    def appendGroup(self, group):
+        """
+        Append a L{methanal.widgets.TabGroup} and its tabs.
+
+        @return: A C{Deferred} that fires when the widgets have been inserted on
+            the client side.
+        """
+        self._manageGroup(group)
+        return self.appendTabs(group.tabs)
 
 
     def getInitialArguments(self):
-        return [dict.fromkeys(self._tabIDs, True), self.topLevel]
+        return [
+            dict.fromkeys(self._tabIDs, True),
+            self._tabGroups,
+            self.topLevel]
 
 
     @renderer
@@ -717,9 +774,41 @@ class TabView(ThemedElement):
 
 
 
+class TabGroup(record('id title tabs')):
+    """
+    Visually group labels of L{methanal.widgets.Tab}s together.
+
+    @type id: C{unicode}
+    @ivar id: Unique identifier.
+
+    @type title: C{unicode}
+    @ivar title: Title of the group, used by L{methanal.widgets.TabView} when
+        constructing the tab list.
+
+    @type tabs: C{list} of L{methanal.widgets.Tab}
+    @ivar tabs: Tabs to group together.
+    """
+    implements(IAthenaTransportable)
+
+    jsClass = u'Methanal.Widgets.TabGroup'
+
+    def __init__(self, *a, **kw):
+        super(TabGroup, self).__init__(*a, **kw)
+        for tab in self.tabs:
+            tab.group = self.id
+
+
+    def getInitialArguments(self):
+        return [self.id, self.title]
+
+
+
 class Tab(ThemedElement):
     """
     A content container, intended to be passed to L{TabView}.
+
+    @type id: C{unicode}
+    @ivar id: Unique identifier for this container.
 
     @type title: C{unicode}
     @ivar title: Title of the container, used by L{TabView} when constructing
@@ -732,19 +821,21 @@ class Tab(ThemedElement):
     @ivar selected: Is this container to be selected initially? Defaults to
         C{False}.
 
-    @type id: C{unicode}
-    @ivar id: Unique identifier for this container.
+    @type group: C{unicode}
+    @ivar group: Identifier of the group this tab belongs to, or C{None} for no
+        grouping. Defaults to C{None}.
     """
     fragmentName = 'methanal-tab'
 
-
-    def __init__(self, id, title, contentFactory, selected=False, **kw):
+    def __init__(self, id, title, contentFactory, selected=False, group=None,
+                 **kw):
         super(Tab, self).__init__(**kw)
 
         self.id = id
         self.title = title
         self.contentFactory = contentFactory
         self.selected = selected
+        self.group = group
 
 
     def getInitialArguments(self):
@@ -754,7 +845,8 @@ class Tab(ThemedElement):
     def getArgs(self):
         return {u'id': self.id,
                 u'title': self.title,
-                u'selected': self.selected}
+                u'selected': self.selected,
+                u'group': self.group}
 
 
     @expose
