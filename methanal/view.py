@@ -822,12 +822,13 @@ class ObjectMultiChoiceMixin(_ObjectChoiceMixinBase):
     A mixin for supporting many arbitrary Python objects in a L{ChoiceInput}.
     """
     def getValue(self):
-        values = super(ObjectMultiChoiceMixin, self).getValue()
+        values = super(ObjectMultiChoiceMixin, self).getValue() or []
         return map(self.encodeValue, values)
 
 
     def invoke(self, data):
-        self.param.value = map(self.decodeValue, data[self.param.name])
+        values = data[self.param.name] or []
+        self.param.value = map(self.decodeValue, values)
 
 
 
