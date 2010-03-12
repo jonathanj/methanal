@@ -465,8 +465,8 @@ class ObjectMultiChoiceTestsMixin(ObjectChoiceTestsMixin):
     """
     def test_getValueNoValues(self):
         """
-        Multiple-object-enabled L{ChoiceInput}s return an empty list their
-        C{getValue} method when the parameter is C{None}, or empty.
+        Multiple-object-enabled L{ChoiceInput}s return an empty list from
+        C{getValue} when the parameter is C{None}, or empty.
         """
         control = self.createControl(dict(values=self.values))
 
@@ -480,7 +480,7 @@ class ObjectMultiChoiceTestsMixin(ObjectChoiceTestsMixin):
     def test_getValue(self):
         """
         Multiple-object-enabled L{ChoiceInput}s return many encoded object
-        identities from their C{getValue} method.
+        identities from C{getValue}.
         """
         control = self.createControl(dict(values=self.values))
         param = control.parent.param
@@ -499,6 +499,10 @@ class ObjectMultiChoiceTestsMixin(ObjectChoiceTestsMixin):
 
 
     def test_invokeNoValues(self):
+        """
+        Multiple-object-enabled L{ChoiceInput}s set their parameter value to an
+        empty list when invoked with C{None}, or empty.
+        """
         control = self.createControl(dict(values=self.values))
         param = control.parent.param
         control.invoke({param.name: None})
