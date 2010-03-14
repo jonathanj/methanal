@@ -1508,6 +1508,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         var labelParent = self.nodeById('labels');
         if (tab.group !== null) {
             labelParent = self._getGroupNode(tab.group);
+            self._updateGroupVisiblity(tab.group);
         }
         labelParent.appendChild(label);
 
@@ -1550,13 +1551,53 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
 
     /**
+     * Update the visibility of a tab group based on the visibility of the tabs
+     * it contains.
+     */
+    function _updateGroupVisiblity(self, groupID) {
+        try {
+            var group = self.getGroup(groupID);
+        } catch (e) {
+            if (e instanceof Methanal.Widgets.UnknownGroup) {
+                return;
+            }
+            throw e;
+        }
+
+        var visible = false;
+        for (var i = 0; i < group.tabIDs.length; ++i) {
+            try {
+                var tab = self.getTab(group.tabIDs[i]);
+                visible = visible || tab.visible;
+                if (visible) {
+                    break;
+                }
+            } catch (e) {
+                if (!(e instanceof Methanal.Widgets.UnknownTab)) {
+                    throw e;
+                }
+            }
+        }
+
+        // Change the visibility of the group parent node, not the inner
+        // container.
+        var groupNode = self._groups[groupID].parentNode;
+        if (visible) {
+            Methanal.Util.removeElementClass(groupNode, 'hidden');
+        } else {
+            Methanal.Util.addElementClass(groupNode, 'hidden');
+        }
+    },
+
+
+    /**
      * Make the specified tab visible.
      *
      * If this is the first tab to be made visible, it is selected.
      */
     function showTab(self, tab) {
         var labelNode = self._labels[tab.id];
-        labelNode.style.display = 'inline';
+        Methanal.Util.removeElementClass(labelNode, 'hidden');
         // If this is the only tab about to be visible, select it.
         try {
             self.getFirstVisibleTab();
@@ -1567,6 +1608,8 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
             self.selectTab(self);
         }
         tab.visible = true;
+
+        self._updateGroupVisiblity(tab.group);
     },
 
 
@@ -1578,7 +1621,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      */
     function hideTab(self, tab) {
         var labelNode = self._labels[tab.id];
-        labelNode.style.display = 'none';
+        Methanal.Util.addElementClass(labelNode, 'hidden');
         tab.visible = false;
         // If we're hiding the selected tab, select the first visible tab.
         if (tab.selected) {
@@ -1590,6 +1633,8 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
                 }
             }
         }
+
+        self._updateGroupVisiblity(tab.group);
     },
 
 
@@ -1634,17 +1679,21 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 /**
  * Visually group labels of L{Methanal.Widgets.Tab}s together.
  *
- * @type id: C{unicode}
+ * @type id: C{String}
  * @ivar id: Unique identifier.
  *
- * @type title: C{unicode}
+ * @type title: C{String}
  * @ivar title: Title of the group, used by L{Methanal.Widgets.TabView} when
  *     constructing the tab list.
+ *
+ * @type tabIDs: C{Array} of C{String}
+ * @ivar tabIDs: Identifiers of all the contained tabs.
  */
 Divmod.Class.subclass(Methanal.Widgets, 'TabGroup').methods(
-    function __init__(self, id, title) {
+    function __init__(self, id, title, tabIDs) {
         self.id = id;
         self.title = title;
+        self.tabIDs = tabIDs;
     });
 
 

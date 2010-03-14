@@ -553,3 +553,7 @@ button.roll-up {
     margin: 0;
     padding: 0.5em 0;
 }
+
+.hidden {
+    display: none !important;
+}

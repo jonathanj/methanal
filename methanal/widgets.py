@@ -799,7 +799,8 @@ class TabGroup(record('id title tabs')):
 
 
     def getInitialArguments(self):
-        return [self.id, self.title]
+        tabIDs = [tab.id for tab in self.tabs]
+        return [self.id, self.title, tabIDs]
 
 
 
