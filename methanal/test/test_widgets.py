@@ -154,7 +154,10 @@ class TabGroupTests(unittest.TestCase):
         """
         Tab groups implement L{nevow.inevow.IAthenaTransportable}.
         """
-        tabGroup = widgets.TabGroup(u'id', u'title', tabs=[])
+        tabs = [
+            widgets.Tab(u'id1', u'Title 1', None),
+            widgets.Tab(u'id2', u'Title 2', None)]
+        tabGroup = widgets.TabGroup(u'id', u'title', tabs=tabs)
         self.assertEquals(
             inevow.IAthenaTransportable(tabGroup).getInitialArguments(),
-            [u'id', u'title'])
+            [u'id', u'title', [u'id1', u'id2']])

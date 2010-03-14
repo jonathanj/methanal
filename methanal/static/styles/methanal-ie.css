@@ -60,7 +60,7 @@ form {
 }
 
 .methanal-tab-view .selected-tab-label a {
-    margin-top: -0.8em;
+    padding-top: 0.5em;
 }
 
 .methanal-tab-view .methanal-tab-group-label {
