@@ -1386,6 +1386,19 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
 
     /**
+     * Get a L{Methanal.Widgets.TabGroup} instance for a given group identifier.
+     */
+    function getGroup(self, id) {
+        var group = self.tabGroups[id];
+        if (group === undefined) {
+            throw new Methanal.Widgets.UnknownGroup(
+                Methanal.Util.repr(id) + ' is an unknown group identifier');
+        }
+        return group;
+    },
+
+
+    /**
      * Get a L{Methanal.Widgets.Tab} instance for a given tab identifier.
      */
     function getTab(self, id) {
@@ -1444,12 +1457,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      *     group.
      */
     function _createGroupNode(self, id) {
-        var title = self.tabGroups[id].title;
-        if (title === undefined) {
-            throw Methanal.Widgets.UnknownGroup(
-                Methanal.Util.repr(id) +
-                ' is an unknown tab group identifier');
-        }
+        var title = self.getGroup(id).title;
 
         var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
         var group = D('ul', {'class': 'methanal-tab-group-tabs'}, []);
