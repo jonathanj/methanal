@@ -1,4 +1,21 @@
 /**
+ * Determine if an element's "className" attribute contains a value.
+ *
+ * @rtype: C{Boolean}
+ */
+Methanal.Util.containsElementClass = function containsElementClass(node, cls) {
+    var classes = node.className.split(' ');
+    for (var i = 0; i < classes.length; ++i) {
+        if (classes[i] === cls) {
+            return true;
+        }
+    }
+    return false;
+};
+
+
+
+/**
  * Add a class to an element's "className" attribute.
  *
  * This operation is intended to preserve any other values that were already
@@ -24,13 +41,9 @@ Methanal.Util.addElementClass = function addElementClass(node, cls) {
     }
 
     // Non-trivial case.
-    var classes = current.split(' ');
-    for (var i = 0; i < classes.length; ++i) {
-        if (classes[i] === cls) {
-            return;
-        }
+    if (!Methanal.Util.containsElementClass(node, cls)) {
+        node.className += ' ' + cls;
     }
-    node.className += ' ' + cls;
 };
 
 
