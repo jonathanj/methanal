@@ -1350,7 +1350,8 @@ Divmod.Error.subclass(Methanal.Widgets, 'UnknownGroup');
  * @ivar _labels: Mapping of L{Tab.id} to DOM nodes of the tab labels.
  */
 Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
-    function __init__(self, node, tabIDs, tabGroups, topLevel) {
+    function __init__(self, node, tabIDs, tabGroups, topLevel,
+                      _makeThrobber/*=undefined*/) {
         Methanal.Widgets.TabView.upcall(self, '__init__', node);
         self.tabIDs = tabIDs;
         self.tabGroups = tabGroups;
@@ -1362,8 +1363,19 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         self._tabs = {};
         self._groups = {};
         self.fullyLoaded = false;
-        self.throbber = Methanal.Util.Throbber(self, 'inline');
+        if (_makeThrobber === undefined) {
+            _makeThrobber = function() { return self._makeThrobber() };
+        }
+        self.throbber = _makeThrobber();
         self.throbber.start();
+    },
+
+
+    /**
+     * Create a throbber object.
+     */
+    function _makeThrobber(self) {
+        return Methanal.Util.Throbber(self, 'inline');
     },
 
 

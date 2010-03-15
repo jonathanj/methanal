@@ -314,3 +314,326 @@ Methanal.Tests.TestWidgets.SimpleColumnTest.subclass(
                   nodeValue: t2.asHumanly()}};
         Methanal.Tests.TestWidgets.TestTimestampColumn.upcall(self, 'setUp');
     });
+
+
+
+/**
+ * Tests for L{Methanal.Widgets.TabView}.
+ */
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestWidgets, 'TabViewTest').methods(
+    /**
+     * Assert that C{tab} is the only selected tab contained in its parent.
+     */
+    function assertSelected(self, tab) {
+        self.assertIdentical(tab.selected, true, 'Tab not selected');
+        var tabView = tab.widgetParent;
+        self.assertIdentical(
+            Methanal.Util.containsElementClass(
+                tabView._labels[tab.id], 'selected-tab-label'),
+            true,
+            'Tab selection style not applied');
+
+        var childWidgets = tabView.childWidgets;
+        var labelCount = 0;
+        for (var k in tabView._labels) {
+            ++labelCount;
+        }
+        self.assertIdentical(childWidgets.length, labelCount);
+        for (var i = 0; i < childWidgets.length; ++i) {
+            var otherTab = childWidgets[i];
+            if (otherTab === tab) {
+                continue;
+            }
+            self.assertIdentical(
+                otherTab.selected, false,
+                Methanal.Util.repr(otherTab.id) + ' also selected');
+            self.assertIdentical(
+                Methanal.Util.containsElementClass(
+                    tabView._labels[otherTab.id], 'selected-tab-label'),
+                false,
+                Methanal.Util.repr(otherTab.id) + ' also has selection style');
+        }
+    },
+
+
+    /**
+     * Assert that C{node} is not visible.
+     *
+     * Since we don't have a working render engine we can't check the
+     * C{'style'} attribute, so C{'className'} will have to do.
+     */
+    function assertNodeHidden(self, node) {
+        self.assertIdentical(
+            Methanal.Util.containsElementClass(node, 'hidden'),
+            true, 'Node is visible');
+    },
+
+
+    /**
+     * Assert that C{node} is visible.
+     */
+    function assertNodeVisible(self, node) {
+        self.assertThrows(Divmod.UnitTest.AssertionError,
+            function() {
+                self.assertNodeHidden(node);
+            },
+        'Node is not visible');
+    },
+
+
+    /**
+     * Assert that C{tab} is not visible.
+     */
+    function assertHidden(self, tab) {
+        self.assertIdentical(tab.visible, false, 'Tab is visible');
+        var tabView = tab.widgetParent;
+        self.assertNodeHidden(tabView._labels[tab.id]);
+    },
+
+
+    /**
+     * Assert that C{tab} is visible.
+     */
+    function assertVisible(self, tab) {
+        self.assertThrows(Divmod.UnitTest.AssertionError,
+            function() {
+                self.assertHidden(tab);
+            },
+        'Tab is not visible');
+    },
+
+
+    /**
+     * Create a L{Methanal.Widgets.TabView}.
+     */
+    function createTabView(self, tabIDs, tabGroups, topLevel) {
+        function _makeThrobber() {
+            return {
+                'start': function() {},
+                'stop': function() {}};
+        }
+
+        var _tabIDs = {};
+        for (var i = 0; i < tabIDs.length; ++i) {
+            _tabIDs[tabIDs[i]] = true;
+        }
+
+        tabGroups = tabGroups || [];
+        var _tabGroups = {};
+        for (var i = 0; i < tabGroups.length; ++i) {
+            _tabGroups[tabGroups[i].id] = tabGroups[i];
+        }
+
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var tabView = Methanal.Widgets.TabView(
+            node, _tabIDs, _tabGroups, topLevel || false, _makeThrobber);
+        Methanal.Tests.Util.makeWidgetChildNode(tabView, 'div', 'throbber');
+        Methanal.Tests.Util.makeWidgetChildNode(tabView, 'ul', 'labels');
+        document.body.appendChild(node);
+        Methanal.Util.nodeInserted(tabView);
+        return tabView;
+    },
+
+
+    /**
+     * Create a L{Methanal.Widgets.Tab} as child of C{tabView}.
+     */
+    function createTab(self, tabView, id, title, selected /*=false*/,
+                       group /*=null*/) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var tab = Methanal.Widgets.Tab(node, {
+            'id': id,
+            'title': title,
+            'selected': selected || false,
+            'group': group || null})
+        tabView.addChildWidget(tab);
+        Methanal.Tests.Util.makeWidgetChildNode(tab, 'content');
+        Methanal.Util.nodeInserted(tab);
+        return tab;
+    },
+
+
+    /**
+     * Calling L{Methanal.Widgets.TabView.loadedUp} removes the specified tab
+     * from the loading queue and creates a label for it.
+     */
+    function test_loadedUp(self) {
+        var tabView = self.createTabView(['tab1']);
+        self.assertIdentical(tabView._labels['tab1'], undefined);
+        self.assertIdentical(tabView.tabIDs['tab1'], true);
+
+        self.createTab(tabView, 'tab1', 'Tab 1');
+        self.assertNotIdentical(tabView._labels['tab1'], undefined);
+        self.assertIdentical(tabView.tabIDs['tab1'], undefined);
+    },
+
+
+    /**
+     * Tab views are not fully loaded until all the expected tabs have called
+     * L{Methanal.Widgets.TabView.loadedUp}.
+     */
+    function test_fullyLoaded(self) {
+        var tabView = self.createTabView(['tab1', 'tab2']);
+        self.assertIdentical(tabView.fullyLoaded, false);
+        self.createTab(tabView, 'tab1', 'Tab 1');
+        self.assertIdentical(tabView.fullyLoaded, false);
+        self.createTab(tabView, 'tab2', 'Tab 2');
+        self.assertIdentical(tabView.fullyLoaded, true);
+    },
+
+
+    /**
+     * L{Methanal.Widgets.TabView.getTab} retrieves a tab by its identifier, or
+     * throws L{Methanal.Widgets.UnknownTab} for unknown identifiers.
+     */
+    function test_getTab(self) {
+        var tabView = self.createTabView(['tab1']);
+
+        self.assertThrows(Methanal.Widgets.UnknownTab,
+            function () { tabView.getTab('tab1'); });
+
+        var tab1 = self.createTab(tabView, 'tab1', 'Tab 1');
+        self.assertIdentical(tabView.getTab('tab1'), tab1);
+    },
+
+
+    /**
+     * L{Methanal.Widgets.TabView.selectTab} selects the specified tab and
+     * deselects all others.
+     */
+    function test_selectTab(self) {
+        var tabView = self.createTabView(['tab1', 'tab2']);
+        var tab1 = self.createTab(tabView, 'tab1', 'Tab 1');
+        var tab2 = self.createTab(tabView, 'tab2', 'Tab 2');
+        // When there are no other candidates, the first tab is selected.
+        self.assertSelected(tab1);
+        tabView.selectTab(tab2);
+        self.assertSelected(tab2);
+    },
+
+
+    /**
+     * Tabs with a true C{'selected'} attribute will be selected when the tab
+     * view has finished loading.
+     */
+    function test_preselectedTab(self) {
+        var tabView = self.createTabView(['tab1', 'tab2']);
+        var tab1 = self.createTab(tabView, 'tab1', 'Tab 1');
+        var tab2 = self.createTab(tabView, 'tab2', 'Tab 2', true);
+        self.assertSelected(tab2);
+    },
+
+
+    /**
+     * Selecting another tab before the tab view has finished loading will
+     * override any tabs with a true C{'selected'} attribute.
+     */
+    function test_preselectedTabOverride(self) {
+        var tabView = self.createTabView(['tab1', 'tab2']);
+        var tab1 = self.createTab(tabView, 'tab1', 'Tab 1');
+        tabView.selectTab(tab1);
+        var tab2 = self.createTab(tabView, 'tab2', 'Tab 2', true);
+        self.assertSelected(tab1);
+    },
+
+
+    /**
+     * Hiding a tab makes it invisible. Hiding the selected tab also selects
+     * the first visible tab. Showing a tab makes it visible. The only tab to
+     * be made visible is also selected.
+     */
+    function test_hideShowTab(self) {
+        var tabView = self.createTabView(['tab1', 'tab2']);
+        var tab1 = self.createTab(tabView, 'tab1', 'Tab 1');
+        var tab2 = self.createTab(tabView, 'tab2', 'Tab 2');
+        tabView.hideTab(tab1);
+        self.assertHidden(tab1);
+        // Hiding the selected tab will focus the first visible one.
+        self.assertSelected(tab2);
+
+        tabView.hideTab(tab2);
+        self.assertHidden(tab2);
+        tabView.showTab(tab1);
+        self.assertVisible(tab1);
+        // The only tab to be made visible is also selected.
+        self.assertSelected(tab1);
+    },
+
+
+    /**
+     * Top-level tab views will select tabs specified in
+     * C{window.location.hash} as well as using it to track tab selection.
+     */
+    function test_topLevel(self) {
+        window = {
+            'location': {
+                'hash': '#tab:tab2'}};
+        var tabView = self.createTabView(['tab1', 'tab2'], undefined, true);
+        var tab1 = self.createTab(tabView, 'tab1', 'Tab 1');
+        var tab2 = self.createTab(tabView, 'tab2', 'Tab 2');
+        self.assertSelected(tab2);
+
+        tabView.selectTab(tab1);
+        self.assertIdentical(window.location.hash, '#tab:tab1');
+        window = undefined;
+    },
+
+
+    /**
+     * Tab groups are created dynamically and visually group tabs.
+     */
+    function test_groups(self) {
+        function checkGroup(group) {
+            var groupNode = tabView._groups[group.id];
+            self.assertNotIdentical(groupNode, undefined);
+            self.assertIdentical(
+                groupNode.getElementsByTagName('li').length,
+                group.tabIDs.length);
+        }
+
+        var group1 = Methanal.Widgets.TabGroup(
+            'group1', 'Group 1', ['tab2', 'tab3']);
+        var tabView = self.createTabView(
+            ['tab1', 'tab2', 'tab3'], [group1]);
+        var tab1 = self.createTab(tabView, 'tab1', 'Tab 1');
+        var tab2 = self.createTab(
+            tabView, 'tab2', 'Tab 2', undefined, group1.id);
+        var tab3 = self.createTab(
+            tabView, 'tab3', 'Tab 3', undefined, group1.id);
+        checkGroup(group1);
+
+        var group2 = Methanal.Widgets.TabGroup(
+            'group2', 'Group 2', ['tab4']);
+        tabView.tabGroups[group2.id] = group2;
+        var tab4 = self.createTab(
+            tabView, 'tab4', 'Tab 4', undefined, group2.id);
+        checkGroup(group2);
+    },
+
+
+    /**
+     * Group visibility is determined by the visibility of the tabs it
+     * contains.
+     */
+    function test_groupVisibility(self) {
+        var group1 = Methanal.Widgets.TabGroup(
+            'group1', 'Group 1', ['tab2', 'tab3']);
+        var tabView = self.createTabView(
+            ['tab1', 'tab2', 'tab3'], [group1]);
+        var tab1 = self.createTab(tabView, 'tab1', 'Tab 1');
+        var tab2 = self.createTab(
+            tabView, 'tab2', 'Tab 2', undefined, group1.id);
+        var tab3 = self.createTab(
+            tabView, 'tab3', 'Tab 3', undefined, group1.id);
+
+        var node = tabView._groups[group1.id].parentNode;
+        tabView.hideTab(tab1);
+        self.assertNodeVisible(node);
+        tabView.hideTab(tab2);
+        self.assertNodeVisible(node);
+        tabView.hideTab(tab3);
+        self.assertNodeHidden(node);
+        tabView.showTab(tab3);
+        self.assertNodeVisible(node);
+    });
