@@ -1553,11 +1553,12 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         tab.select();
 
         if (self.topLevel) {
-            window.location.hash = 'tab:' + tab.id;
+            window.location.hash = '#tab:' + tab.id;
         }
 
         if (!self.fullyLoaded) {
-            self._tabToSelect = self._idToSelect = null;
+            self._tabToSelect = tab;
+            self._idToSelect = tab.id;
         }
     },
 
@@ -1617,7 +1618,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
             if (!(e instanceof Methanal.Widgets.UnknownTab)) {
                 throw e;
             }
-            self.selectTab(self);
+            self.selectTab(tab);
         }
         tab.visible = true;
 
@@ -1875,7 +1876,7 @@ Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DynamicTab').methods(
  * Content is only requested, from the server, and inserted when the tab is
  * selected. Selecting the tab always retrieves new content; selecting the tab
  * before a previous fetch attempt has completed will result in that data being
- * discarded and a new fetch occuring.
+ * discarded and a new fetch occurring.
  */
 Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DemandTab').methods(
     function getLabelClassName(self) {
