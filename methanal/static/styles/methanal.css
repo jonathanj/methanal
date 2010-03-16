@@ -474,7 +474,7 @@ button.roll-up {
  */
 
 .methanal-tab-view {
-    margin: 1em 0;
+    margin: 3em 0;
 }
 
 .methanal-tab-view .methanal-tab-labels {
@@ -488,12 +488,14 @@ button.roll-up {
 
 .methanal-tab-view .methanal-tab-label {
     cursor: pointer;
-    display: inline;
+    display: inline-block;
     list-style: none;
 }
 
 .methanal-tab-view .methanal-tab-label a {
     padding: 0.5em 1em;
+    border: 1px solid transparent;
+    border-bottom: none;
 }
 
 .methanal-tab-view .methanal-dynamic-tab a {
@@ -515,8 +517,7 @@ button.roll-up {
     position: relative;
     top: 1px;
     padding-top: 0.8em;
-    border: 1px solid #247dc2;
-    border-bottom: none;
+    border-color: #247dc2;
 }
 
 .methanal-tab-view .methanal-tab-content {
@@ -529,4 +530,30 @@ button.roll-up {
 
 .methanal-tab-view .selected-tab {
     display: block;
+}
+
+.methanal-tab-view .methanal-tab-group {
+    cursor: default;
+    background: #9bc4e5;
+    margin: -2.5em 0.25em -0.5em;
+    padding: 0 0.5em;
+    -moz-border-radius: 0.5em 0.5em 0 0;
+    -webkit-border-radius: 0.5em 0.5em 0 0;
+}
+
+.methanal-tab-view .methanal-tab-group-label {
+    font-size: 80%;
+    text-align: center;
+    padding: 0.5em;
+    color: #e0f1ff;
+}
+
+.methanal-tab-view .methanal-tab-group-tabs {
+    list-style: none;
+    margin: 0;
+    padding: 0.5em 0;
+}
+
+.hidden {
+    display: none !important;
 }

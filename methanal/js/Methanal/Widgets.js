@@ -1327,6 +1327,13 @@ Divmod.Error.subclass(Methanal.Widgets, 'UnknownTab');
 
 
 /**
+ * An unknown group identifier was specified.
+ */
+Divmod.Error.subclass(Methanal.Widgets, 'UnknownGroup');
+
+
+
+/**
  * A tab container, visually displayed as a horizontal tab bar.
  *
  * @ivar tabIDs: Mapping of L{Tab.id}, used conceptually as a set, used for
@@ -1343,18 +1350,32 @@ Divmod.Error.subclass(Methanal.Widgets, 'UnknownTab');
  * @ivar _labels: Mapping of L{Tab.id} to DOM nodes of the tab labels.
  */
 Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
-    function __init__(self, node, tabIDs, topLevel) {
+    function __init__(self, node, tabIDs, tabGroups, topLevel,
+                      _makeThrobber/*=undefined*/) {
         Methanal.Widgets.TabView.upcall(self, '__init__', node);
         self.tabIDs = tabIDs;
+        self.tabGroups = tabGroups;
         self.topLevel = topLevel;
         if (self.topLevel) {
             self._idToSelect = self._getTabIDFromLocation();
         }
         self._labels = {};
         self._tabs = {};
+        self._groups = {};
         self.fullyLoaded = false;
-        self.throbber = Methanal.Util.Throbber(self, 'inline');
+        if (_makeThrobber === undefined) {
+            _makeThrobber = function() { return self._makeThrobber() };
+        }
+        self.throbber = _makeThrobber();
         self.throbber.start();
+    },
+
+
+    /**
+     * Create a throbber object.
+     */
+    function _makeThrobber(self) {
+        return Methanal.Util.Throbber(self, 'inline');
     },
 
 
@@ -1373,6 +1394,19 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
                 return parts[1];
             }
         }
+    },
+
+
+    /**
+     * Get a L{Methanal.Widgets.TabGroup} instance for a given group identifier.
+     */
+    function getGroup(self, id) {
+        var group = self.tabGroups[id];
+        if (group === undefined) {
+            throw new Methanal.Widgets.UnknownGroup(
+                Methanal.Util.repr(id) + ' is an unknown group identifier');
+        }
+        return group;
     },
 
 
@@ -1406,18 +1440,56 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
 
     /**
-     * Client-side handler for appending a tab from the server-side.
+     * Client-side handler for appending a tabs from the server-side.
      */
-    function _appendTabFromServer(self, widgetInfo) {
+    function _appendTabsFromServer(self, widgetInfos, tabGroups) {
         self.throbber.start();
-        d = self.addChildWidgetFromWidgetInfo(widgetInfo);
-        d.addCallback(function (widget) {
-            self.tabIDs[widget.id] = true;
-            self.node.appendChild(widget.node);
-            Methanal.Util.nodeInserted(widget);
-            return null;
-        });
-        return d;
+        self.tabGroups = tabGroups;
+
+        function _appendTab(widgetInfo) {
+            var d = self.addChildWidgetFromWidgetInfo(widgetInfo);
+            d.addCallback(function (widget) {
+                self.tabIDs[widget.id] = true;
+                self.node.appendChild(widget.node);
+                Methanal.Util.nodeInserted(widget);
+                return null;
+            });
+            return d;
+        }
+
+        var ds = Methanal.Util.map(_appendTab, widgetInfos);
+        return Divmod.Defer.gatherResults(ds);
+    },
+
+
+    /**
+     * Create the DOM node for a tab group.
+     *
+     * @raise Methanal.Widgets.UnknownGroup: If C{id} does not map to any known
+     *     group.
+     */
+    function _createGroupNode(self, id) {
+        var title = self.getGroup(id).title;
+
+        var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+        var group = D('ul', {'class': 'methanal-tab-group-tabs'}, []);
+        self._groups[id] = group;
+        var groupInner = D(
+            'li', {'class': 'methanal-tab-label methanal-tab-group'}, [
+                D('div', {'class': 'methanal-tab-group-label'}, [title]),
+                group]);
+        self.nodeById('labels').appendChild(groupInner);
+    },
+
+
+    /**
+     * Get the DOM node for a group, creating it if it doesn't already exist.
+     */
+    function _getGroupNode(self, id) {
+        if (!(id in self._groups)) {
+            self._createGroupNode(id);
+        }
+        return self._groups[id];
     },
 
 
@@ -1444,7 +1516,13 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
         self._labels[tab.id] = label;
         self._tabs[tab.id] = tab;
-        self.nodeById('labels').appendChild(label);
+
+        var labelParent = self.nodeById('labels');
+        if (tab.group !== null) {
+            labelParent = self._getGroupNode(tab.group);
+            self._updateGroupVisiblity(tab.group);
+        }
+        labelParent.appendChild(label);
 
         // If this tab's identifier matches the one we're supposed to select,
         // do it. Otherwise select this tab if its "selected" attribute is true
@@ -1475,11 +1553,52 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         tab.select();
 
         if (self.topLevel) {
-            window.location.hash = 'tab:' + tab.id;
+            window.location.hash = '#tab:' + tab.id;
         }
 
         if (!self.fullyLoaded) {
-            self._tabToSelect = self._idToSelect = null;
+            self._tabToSelect = tab;
+            self._idToSelect = tab.id;
+        }
+    },
+
+
+    /**
+     * Update the visibility of a tab group based on the visibility of the tabs
+     * it contains.
+     */
+    function _updateGroupVisiblity(self, groupID) {
+        try {
+            var group = self.getGroup(groupID);
+        } catch (e) {
+            if (e instanceof Methanal.Widgets.UnknownGroup) {
+                return;
+            }
+            throw e;
+        }
+
+        var visible = false;
+        for (var i = 0; i < group.tabIDs.length; ++i) {
+            try {
+                var tab = self.getTab(group.tabIDs[i]);
+                visible = visible || tab.visible;
+                if (visible) {
+                    break;
+                }
+            } catch (e) {
+                if (!(e instanceof Methanal.Widgets.UnknownTab)) {
+                    throw e;
+                }
+            }
+        }
+
+        // Change the visibility of the group parent node, not the inner
+        // container.
+        var groupNode = self._groups[groupID].parentNode;
+        if (visible) {
+            Methanal.Util.removeElementClass(groupNode, 'hidden');
+        } else {
+            Methanal.Util.addElementClass(groupNode, 'hidden');
         }
     },
 
@@ -1491,7 +1610,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      */
     function showTab(self, tab) {
         var labelNode = self._labels[tab.id];
-        labelNode.style.display = 'inline';
+        Methanal.Util.removeElementClass(labelNode, 'hidden');
         // If this is the only tab about to be visible, select it.
         try {
             self.getFirstVisibleTab();
@@ -1499,9 +1618,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
             if (!(e instanceof Methanal.Widgets.UnknownTab)) {
                 throw e;
             }
-            self.selectTab(self);
+            self.selectTab(tab);
         }
         tab.visible = true;
+
+        self._updateGroupVisiblity(tab.group);
     },
 
 
@@ -1513,7 +1634,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      */
     function hideTab(self, tab) {
         var labelNode = self._labels[tab.id];
-        labelNode.style.display = 'none';
+        Methanal.Util.addElementClass(labelNode, 'hidden');
         tab.visible = false;
         // If we're hiding the selected tab, select the first visible tab.
         if (tab.selected) {
@@ -1525,6 +1646,8 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
                 }
             }
         }
+
+        self._updateGroupVisiblity(tab.group);
     },
 
 
@@ -1567,6 +1690,28 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
 
 /**
+ * Visually group labels of L{Methanal.Widgets.Tab}s together.
+ *
+ * @type id: C{String}
+ * @ivar id: Unique identifier.
+ *
+ * @type title: C{String}
+ * @ivar title: Title of the group, used by L{Methanal.Widgets.TabView} when
+ *     constructing the tab list.
+ *
+ * @type tabIDs: C{Array} of C{String}
+ * @ivar tabIDs: Identifiers of all the contained tabs.
+ */
+Divmod.Class.subclass(Methanal.Widgets, 'TabGroup').methods(
+    function __init__(self, id, title, tabIDs) {
+        self.id = id;
+        self.title = title;
+        self.tabIDs = tabIDs;
+    });
+
+
+
+/**
  * A content container, intended to be passed to L{TabView}.
  *
  * @type id: C{String}
@@ -1580,6 +1725,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
  * @ivar selected: Is this container to be selected initially? Defaults to
  *     C{False}.
  *
+ * @type group: C{String}
+ * @ivar group: Tab group identifier, or C{null} for no grouping.
+ *
  * @type visible: C{Boolean}
  * @ivar visible: Is this container visible?
  */
@@ -1589,6 +1737,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Tab').methods(
         self.id = args.id;
         self.title = args.title;
         self.selected = args.selected;
+        self.group = args.group;
         self.visible = true;
         self._cancelFetch = function() {};
         self._currentWidget = undefined;
@@ -1727,7 +1876,7 @@ Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DynamicTab').methods(
  * Content is only requested, from the server, and inserted when the tab is
  * selected. Selecting the tab always retrieves new content; selecting the tab
  * before a previous fetch attempt has completed will result in that data being
- * discarded and a new fetch occuring.
+ * discarded and a new fetch occurring.
  */
 Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DemandTab').methods(
     function getLabelClassName(self) {
