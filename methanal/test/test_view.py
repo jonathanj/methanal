@@ -8,6 +8,7 @@ except ImportError:
     import elementtree.ElementTree as etree
 
 from twisted.trial import unittest
+from twisted.internet.defer import gatherResults
 
 from epsilon.extime import FixedOffset, Time
 
@@ -439,16 +440,47 @@ class ObjectChoiceTestsMixin(ChoiceInputTestsMixin):
             self.assertIdentical(param.value, obj)
 
 
+    def test_render(self):
+        """
+        Rendering the control raises no exceptions.
+        """
+        control = self.createControl(dict(values=self.values))
+        ds = []
+
+        def _render(value):
+            control.parent.param.value = value
+            ds.append(renderWidget(control))
+
+        _render(None)
+        for obj, desc in self.values:
+            _render(obj)
+        return gatherResults(ds)
+
+
 
 class ObjectMultiChoiceTestsMixin(ObjectChoiceTestsMixin):
     """
     Mixin for L{methanal.view.ChoiceInput}s that support many arbitrary Python
     objects.
     """
+    def test_getValueNoValues(self):
+        """
+        Multiple-object-enabled L{ChoiceInput}s return an empty list from
+        C{getValue} when the parameter is C{None}, or empty.
+        """
+        control = self.createControl(dict(values=self.values))
+
+        control.parent.param.value = None
+        self.assertEquals(control.getValue(), [])
+
+        control.parent.param.value = []
+        self.assertEquals(control.getValue(), [])
+
+
     def test_getValue(self):
         """
         Multiple-object-enabled L{ChoiceInput}s return many encoded object
-        identities from their C{getValue} method.
+        identities from C{getValue}.
         """
         control = self.createControl(dict(values=self.values))
         param = control.parent.param
@@ -464,6 +496,22 @@ class ObjectMultiChoiceTestsMixin(ObjectChoiceTestsMixin):
         self.assertEquals(
             control.getValue(),
             [control.encodeValue(obj1), control.encodeValue(obj2)])
+
+
+    def test_invokeNoValues(self):
+        """
+        Multiple-object-enabled L{ChoiceInput}s set their parameter value to an
+        empty list when invoked with C{None}, or empty.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+        control.invoke({param.name: None})
+        self.assertEquals(param.value, [])
+
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+        control.invoke({param.name: []})
+        self.assertEquals(param.value, [])
 
 
     def test_invoke(self):
@@ -488,6 +536,23 @@ class ObjectMultiChoiceTestsMixin(ObjectChoiceTestsMixin):
         data = {param.name: [value1, value2]}
         control.invoke(data)
         self.assertEquals(param.value, [obj1, obj2])
+
+
+    def test_render(self):
+        """
+        Rendering the control raises no exceptions.
+        """
+        control = self.createControl(dict(values=self.values))
+        ds = []
+
+        def _render(value):
+            control.parent.param.value = value
+            ds.append(renderWidget(control))
+
+        _render(None)
+        for obj, desc in self.values:
+            _render([obj])
+        return gatherResults(ds)
 
 
 
