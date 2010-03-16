@@ -2,7 +2,6 @@
 Unit tests for L{methanal.widgets}.
 """
 from twisted.trial import unittest
-from twisted.internet.defer import succeed
 
 from nevow import inevow
 
