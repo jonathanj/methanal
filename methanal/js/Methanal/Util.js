@@ -4,6 +4,9 @@
  * @rtype: C{Boolean}
  */
 Methanal.Util.containsElementClass = function containsElementClass(node, cls) {
+    if (!node.className) {
+        return false;
+    }
     var classes = node.className.split(' ');
     for (var i = 0; i < classes.length; ++i) {
         if (classes[i] === cls) {
@@ -30,13 +33,13 @@ Methanal.Util.addElementClass = function addElementClass(node, cls) {
     var current = node.className;
 
     // Trivial case, no "className" yet.
-    if (current == undefined || current.length === 0) {
+    if (!current) {
         node.className = cls;
         return;
     }
 
     // Other trivial case, already set as the only class.
-    if (current == cls) {
+    if (current === cls) {
         return;
     }
 
@@ -68,7 +71,7 @@ Methanal.Util.removeElementClass = function removeElementClass(node, cls) {
     }
 
     // Other trivial case, set only to "className".
-    if (current == cls) {
+    if (current === cls) {
         node.className = '';
         return;
     }
