@@ -71,19 +71,17 @@ class TabViewTests(unittest.TestCase):
         Appending tabs on the server side manages them and invokes methods
         on the client side to insert them.
         """
-        def callRemote(methodName, *a):
-            return succeed(methodName == '_appendTabsFromServer')
+        self.result = None
 
-        def checkResult(result):
-            self.assertTrue(result)
-            self.assertIn(u'id4', self.tabView._tabIDs)
-            self.assertIdentical(self.tabView.tabs[-1], tab)
+        def callRemote(methodName, *a):
+            self.result = methodName == '_appendTabsFromServer'
 
         tab = widgets.Tab(u'id4', u'Title 4', self.contentFactory)
         self.patch(self.tabView, 'callRemote', callRemote)
-        d = self.tabView.appendTabs([tab])
-        d.addCallback(checkResult)
-        return d
+        self.tabView.appendTabs([tab])
+        self.assertTrue(self.result)
+        self.assertIn(u'id4', self.tabView._tabIDs)
+        self.assertIdentical(self.tabView.tabs[-1], tab)
 
 
     def test_appendDuplicateGroup(self):
@@ -103,21 +101,19 @@ class TabViewTests(unittest.TestCase):
         Appending a group on the server site manages it, and all the tabs it
         contains, and invokes methods on the client side to insert them.
         """
-        def callRemote(methodName, *a):
-            return succeed(methodName == '_appendTabsFromServer')
+        self.result = None
 
-        def checkResult(result):
-            self.assertTrue(result)
-            self.assertIn(u'id4', self.tabView._tabIDs)
-            self.assertIn(u'group1', self.tabView._tabGroups)
-            self.assertIdentical(self.tabView.tabs[-1], tab)
+        def callRemote(methodName, *a):
+            self.result = methodName == '_appendTabsFromServer'
 
         tab = widgets.Tab(u'id4', u'Title 4', self.contentFactory)
         group = widgets.TabGroup(u'group1', u'Group', tabs=[tab])
         self.patch(self.tabView, 'callRemote', callRemote)
-        d = self.tabView.appendGroup(group)
-        d.addCallback(checkResult)
-        return d
+        self.tabView.appendGroup(group)
+        self.assertTrue(self.result)
+        self.assertIn(u'id4', self.tabView._tabIDs)
+        self.assertIn(u'group1', self.tabView._tabGroups)
+        self.assertIdentical(self.tabView.tabs[-1], tab)
 
 
 
