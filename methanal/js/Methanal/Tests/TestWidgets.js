@@ -442,6 +442,8 @@ Methanal.Tests.Util.TestCase.subclass(
     function createTab(self, tabView, id, title, selected /*=false*/,
                        group /*=null*/) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var parentNode = document.createElement('div');
+        parentNode.appendChild(node);
         var tab = Methanal.Widgets.Tab(node, {
             'id': id,
             'title': title,
@@ -614,7 +616,8 @@ Methanal.Tests.Util.TestCase.subclass(
 
     /**
      * Group visibility is determined by the visibility of the tabs it
-     * contains.
+     * contains. Removing all the tabs from a group will result in that group
+     * becoming invisible.
      */
     function test_groupVisibility(self) {
         var group1 = Methanal.Widgets.TabGroup(
@@ -636,4 +639,15 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertNodeHidden(node);
         tabView.showTab(tab3);
         self.assertNodeVisible(node);
+
+        // Stub out Nevow.Athena.Widget.detach.
+        function detach() {}
+
+        tab2.detach = detach;
+        tabView.removeTab(tab2);
+        self.assertNodeVisible(node);
+
+        tab3.detach = detach;
+        tabView.removeTab(tab3);
+        self.assertNodeHidden(node);
     });

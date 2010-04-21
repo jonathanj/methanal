@@ -1440,6 +1440,20 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
 
     /**
+     * Select the first visible tab.
+     */
+    function selectFirstVisibleTab(self) {
+        try {
+            self.selectTab(self.getFirstVisibleTab());
+        } catch (e) {
+            if (!(e instanceof Methanal.Widgets.UnknownTab)) {
+                throw e;
+            }
+        }
+    },
+
+
+    /**
      * Client-side handler for appending a tabs from the server-side.
      */
     function _appendTabsFromServer(self, widgetInfos, tabGroups) {
@@ -1457,8 +1471,55 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
             return d;
         }
 
-        var ds = Methanal.Util.map(_appendTab, widgetInfos);
-        return Divmod.Defer.gatherResults(ds);
+        return Divmod.Defer.gatherResults(
+            Methanal.Util.map(_appendTab, widgetInfos));
+    },
+
+
+    /**
+     * Remove a tab.
+     *
+     * Group visibility is updated too, meaning any groups that contain no
+     * visible tabs will be hidden.
+     */
+    function removeTab(self, tab) {
+        tab.node.parentNode.removeChild(tab.node);
+        var label = self._labels[tab.id];
+        label.parentNode.removeChild(label);
+        delete self._labels[tab.id];
+        delete self._tabs[tab.id];
+        if (tab.group !== null) {
+            self._updateGroupVisiblity(tab.group);
+        }
+        return tab.detach();
+    },
+
+
+    /**
+     * Client-side handler for removing tabs from the server-side.
+     */
+    function _removeTabsFromServer(self, tabIDs, tabGroups) {
+        self.tabGroups = tabGroups;
+        var wasSelected = false;
+
+        function _removeTab(tabID) {
+            var tab = self.getTab(tabID);
+            wasSelected |= tab.selected;
+            return self.removeTab(tab);
+        }
+
+        var d = Divmod.Defer.gatherResults(
+            Methanal.Util.map(_removeTab, tabIDs));
+
+        d.addCallback(function () {
+            // If one of the removed tabs was selected then select another one.
+            if (wasSelected) {
+                self.selectFirstVisibleTab();
+            }
+            return null;
+        });
+
+        return d;
     },
 
 
@@ -1638,13 +1699,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         tab.visible = false;
         // If we're hiding the selected tab, select the first visible tab.
         if (tab.selected) {
-            try {
-                self.selectTab(self.getFirstVisibleTab());
-            } catch (e) {
-                if (!(e instanceof Methanal.Widgets.UnknownTab)) {
-                    throw e;
-                }
-            }
+            self.selectFirstVisibleTab();
         }
 
         self._updateGroupVisiblity(tab.group);

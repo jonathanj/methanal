@@ -707,7 +707,7 @@ class TabView(ThemedElement):
 
     def _manageTab(self, tab):
         """
-        Begin managing a L{Tab} widget.
+        Begin managing a L{methanal.widgets.Tab} widget.
 
         @raise ValueError: If the tab's identifier matches one that is already
             being managed.
@@ -717,11 +717,25 @@ class TabView(ThemedElement):
                 '%r is a duplicate tab identifier in %r' % (tab.id, self))
         self._tabIDs.add(tab.id)
         self.tabs.append(tab)
+        group = self._tabGroups.get(tab.group)
+        if group is not None:
+            group._manageTab(tab)
+
+
+    def _releaseTab(self, tab):
+        """
+        Stop managing a L{methanal.widgets.Tab} widget.
+        """
+        self._tabIDs.remove(tab.id)
+        self.tabs.remove(tab)
+        group = self._tabGroups.get(tab.group)
+        if group is not None:
+            group._releaseTab(tab)
 
 
     def appendTab(self, tab):
         """
-        Append a L{Tab} widget.
+        Append a L{methanal.widgets.Tab} widget.
 
         @return: A C{Deferred} that fires when the widget has been inserted on
             the client side.
@@ -756,6 +770,33 @@ class TabView(ThemedElement):
         return self.appendTabs(group.tabs)
 
 
+    def removeTab(self, tab):
+        """
+        Remove a previously added L{methanal.widgets.Tab} widget.
+
+        @return: A C{Deferred} that fires when the widget has been removed on
+            the client side.
+        """
+        return self.removeTabs([tab])
+
+
+    def removeTabs(self, tabs):
+        """
+        Remove many L{methanal.widgets.Tab} widgets.
+
+        Empty groups, caused by removing all contained tabs, are removed too.
+
+        @return: A C{Deferred} that fires when the widget has been removed on
+            the client side.
+        """
+        tabIDs = []
+        for tab in tabs:
+            tabIDs.append(tab.id)
+            self._releaseTab(tab)
+
+        return self.callRemote('_removeTabsFromServer', tabIDs, self._tabGroups)
+
+
     def getInitialArguments(self):
         return [
             dict.fromkeys(self._tabIDs, True),
@@ -774,7 +815,7 @@ class TabView(ThemedElement):
 
 
 
-class TabGroup(record('id title tabs')):
+class TabGroup(object):
     """
     Visually group labels of L{methanal.widgets.Tab}s together.
 
@@ -792,11 +833,33 @@ class TabGroup(record('id title tabs')):
 
     jsClass = u'Methanal.Widgets.TabGroup'
 
-    def __init__(self, *a, **kw):
-        super(TabGroup, self).__init__(*a, **kw)
-        for tab in self.tabs:
+    def __init__(self, id, title, tabs):
+        self.id = id
+        self.title = title
+        self.tabs = []
+        for tab in tabs:
+            self._manageTab(tab)
+
+
+    def _manageTab(self, tab):
+        """
+        Manage a L{methanal.widgets.Tab} widget.
+        """
+        if tab not in self.tabs:
+            self.tabs.append(tab)
             tab.group = self.id
 
+
+    def _releaseTab(self, tab):
+        """
+        Stop managing a L{methanal.widgets.Tab} widget.
+        """
+        if tab in self.tabs:
+            self.tabs.remove(tab)
+            tab.group = None
+
+
+    # IAthenaTransportable
 
     def getInitialArguments(self):
         tabIDs = [tab.id for tab in self.tabs]

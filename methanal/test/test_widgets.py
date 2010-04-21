@@ -115,6 +115,23 @@ class TabViewTests(unittest.TestCase):
         self.assertIdentical(self.tabView.tabs[-1], tab)
 
 
+    def test_removeTabs(self):
+        """
+        Removing tabs on the server side releases them and invokes methods on
+        the client side to remove them.
+        """
+        self.result = None
+
+        def callRemote(methodName, *a):
+            self.result = methodName == '_removeTabsFromServer'
+
+        self.patch(self.tabView, 'callRemote', callRemote)
+        tab = self.tabView.tabs[0]
+        self.tabView.removeTabs([tab])
+        self.assertTrue(self.result)
+        self.assertNotIn(tab.id, self.tabView._tabIDs)
+
+
 
 class StaticTabTests(unittest.TestCase):
     """
