@@ -1037,6 +1037,10 @@ class StaticTab(Tab):
         return tag[self.getContent()]
 
 
+    def updateRemoteContent(self):
+        pass
+
+
 
 class DynamicTab(Tab):
     """
@@ -1059,3 +1063,9 @@ class DemandTab(Tab):
     being discarded and a new fetch occurring.
     """
     jsClass = u'Methanal.Widgets.DemandTab'
+
+    def updateRemoteContent(self):
+        """
+        Force the remote content to be updated.
+        """
+        return self.callRemote('_setContentFromWidgetInfo', self.getContent())

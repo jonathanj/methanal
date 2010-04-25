@@ -1894,6 +1894,25 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Tab').methods(
 
 
     /**
+     * Set an Athena widget as the tab content.
+     */
+    function _setContentFromWidgetInfo(self, widgetInfo, abortFetch) {
+        var d = self.addChildWidgetFromWidgetInfo(widgetInfo);
+        d.addCallback(function (widget) {
+            if (abortFetch) {
+                return widget.detach();
+            } else {
+                self._setContent(widget.node);
+                self._currentWidget = widget;
+                Methanal.Util.nodeInserted(widget);
+            }
+            return null;
+        });
+        return d;
+    },
+
+
+    /**
      * Fetch the latest tab content from the server.
      *
      * If a fetch is already in progress it's result is discarded and a new
@@ -1915,16 +1934,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Tab').methods(
 
         var d = self.callRemote('getContent');
         d.addCallback(function (widgetInfo) {
-            return self.addChildWidgetFromWidgetInfo(widgetInfo);
-        });
-        d.addCallback(function (widget) {
-            if (abortFetch) {
-                return widget.detach();
-            } else {
-                self._setContent(widget.node);
-                self._currentWidget = widget;
-                Methanal.Util.nodeInserted(widget);
-            }
+            return self._setContentFromWidgetInfo(widgetInfo, abortFetch);
         });
         return d;
     },
