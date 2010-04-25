@@ -1454,25 +1454,45 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
 
     /**
-     * Client-side handler for appending a tabs from the server-side.
+     * Client-side handler for updating tabs from the server-side.
+     *
+     * @param widgetInfos: New tab widgets to add.
+     *
+     * @type  tabIDsToRemove: C{Array} of C{String}
+     * @param tabIDsToRemove: Identifiers of L{methanal.widgets.Tab}s to remove.
+     *
+     * @param tabGroups: Tab groups.
      */
-    function _appendTabsFromServer(self, widgetInfos, tabGroups) {
+    function _updateTabsFromServer(self, widgetInfos, tabIDsToRemove, tabGroups) {
         self.throbber.start();
         self.tabGroups = tabGroups;
 
-        function _appendTab(widgetInfo) {
+        function _updateTab(widgetInfo) {
             var d = self.addChildWidgetFromWidgetInfo(widgetInfo);
-            d.addCallback(function (widget) {
-                self.tabIDs[widget.id] = true;
-                self.node.appendChild(widget.node);
-                Methanal.Util.nodeInserted(widget);
+            d.addCallback(function (tab) {
+                var oldTab = self._tabs[tab.id];
+                // If we are updating an existing tab then detach and remove
+                // the old one first. Selection state is transferred too.
+                if (oldTab !== undefined) {
+                    tab.selected = oldTab.selected;
+                    self._removeTabContent(oldTab);
+                }
+                self.tabIDs[tab.id] = true;
+                self.nodeById('contents').appendChild(tab.node);
+                Methanal.Util.nodeInserted(tab);
                 return null;
             });
             return d;
         }
 
-        return Divmod.Defer.gatherResults(
-            Methanal.Util.map(_appendTab, widgetInfos));
+        var d = Divmod.Defer.gatherResults(
+            Methanal.Util.map(_updateTab, widgetInfos));
+        if (tabIDsToRemove.length > 0) {
+            d.addCallback(function () {
+                return self._removeTabsFromServer(tabIDsToRemove, tabGroups);
+            });
+        }
+        return d;
     },
 
 
@@ -1483,7 +1503,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      * visible tabs will be hidden.
      */
     function removeTab(self, tab) {
-        tab.node.parentNode.removeChild(tab.node);
+        var d = self._removeTabContent(tab);
         var label = self._labels[tab.id];
         label.parentNode.removeChild(label);
         delete self._labels[tab.id];
@@ -1491,12 +1511,26 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         if (tab.group !== null) {
             self._updateGroupVisiblity(tab.group);
         }
+        return d;
+    },
+
+
+    /**
+     * Remove a tab widget's content.
+     */
+    function _removeTabContent(self, tab) {
+        self.nodeById('contents').removeChild(tab.node);
         return tab.detach();
     },
 
 
     /**
      * Client-side handler for removing tabs from the server-side.
+     *
+     * @type  tabIDs: C{Array} of C{String}
+     * @param tabIDs: Identifiers of L{methanal.widgets.Tab}s to remove.
+     *
+     * @param tabGroups: Tab groups.
      */
     function _removeTabsFromServer(self, tabIDs, tabGroups) {
         self.tabGroups = tabGroups;
@@ -1518,8 +1552,46 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
             }
             return null;
         });
-
         return d;
+    },
+
+
+    /**
+     * Create or update a tab label.
+     *
+     * Tab group titles will be updated too.
+     */
+    function _createLabel(self, tab) {
+        var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+        var label = D('li', {'class': 'methanal-tab-label'}, [
+            D('a', {}, [tab.title])]);
+        label.onclick = function onclick(node) {
+            self.selectTab(tab);
+        };
+
+        var labelClassName = tab.getLabelClassName();
+        if (labelClassName) {
+            Methanal.Util.addElementClass(label, labelClassName);
+        }
+
+        var labelParent = self.nodeById('labels');
+        if (tab.group !== null) {
+            var nodes = self._getGroupNode(tab.group);
+            Methanal.Util.replaceNodeText(
+                nodes.label, self.getGroup(tab.group).title);
+            self._updateGroupVisiblity(tab.group);
+            labelParent = nodes.content;
+        }
+
+        var oldLabel = self._labels[tab.id];
+        // If a label for this tab already exists, then update that label.
+        if (oldLabel !== undefined) {
+            oldLabel.parentNode.replaceChild(label, oldLabel);
+        } else {
+            labelParent.appendChild(label);
+        }
+
+        self._labels[tab.id] = label;
     },
 
 
@@ -1531,15 +1603,16 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      */
     function _createGroupNode(self, id) {
         var title = self.getGroup(id).title;
-
         var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
-        var group = D('ul', {'class': 'methanal-tab-group-tabs'}, []);
-        self._groups[id] = group;
-        var groupInner = D(
+        var content = D('ul', {'class': 'methanal-tab-group-tabs'}, []);
+        var label = D('div', {'class': 'methanal-tab-group-label'}, [title]);
+        var inner = D(
             'li', {'class': 'methanal-tab-label methanal-tab-group'}, [
-                D('div', {'class': 'methanal-tab-group-label'}, [title]),
-                group]);
-        self.nodeById('labels').appendChild(groupInner);
+                label, content]);
+        self._groups[id] = {
+            'content': content,
+            'label': label};
+        self.nodeById('labels').appendChild(inner);
     },
 
 
@@ -1560,39 +1633,24 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      * A new label is created for C{tab}, based on L{Tab.title}, and an
      * C{onclick} handler attached.
      */
-    function appendTab(self, tab) {
-        function onclick(node) {
-            self.selectTab(tab);
-        }
-
-        var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
-        var label = D('li', {'class': 'methanal-tab-label'}, [
-            D('a', {}, [tab.title])]);
-        label.onclick = onclick;
-
-        var labelClassName = tab.getLabelClassName();
-        if (labelClassName) {
-            Methanal.Util.addElementClass(label, labelClassName);
-        }
-
-        self._labels[tab.id] = label;
+    function updateTab(self, tab) {
         self._tabs[tab.id] = tab;
-
-        var labelParent = self.nodeById('labels');
-        if (tab.group !== null) {
-            labelParent = self._getGroupNode(tab.group);
-            self._updateGroupVisiblity(tab.group);
-        }
-        labelParent.appendChild(label);
+        self._createLabel(tab);
 
         // If this tab's identifier matches the one we're supposed to select,
         // do it. Otherwise select this tab if its "selected" attribute is true
         // and no tab selection has been made yet.
-        if (tab.id == self._idToSelect) {
+        if (tab.id === self._idToSelect) {
             self._tabToSelect = tab;
         } else if (self._tabToSelect === undefined && tab.selected) {
             self._tabToSelect = tab;
         }
+    },
+
+
+    function appendTab(self, tab) {
+        Divmod.msg('DEPRECATED: Use Methanal.Widgets.TabView.updateTab');
+        return self.updateTab(tab);
     },
 
 
@@ -1620,6 +1678,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         if (!self.fullyLoaded) {
             self._tabToSelect = tab;
             self._idToSelect = tab.id;
+        } else {
+            self._tabToSelect = undefined;
+            self._idToSelect = undefined;
         }
     },
 
@@ -1655,7 +1716,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
         // Change the visibility of the group parent node, not the inner
         // container.
-        var groupNode = self._groups[groupID].parentNode;
+        var groupNode = self._getGroupNode(groupID).content.parentNode;
         if (visible) {
             Methanal.Util.removeElementClass(groupNode, 'hidden');
         } else {
@@ -1713,7 +1774,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      * finalised by calling L{_finishLoading}.
      */
     function loadedUp(self, tab) {
-        self.appendTab(tab);
+        self.updateTab(tab);
 
         delete self.tabIDs[tab.id];
         for (var id in self.tabIDs) {
@@ -1729,13 +1790,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      */
     function _finishLoading(self) {
         self.throbber.stop();
-        if (self.fullyLoaded) {
-            return;
-        }
-
-        self.fullyLoaded = true;
-        if (self._tabToSelect === undefined && self.childWidgets.length > 0) {
-            self._tabToSelect = self.childWidgets[0];
+        if (!self.fullyLoaded) {
+            self.fullyLoaded = true;
+            if (self._tabToSelect === undefined && self.childWidgets.length > 0) {
+                self._tabToSelect = self.childWidgets[0];
+            }
         }
         if (self._tabToSelect) {
             self.selectTab(self._tabToSelect);
