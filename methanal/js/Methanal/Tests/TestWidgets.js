@@ -430,6 +430,7 @@ Methanal.Tests.Util.TestCase.subclass(
             node, _tabIDs, _tabGroups, topLevel || false, _makeThrobber);
         Methanal.Tests.Util.makeWidgetChildNode(tabView, 'div', 'throbber');
         Methanal.Tests.Util.makeWidgetChildNode(tabView, 'ul', 'labels');
+        Methanal.Tests.Util.makeWidgetChildNode(tabView, 'div', 'contents');
         document.body.appendChild(node);
         Methanal.Util.nodeInserted(tabView);
         return tabView;
@@ -442,8 +443,6 @@ Methanal.Tests.Util.TestCase.subclass(
     function createTab(self, tabView, id, title, selected /*=false*/,
                        group /*=null*/) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
-        var parentNode = document.createElement('div');
-        parentNode.appendChild(node);
         var tab = Methanal.Widgets.Tab(node, {
             'id': id,
             'title': title,
@@ -451,6 +450,7 @@ Methanal.Tests.Util.TestCase.subclass(
             'group': group || null})
         tabView.addChildWidget(tab);
         Methanal.Tests.Util.makeWidgetChildNode(tab, 'content');
+        tabView.nodeById('contents').appendChild(tab.node);
         Methanal.Util.nodeInserted(tab);
         return tab;
     },
@@ -587,7 +587,7 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_groups(self) {
         function checkGroup(group) {
-            var groupNode = tabView._groups[group.id];
+            var groupNode = tabView._groups[group.id].content;
             self.assertNotIdentical(groupNode, undefined);
             self.assertIdentical(
                 groupNode.getElementsByTagName('li').length,
@@ -630,7 +630,7 @@ Methanal.Tests.Util.TestCase.subclass(
         var tab3 = self.createTab(
             tabView, 'tab3', 'Tab 3', undefined, group1.id);
 
-        var node = tabView._groups[group1.id].parentNode;
+        var node = tabView._groups[group1.id].content.parentNode;
         tabView.hideTab(tab1);
         self.assertNodeVisible(node);
         tabView.hideTab(tab2);
