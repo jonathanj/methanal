@@ -430,6 +430,7 @@ Methanal.Tests.Util.TestCase.subclass(
             node, _tabIDs, _tabGroups, topLevel || false, _makeThrobber);
         Methanal.Tests.Util.makeWidgetChildNode(tabView, 'div', 'throbber');
         Methanal.Tests.Util.makeWidgetChildNode(tabView, 'ul', 'labels');
+        Methanal.Tests.Util.makeWidgetChildNode(tabView, 'div', 'contents');
         document.body.appendChild(node);
         Methanal.Util.nodeInserted(tabView);
         return tabView;
@@ -449,6 +450,7 @@ Methanal.Tests.Util.TestCase.subclass(
             'group': group || null})
         tabView.addChildWidget(tab);
         Methanal.Tests.Util.makeWidgetChildNode(tab, 'content');
+        tabView.nodeById('contents').appendChild(tab.node);
         Methanal.Util.nodeInserted(tab);
         return tab;
     },
@@ -585,7 +587,7 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_groups(self) {
         function checkGroup(group) {
-            var groupNode = tabView._groups[group.id];
+            var groupNode = tabView._groups[group.id].content;
             self.assertNotIdentical(groupNode, undefined);
             self.assertIdentical(
                 groupNode.getElementsByTagName('li').length,
@@ -614,7 +616,8 @@ Methanal.Tests.Util.TestCase.subclass(
 
     /**
      * Group visibility is determined by the visibility of the tabs it
-     * contains.
+     * contains. Removing all the tabs from a group will result in that group
+     * becoming invisible.
      */
     function test_groupVisibility(self) {
         var group1 = Methanal.Widgets.TabGroup(
@@ -627,7 +630,7 @@ Methanal.Tests.Util.TestCase.subclass(
         var tab3 = self.createTab(
             tabView, 'tab3', 'Tab 3', undefined, group1.id);
 
-        var node = tabView._groups[group1.id].parentNode;
+        var node = tabView._groups[group1.id].content.parentNode;
         tabView.hideTab(tab1);
         self.assertNodeVisible(node);
         tabView.hideTab(tab2);
@@ -636,4 +639,15 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertNodeHidden(node);
         tabView.showTab(tab3);
         self.assertNodeVisible(node);
+
+        // Stub out Nevow.Athena.Widget.detach.
+        function detach() {}
+
+        tab2.detach = detach;
+        tabView.removeTab(tab2);
+        self.assertNodeVisible(node);
+
+        tab3.detach = detach;
+        tabView.removeTab(tab3);
+        self.assertNodeHidden(node);
     });
