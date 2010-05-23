@@ -1576,7 +1576,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
         var labelParent = self.nodeById('labels');
         if (tab.group !== null) {
-            var nodes = self._getGroupNode(tab.group);
+            var nodes = self._getGroupNodes(tab.group);
             Methanal.Util.replaceNodeText(
                 nodes.label, self.getGroup(tab.group).title);
             self._updateGroupVisiblity(tab.group);
@@ -1617,9 +1617,10 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
 
     /**
-     * Get the DOM node for a group, creating it if it doesn't already exist.
+     * Get the DOM nodes for a group's container and label, creating them if
+     * they don't exist.
      */
-    function _getGroupNode(self, id) {
+    function _getGroupNodes(self, id) {
         if (!(id in self._groups)) {
             self._createGroupNode(id);
         }
@@ -1716,7 +1717,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
         // Change the visibility of the group parent node, not the inner
         // container.
-        var groupNode = self._getGroupNode(groupID).content.parentNode;
+        var groupNode = self._getGroupNodes(groupID).content.parentNode;
         if (visible) {
             Methanal.Util.removeElementClass(groupNode, 'hidden');
         } else {
