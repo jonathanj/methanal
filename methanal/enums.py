@@ -1,3 +1,4 @@
+import textwrap
 from zope.interface import implements
 
 from methanal.errors import InvalidEnumItem
@@ -25,6 +26,8 @@ class ListEnumeration(object):
 class Enum(object):
     """
     An enumeration.
+
+    L{Enum} objects implement the iteration protocol.
 
     @ivar doc: A brief description of the enumeration's intent
 
@@ -54,6 +57,20 @@ class Enum(object):
                     '%r is already a value in the enumeration' % (value.value,))
             _order.append(value)
             _values[value.value] = value
+
+
+    def __iter__(self):
+        return iter(self._order)
+
+
+    def __repr__(self):
+        lines = textwrap.wrap(textwrap.dedent(self.doc.strip()))
+        line = lines[0]
+        if len(lines) > 1:
+            line += '...'
+        return '<%s """%s""">' % (
+            type(self).__name__,
+            line)
 
 
     @classmethod
@@ -131,15 +148,16 @@ class Enum(object):
             raise ValueError('Only one query is allowed at a time')
 
         name, value = values[0]
-        for item in self._order:
+        for item in self:
             if item.get(name) == value:
                 yield item
 
 
     # IEnumeration
+
     def asPairs(self):
         return [(i.value, i.desc)
-                for i in self._order
+                for i in self
                 if not i.hidden]
 
 
@@ -168,6 +186,14 @@ class EnumItem(object):
         self.desc = desc
         self.hidden = hidden
         self._extra = extra
+
+
+    def __repr__(self):
+        return '<%s value=%r desc=%r hidden=%r>' % (
+            type(self).__name__,
+            self.value,
+            self.desc,
+            self.hidden)
 
 
     def __getattr__(self, name):

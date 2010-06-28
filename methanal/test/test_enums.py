@@ -210,3 +210,31 @@ class EnumTests(unittest.TestCase):
         self.assertRaises(ValueError, list, self.enum.findAll())
         self.assertRaises(ValueError, list, self.enum.findAll(foo=u'foo',
                                                               bar=u'bar'))
+
+
+    def test_reprEnum(self):
+        self.assertEquals(
+            repr(enums.Enum('Foo bar', [])),
+            '<Enum """Foo bar""">')
+
+        lorem = """
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. In vitae sem
+        felis, sit amet tincidunt est. Cras convallis, odio nec accumsan
+        vestibulum, lectus dolor feugiat magna, sit amet tempus lorem diam ac
+        enim. Curabitur nisl nibh, bibendum ac tempus non, blandit ac turpis.
+        """
+
+        self.assertEquals(
+            repr(enums.Enum(lorem, [])),
+            '<Enum """Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+            ' In vitae sem...""">')
+
+
+    def test_reprEnumItem(self):
+        self.assertEquals(
+            repr(enums.EnumItem(u'foo', u'Foo')),
+            "<EnumItem value=u'foo' desc=u'Foo' hidden=False>")
+
+        self.assertEquals(
+            repr(enums.EnumItem(u'foo', u'Foo', hidden=True)),
+            "<EnumItem value=u'foo' desc=u'Foo' hidden=True>")
