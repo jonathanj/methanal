@@ -824,6 +824,7 @@ class MultiChoiceInputMixin(object):
 
 
 
+# XXX: All his friends are deprecated, remove this too.
 class _ObjectChoiceMixinBase(object):
     """
     Common base class for L{ObjectChoiceMixin} and L{ObjectMultiChoiceMixin}.
@@ -891,6 +892,7 @@ class _ObjectChoiceMixinBase(object):
 
 
 
+# XXX: All his friends are deprecated, remove this too.
 class ObjectChoiceMixin(_ObjectChoiceMixinBase):
     """
     A mixin for supporting arbitrary Python objects in a L{ChoiceInput}.
@@ -905,6 +907,7 @@ class ObjectChoiceMixin(_ObjectChoiceMixinBase):
 
 
 
+# XXX: All his friends are deprecated, remove this too.
 class ObjectMultiChoiceMixin(_ObjectChoiceMixinBase):
     """
     A mixin for supporting many arbitrary Python objects in a L{ChoiceInput}.
@@ -938,7 +941,11 @@ class RadioGroupInput(ChoiceInput):
 class ObjectRadioGroupInput(ObjectChoiceMixin, RadioGroupInput):
     """
     Variant of L{RadioGroupInput} for arbitrary Python objects.
+
+    Deprecated. Use L{RadioGroupInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectRadioGroupInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectRadioGroupInput.__init__)
 
 
 
@@ -954,7 +961,11 @@ class MultiCheckboxInput(MultiChoiceInputMixin, ChoiceInput):
 class ObjectMultiCheckboxInput(ObjectMultiChoiceMixin, MultiCheckboxInput):
     """
     Variant of L{MultiCheckboxInput} for arbitrary Python objects.
+
+    Deprecated. Use L{MultiCheckboxInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectMultiCheckboxInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectMultiCheckboxInput.__init__)
 
 
 
@@ -973,6 +984,8 @@ class ObjectSelectInput(ObjectChoiceMixin, SelectInput):
 
     Deprecated. Use L{SelectInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectSelectInput.__init__)
 
 
 
@@ -997,7 +1010,11 @@ class MultiSelectInput(MultiChoiceInputMixin, ChoiceInput):
 class ObjectMultiSelectInput(ObjectMultiChoiceMixin, MultiSelectInput):
     """
     Variant of L{MultiSelectInput} for arbitrary Python objects.
+
+    Deprecated. Use L{MultiSelectInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectMultiSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectMultiSelectInput.__init__)
 
 
 
@@ -1005,14 +1022,14 @@ class GroupedSelectInput(SelectInput):
     """
     Dropdown input with grouped values.
 
-    DEPRECATED: Use L{methanal.view.SelectInput} with L{methanal.enums.Enum}
-    values with a C{'group'} extra value instead.
-
     Values should be structured as follows::
 
         (u'Group name', [(u'value', u'Description'),
                          ...]),
          ...)
+
+    Deprecated. Use L{methanal.view.SelectInput} with L{methanal.enums.Enum}
+    values with a C{'group'} extra value instead.
     """
 GroupedSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
     GroupedSelectInput.__init__)
@@ -1022,7 +1039,11 @@ GroupedSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
 class ObjectGroupedSelectInput(ObjectChoiceMixin, SelectInput):
     """
     Variant of L{GroupedSelectInput} for arbitrary Python objects.
+
+    Deprecated. Use L{SelectInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectGroupedSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectGroupedSelectInput.__init__)
 
 
 
