@@ -6,20 +6,21 @@ from methanal.imethanal import IEnumeration
 
 
 
-class ListEnumeration(object):
+def ListEnumeration(theList):
     """
-    An L{IEnumeration} implementation for the C{list} type.
+    An L{IEnumeration} adapter for the C{list} type.
     """
-    implements(IEnumeration)
+    if (theList and
+        len(theList[0]) > 1 and
+        type(theList[0][1]) not in (tuple, list)):
+        theList = [(None, theList)]
 
+    items = []
+    for groupName, values in theList:
+        for value, desc in values:
+            items.append(EnumItem(value, desc, group=groupName))
 
-    def __init__(self, theList):
-        self.theList = theList
-
-
-    # IEnumeration
-    def asPairs(self):
-        return self.theList
+    return Enum('', items)
 
 
 

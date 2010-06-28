@@ -15,31 +15,46 @@ class EnumerationAdapterTests(unittest.TestCase):
     """
     def test_list(self):
         """
-        Adapting a C{list} to L{IEnumeration} results in an identical list.
+        Adapting a C{list} to L{IEnumeration} results in an L{Enum} accurately
+        representing the list.
         """
         values = [
             (u'foo', u'Foo'),
             (u'bar', u'Bar')]
-        self.assertEquals(IEnumeration(values).asPairs(), values)
+        enum = IEnumeration(values)
+        self.assertEquals(enum.asPairs(), values)
+        for value, desc in values:
+            item = enum.get(value)
+            self.assertEquals(item.value, value)
+            self.assertEquals(item.desc, desc)
 
 
     def test_groupList(self):
         """
         Adapting a C{list} of nested C{list}s, as used by
-        L{methanal.view.GroupedSelectInput}, results in an identical list.
+        L{methanal.view.GroupedSelectInput}, results in an L{Enum} with
+        L{EnumItems} with a C{'group'} extra value the same as the first
+        element in each C{tuple}. L{IEnumeration.asPairs} returns a flat
+        C{list} for nested C{list}s adapted to L{IEnumeration}.
         """
         values = [
             (u'Group', [
                 (u'foo', u'Foo'),
                 (u'bar', u'Bar')]),
-            (u'Group', [
+            (u'Group 2', [
                 (u'quux', u'Quux'),
                 (u'frob', u'Frob')])]
 
-        pairs = IEnumeration(values).asPairs()
-        for i, (groupName, innerValues) in enumerate(pairs):
-            self.assertEquals(groupName, u'Group')
-            self.assertEquals(pairs[i][1], innerValues)
+        enum = IEnumeration(values)
+        for groupName, innerValues in values:
+            for value, desc in innerValues:
+                item = enum.get(value)
+                self.assertEquals(item.value, value)
+                self.assertEquals(item.desc, desc)
+                self.assertEquals(item.get('group'), groupName)
+
+        pairs = sum(zip(*values)[1], [])
+        self.assertEquals(enum.asPairs(), pairs)
 
 
     def test_notAdapted(self):
