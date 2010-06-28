@@ -10,6 +10,7 @@ def ListEnumeration(theList):
     """
     An L{IEnumeration} adapter for the C{list} type.
     """
+    # If this isn't a grouped input, turn it into one with one unnamed group.
     if (theList and
         len(theList[0]) > 1 and
         type(theList[0][1]) not in (tuple, list)):
@@ -53,11 +54,12 @@ class Enum(object):
         _order = self._order = []
         _values = self._values = {}
         for value in values:
-            if value.value in _values:
+            key = self._getValueMapping(value)
+            if key in _values:
                 raise ValueError(
-                    '%r is already a value in the enumeration' % (value.value,))
+                    '%r is already a value in the enumeration' % (key,))
             _order.append(value)
-            _values[value.value] = value
+            _values[key] = value
 
 
     def __iter__(self):
@@ -72,6 +74,13 @@ class Enum(object):
         return '<%s """%s""">' % (
             type(self).__name__,
             line)
+
+
+    def _getValueMapping(self, value):
+        """
+        Determine the key to use when constructing a mapping for C{value}.
+        """
+        return value.value
 
 
     @classmethod
@@ -158,6 +167,31 @@ class Enum(object):
 
     def asPairs(self):
         return [(i.value, i.desc)
+                for i in self
+                if not i.hidden]
+
+
+
+class ObjectEnum(Enum):
+    """
+    An enumeration for arbitrary Python objects.
+    """
+    def _getValueMapping(self, value):
+        key = unicode(id(value.value))
+        if value.get('id') is None:
+            value._extra['id'] = key
+        return key
+
+
+    def get(self, value):
+        value = unicode(id(value))
+        return super(ObjectEnum, self).get(value)
+
+
+    # IEnumeration
+
+    def asPairs(self):
+        return [(i.id, i.desc)
                 for i in self
                 if not i.hidden]
 

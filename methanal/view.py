@@ -17,6 +17,7 @@ from nevow.athena import expose
 from xmantissa.ixmantissa import IWebTranslator
 from xmantissa.webtheme import ThemedElement
 
+from methanal import errors
 from methanal.imethanal import IEnumeration
 from methanal.model import ItemModel, Model, paramFromAttribute
 from methanal.util import getArgsDict
@@ -722,7 +723,9 @@ class ChoiceInput(FormInput):
     Abstract input with multiple options.
 
     @type values: L{IEnumeration}
-    @ivar values: An enumeration to be used for choice options
+    @ivar values: An enumeration to be used for choice options. C{ChoiceInput}
+        will group enumeration values by their C{'group'} extra value, if one
+        exists.
     """
     def __init__(self, values, **kw):
         super(ChoiceInput, self).__init__(**kw)
@@ -740,7 +743,7 @@ class ChoiceInput(FormInput):
         """
         for enum in enums:
             o = pattern()
-            o.fillSlots('value', enum.value)
+            o.fillSlots('value', enum.get('id', enum.value))
             o.fillSlots('description', enum.desc)
             yield o
 
@@ -764,7 +767,60 @@ class ChoiceInput(FormInput):
                 yield options
 
 
+    def _invokeOne(self, value):
+        if value:
+            item = self.values.find(id=value)
+            if item is None:
+                item = self.values.get(value)
+                # We got tricked into fetching an enumeration item by value
+                # instead of id.
+                if item.get('id') is not None:
+                    raise errors.InvalidEnumItem(value)
+            value = item.value
+        return value
+
+
+    def invoke(self, data):
+        """
+        Set the model parameter's value from form data.
+        """
+        value = data[self.param.name]
+        self.param.value = self._invokeOne(value)
+
+
+    def _getOneValue(self, value):
+        if value is None:
+            return None
+        item = self.values.get(value)
+        return item.get('id', item.value)
+
+
+    def getValue(self):
+        """
+        Get the model parameter's value.
+        """
+        return self._getOneValue(self.param.value)
+
+
 registerAdapter(ListEnumeration, list, IEnumeration)
+
+
+
+class MultiChoiceInputMixin(object):
+    """
+    A mixin for supporting multiple values in a L{ChoiceInput}.
+    """
+    def invoke(self, data):
+        value = data[self.param.name]
+        if value is None:
+            value = []
+        self.param.value = map(self._invokeOne, value)
+
+
+    def getValue(self):
+        if self.param.value is None:
+            return []
+        return map(self._getOneValue, self.param.value)
 
 
 
@@ -789,6 +845,20 @@ class _ObjectChoiceMixinBase(object):
             objects[value] = obj
             objectIDs.append((value, desc))
         super(_ObjectChoiceMixinBase, self).__init__(values=objectIDs, **kw)
+
+
+    def invoke(self, data):
+        """
+        Set the model parameter's value from form data.
+        """
+        self.param.value = data[self.param.name]
+
+
+    def getValue(self):
+        """
+        Get the model parameter's value.
+        """
+        return self.param.value
 
 
     def encodeValue(self, value):
@@ -872,7 +942,7 @@ class ObjectRadioGroupInput(ObjectChoiceMixin, RadioGroupInput):
 
 
 
-class MultiCheckboxInput(ChoiceInput):
+class MultiCheckboxInput(MultiChoiceInputMixin, ChoiceInput):
     """
     Multiple-checkboxes input.
     """
@@ -900,6 +970,8 @@ class SelectInput(ChoiceInput):
 class ObjectSelectInput(ObjectChoiceMixin, SelectInput):
     """
     Variant of L{SelectInput} for arbitrary Python objects.
+
+    Deprecated. Use L{SelectInput} with L{methanal.enums.ObjectEnum}.
     """
 
 
@@ -913,7 +985,7 @@ IntegerSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 0))(
 
 
 
-class MultiSelectInput(ChoiceInput):
+class MultiSelectInput(MultiChoiceInputMixin, ChoiceInput):
     """
     Multiple-selection list box input.
     """
