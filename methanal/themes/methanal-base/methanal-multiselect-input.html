@@ -5,11 +5,7 @@
             <optgroup nevow:pattern="optgroup">
                 <nevow:attr name="label"><nevow:slot name="label" /></nevow:attr>
             </optgroup>
-
-            <option nevow:pattern="option">
-                <nevow:attr name="value"><nevow:slot name="value" /></nevow:attr>
-                <nevow:slot name="description" />
-            </option>
+            <option nevow:pattern="option"><nevow:attr name="value"><nevow:slot name="value" /></nevow:attr><nevow:slot name="description" /></option>
         </nevow:invisible>
     </select>
     <div class="methanal-multiselect-selection">

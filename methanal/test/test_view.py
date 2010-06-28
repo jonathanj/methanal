@@ -571,14 +571,15 @@ class ChoiceInputTests(ChoiceInputTestsMixin, FormInputTests):
         (TypeError, dict())]
 
 
-    def createControl(self, args):
+    def createControl(self, args, checkExpectedValues=True):
         """
         Create a L{methanal.view.ChoiceInput} from C{values}, assert that
         L{methanal.view.ChoiceInput.value} provides L{IEnumeration} and
         calling C{asPairs} results in the same values as C{values}.
         """
         control = super(ChoiceInputTests, self).createControl(args)
-        self.assertEquals(control.values.asPairs(), list(args.get('values')))
+        if checkExpectedValues:
+            self.assertEquals(control.values.asPairs(), list(args.get('values')))
         return control
 
 
@@ -602,6 +603,18 @@ class GroupedSelectInputTests(ChoiceInputTests):
     """
     controlType = view.GroupedSelectInput
 
+    def test_createDeprecated(self):
+        """
+        Passing values that are not adaptable to IEnumeration are converted
+        to a C{list}, adapted to L{IEnumeration} and a warning is emitted.
+        """
+        # Not a list.
+        values = tuple([
+            (u'foo', u'Foo'),
+            (u'bar', u'Bar')])
+        self.createControl(dict(values=values))
+        self.assertEquals(len(self.flushWarnings()), 2)
+
 
     def test_renderOptions(self):
         """
@@ -611,7 +624,8 @@ class GroupedSelectInputTests(ChoiceInputTests):
         values = [(u'Group', [(u'foo', u'Foo'),
                               (u'bar', u'Bar')])]
 
-        control = self.createControl(dict(values=values))
+        control = self.createControl(
+            dict(values=values), checkExpectedValues=False)
 
         def verifyRendering(tree):
             groupNodes = tree.findall('//select/optgroup')

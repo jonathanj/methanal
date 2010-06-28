@@ -1,3 +1,4 @@
+import itertools
 from warnings import warn
 
 from decimal import Decimal
@@ -733,17 +734,34 @@ class ChoiceInput(FormInput):
         self.values = _values
 
 
+    def _makeOptions(self, pattern, enums):
+        """
+        Create "option" elements, based on C{pattern}, from C{enums}.
+        """
+        for enum in enums:
+            o = pattern()
+            o.fillSlots('value', enum.value)
+            o.fillSlots('description', enum.desc)
+            yield o
+
+
     @renderer
     def options(self, req, tag):
         """
         Render all available options.
         """
-        option = tag.patternGenerator('option')
-        for value, description in self.values.asPairs():
-            o = option()
-            o.fillSlots('value', value)
-            o.fillSlots('description', description)
-            yield o
+        optionPattern = tag.patternGenerator('option')
+        groupPattern = tag.patternGenerator('optgroup')
+
+        groups = itertools.groupby(self.values, lambda e: e.get('group'))
+        for group, enums in groups:
+            options = self._makeOptions(optionPattern, enums)
+            if group is not None:
+                g = groupPattern()
+                g.fillSlots('label', group)
+                yield g[options]
+            else:
+                yield options
 
 
 registerAdapter(ListEnumeration, list, IEnumeration)
@@ -839,17 +857,10 @@ class RadioGroupInput(ChoiceInput):
     fragmentName = 'methanal-radio-input'
     jsClass = u'Methanal.View.RadioGroupInput'
 
-    @renderer
-    def options(self, req, tag):
-        """
-        Render all available options.
-        """
-        option = tag.patternGenerator('option')
-        for value, description in self.values.asPairs():
-            o = option()
+    def _makeOptions(self, pattern, enums):
+        options = super(RadioGroupInput, self)._makeOptions(pattern, enums)
+        for o in options:
             o.fillSlots('name', self.name)
-            o.fillSlots('value', value)
-            o.fillSlots('description', description)
             yield o
 
 
@@ -922,25 +933,17 @@ class GroupedSelectInput(SelectInput):
     """
     Dropdown input with grouped values.
 
+    DEPRECATED: Use L{methanal.view.SelectInput} with L{methanal.enums.Enum}
+    values with a C{'group'} extra value instead.
+
     Values should be structured as follows::
 
         (u'Group name', [(u'value', u'Description'),
                          ...]),
          ...)
     """
-    @renderer
-    def options(self, req, tag):
-        option = tag.patternGenerator('option')
-        optgroup = tag.patternGenerator('optgroup')
-
-        for groupName, values in self.values.asPairs():
-            g = optgroup().fillSlots('label', groupName)
-            for value, description in values:
-                o = option()
-                o.fillSlots('value', value)
-                o.fillSlots('description', description)
-                g[o]
-            yield g
+GroupedSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    GroupedSelectInput.__init__)
 
 
 
