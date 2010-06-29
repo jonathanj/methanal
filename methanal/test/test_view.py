@@ -734,6 +734,7 @@ class SelectInputTests(ChoiceInputTests):
             control.invoke, data)
 
 
+
 class MultiValueChoiceInputTestsMixin(object):
     """
     Tests mixin for L{methanal.view.ChoiceInput}s that support multiple values.
