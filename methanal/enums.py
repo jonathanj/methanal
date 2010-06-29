@@ -29,7 +29,7 @@ class Enum(object):
     """
     An enumeration.
 
-    L{Enum} objects implement the iteration protocol.
+    L{Enum} objects implement the iterator protocol.
 
     @ivar doc: A brief description of the enumeration's intent
 
@@ -63,7 +63,9 @@ class Enum(object):
 
 
     def __iter__(self):
-        return iter(self._order)
+        for item in self._order:
+            if not item.hidden:
+                yield item
 
 
     def __repr__(self):
@@ -166,15 +168,17 @@ class Enum(object):
     # IEnumeration
 
     def asPairs(self):
-        return [(i.value, i.desc)
-                for i in self
-                if not i.hidden]
+        return [(i.value, i.desc) for i in self]
 
 
 
 class ObjectEnum(Enum):
     """
     An enumeration for arbitrary Python objects.
+
+    Pass the Python object as the C{value} parameter to L{EnumItem}.
+    C{ObjectEnum} will automatically create an C{'id'} extra value for
+    L{EnumItem}s that do not already have such a value.
     """
     def _getValueMapping(self, value):
         key = unicode(id(value.value))
@@ -192,8 +196,7 @@ class ObjectEnum(Enum):
 
     def asPairs(self):
         return [(i.id, i.desc)
-                for i in self
-                if not i.hidden]
+                for i in self]
 
 
 

@@ -180,6 +180,24 @@ class _EnumTestsMixin(object):
                                                               bar=u'bar'))
 
 
+    def test_iterator(self):
+        """
+        L{Enum} implements the iterator protocol and will iterate over
+        L{EnumItem}s in the order originally specified, omitting L{EnumItem}s
+        that are marked as hidden.
+        """
+        items = [enums.EnumItem(u'foo', u'Foo'),
+                 enums.EnumItem(u'bar', u'Bar'),
+                 enums.EnumItem(u'baz', u'Baz', hidden=True)]
+        enum = enums.Enum('Doc', items)
+
+        # The hidden Enum is omitted.
+        self.assertEquals(len(list(enum)), 2)
+
+        for expected, item in zip(items, enum):
+            self.assertIdentical(expected, item)
+
+
 
 class EnumTests(_EnumTestsMixin, unittest.TestCase):
     """
