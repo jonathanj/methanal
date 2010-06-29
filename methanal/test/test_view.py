@@ -734,9 +734,9 @@ class SelectInputTests(ChoiceInputTests):
             control.invoke, data)
 
 
-class MultiValueChoiceInputMixin(object):
+class MultiValueChoiceInputTestsMixin(object):
     """
-    Mixin for L{methanal.view.ChoiceInput}s that support multiple values.
+    Tests mixin for L{methanal.view.ChoiceInput}s that support multiple values.
     """
     values = [
         (u'foo', u'Foo'),
@@ -869,7 +869,7 @@ class MultiValueChoiceInputMixin(object):
 
 
 
-class MultiSelectInputTests(ChoiceInputTests, MultiValueChoiceInputMixin):
+class MultiSelectInputTests(ChoiceInputTests, MultiValueChoiceInputTestsMixin):
     controlType = view.MultiSelectInput
 
 
@@ -1044,7 +1044,8 @@ class CheckboxInputTests(FormInputTests):
 
 
 
-class MultiCheckboxInputTests(ChoiceInputTests, MultiValueChoiceInputMixin):
+class MultiCheckboxInputTests(ChoiceInputTests,
+                              MultiValueChoiceInputTestsMixin):
     controlType = view.MultiCheckboxInput
 
 
