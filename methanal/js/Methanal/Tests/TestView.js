@@ -20,16 +20,7 @@ Methanal.View.LiveForm.subclass(
         Methanal.Tests.TestView.MockLiveForm.upcall(
             self, '__init__', node, viewOnly, controlNames);
 
-        var makeWidgetChildNode = Methanal.Tests.Util.makeWidgetChildNode;
-        makeWidgetChildNode(self, 'span', 'form-error');
-
-        var actions = Methanal.View.ActionContainer(
-            Nevow.Test.WidgetUtil.makeWidgetNode(), {'actionIDs': {}});
-        makeWidgetChildNode(actions, 'img', 'throbber');
-
-        self.addChildWidget(actions);
-        self.node.appendChild(actions.node);
-        document.body.appendChild(node);
+        Methanal.Tests.Util.setUpForm(self);
     });
 
 
