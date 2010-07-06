@@ -290,6 +290,51 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertArraysEqual(
             Methanal.Util.divmod(23, 12),
             [1, 11]);
+    },
+
+
+    /**
+     * L{Methanal.Util.nthItem} applies a function to the nth item in an
+     * C{Array}.
+     */
+    function test_nthItem(self) {
+        var seq = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        function gatherNth(start, n) {
+            var res = []
+            Methanal.Util.nthItem(seq, start, n, function (v) {
+                res.push(v);
+            });
+            return res;
+        }
+
+        self.assertArraysEqual(
+            gatherNth(-1, 3),
+            [3, 2, 1]);
+
+        self.assertArraysEqual(
+            gatherNth(1, 0),
+            seq);
+
+        self.assertArraysEqual(
+            gatherNth(2, 0),
+            [2, 4, 6, 8, 10]);
+
+        self.assertArraysEqual(
+            gatherNth(2, 1),
+            [1, 3, 5, 7, 9]);
+
+        self.assertArraysEqual(
+            gatherNth(3, 3),
+            [3, 6, 9]);
+
+        self.assertArraysEqual(
+            gatherNth(100, 0),
+            []);
+
+        self.assertArraysEqual(
+            gatherNth(100, 1),
+            [1]);
     });
 
 

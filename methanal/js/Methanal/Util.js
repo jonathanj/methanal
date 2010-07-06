@@ -894,3 +894,43 @@ Methanal.Util.DOMBuilder = function DOMBuilder(doc) {
         return node;
     };
 };
+
+
+
+/**
+ * Apply a function over every nth item in a sequence.
+ *
+ * Selection is made by evaluating C{an + b}, where C{n} is each index in
+ * C{seq}. For example, every odd (first, third, fifth, etc.) item can be
+ * selected with C{a=2} and C{b=1}, and every even (second, fourth, sixth,
+ * etc.) item can be selected with C{a=2} and C{b=0}.
+ *
+ * This function is intended to match the CSS3 C{:nth-child()} pseudo-selector,
+ * and as such treats the values C{a} and C{b} as 1-based values. It can be
+ * less confusing to think about the indices as the first, second, etc. as
+ * opposed to the element at index 0, 1, etc.
+ *
+ * @type  seq: C{Array}
+ * @param seq: Sequence from which to select elements from.
+ *
+ * @type  a: C{Number}
+ * @param a: Integer value, effectively used to divide C{seq} into groups of
+ *     C{a} elements.
+ *
+ * @type  b: C{Number}
+ * @param b: Integer value, effectived used to select the C{bth} value in each
+ *     group of C{a} elements.
+ *
+ * @type  fn: C{function} taking 1 argument
+ * @param fn: Function to apply to every nth item in C{seq}.
+ *
+ * @see: U{http://www.w3.org/TR/css3-selectors/#nth-child-pseudo}
+ */
+Methanal.Util.nthItem = function nthItem(seq, a, b, fn) {
+    for (var n = 0; n <= seq.length; ++n) {
+        var index = (a * n + b) - 1;
+        if (index >= 0 && index < seq.length) {
+            fn(seq[index]);
+        }
+    }
+};

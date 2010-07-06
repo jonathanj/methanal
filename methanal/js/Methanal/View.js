@@ -402,6 +402,19 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         self.controlsLoaded = true;
         self._finishLoading();
+        self.stripeControls();
+    },
+
+
+    /**
+     * Perform control striping.
+     */
+    function stripeControls(self) {
+        Methanal.Util.nthItem(self._controlNamesOrdered, 2, 0,
+            function (controlName) {
+                var node = self.getControl(controlName).widgetParent.node;
+                Methanal.Util.addElementClass(node, 'methanal-control-even');
+            });
     },
 
 
