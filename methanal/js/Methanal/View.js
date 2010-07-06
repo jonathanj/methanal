@@ -421,7 +421,6 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         for (var name in self._depCache._inputToHandlers) {
             var node = self.getControl(name).widgetParent.node;
             Methanal.Util.addElementClass(node, 'dependancy-parent');
-            node.title = 'Other fields depend on this field';
         }
         self.refresh();
     },
