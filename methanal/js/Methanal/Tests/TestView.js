@@ -43,7 +43,7 @@ Methanal.Tests.Util.TestCase.subclass(
      * Create a C{Methanal.View.LiveForm}.
      */
     function createForm(self, viewOnly) {
-        var controlNames = {};
+        var controlNames = [];
         form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
         Methanal.Util.nodeInserted(form);
         return form;
@@ -169,9 +169,9 @@ Methanal.Tests.Util.TestCase.subclass(
     function testControls(self, controls, testingFunc) {
         var map = Methanal.Util.map;
 
-        var controlNames = {};
+        var controlNames = [];
         map(function (control) {
-            controlNames[control.name] = 1;
+            controlNames.push(control.name);
         }, controls);
 
         var form = Methanal.Tests.TestView.MockLiveForm(controlNames);

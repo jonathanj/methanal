@@ -172,8 +172,8 @@ class SimpleForm(ThemedElement):
 
 
     def getInitialArguments(self):
-        keys = (c.name for c in self.getAllControls())
-        return [dict.fromkeys(keys, 1)]
+        keys = [c.name for c in self.getAllControls()]
+        return [keys]
 
 
     def getAllControls(self):

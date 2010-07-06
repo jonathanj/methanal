@@ -751,7 +751,11 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function __init__(self, node, viewOnly, controlNames) {
         Methanal.View.LiveForm.upcall(self, '__init__', node);
         self.viewOnly = viewOnly;
-        self.controlNames = controlNames;
+        if (!(controlNames instanceof Array)) {
+            throw new Error('"controlNames" must be an Array of control names');
+        }
+        self.controlNames = Methanal.Util.arrayToMapping(controlNames);
+        self._controlNamesOrdered = controlNames;
         self.formInit();
     },
 
@@ -1103,6 +1107,10 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'GroupInput').methods(
         self.name = name;
         self.setValid();
         self.controlNames = controlNames;
+        self._controlNamesOrdered = [];
+        for (var key in self.controlNames) {
+            self._controlNamesOrdered.push(key);
+        }
     },
 
 

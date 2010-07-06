@@ -441,6 +441,30 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
 
 
 /**
+ * Transform an array of strings into a mapping.
+ *
+ * This has the effect of creating a collection of unique C{String} elements,
+ * like a set. For a more complete set implementation consider using
+ * L{Methanal.Util.StringSet}.
+ *
+ * @type  seq: C{Array} of C{String}
+ * @param seq: Strings to initialise the set with.
+ *
+ * @rtype: C{object} mapping C{String} to C{Boolean}
+ */
+Methanal.Util.arrayToMapping = function arrayToMapping(seq) {
+    var s = {};
+    if (seq) {
+        for (var i = 0; i < seq.length; ++i) {
+            s[seq[i]] = true;
+        }
+    }
+    return s;
+};
+
+
+
+/**
  * An unordered collection of unique C{String} elements.
  */
 Divmod.Class.subclass(Methanal.Util, 'StringSet').methods(
@@ -451,13 +475,7 @@ Divmod.Class.subclass(Methanal.Util, 'StringSet').methods(
      * @param seq: Strings to initialise the set with
      */
     function __init__(self, seq) {
-        var s = {};
-        if (seq) {
-            for (var i = 0; i < seq.length; ++i) {
-                s[seq[i]] = true;
-            }
-        }
-        self._set = s;
+        self._set = Methanal.Util.arrayToMapping(seq);
     },
 
 
