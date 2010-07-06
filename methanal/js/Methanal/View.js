@@ -946,6 +946,29 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
 /**
+ * Set a widget as active.
+ *
+ * The widget's visibility is determined by whether it is active or not,
+ * inactive widgets are not visible and their values are not used in form
+ * submission.
+ *
+ * @type active: C{boolean}
+ */
+Methanal.View._setActive = function _setActive(widget, active) {
+    widget.active = active;
+    if (active) {
+        Methanal.Util.removeElementClass(widget.node, 'hidden');
+    } else {
+        Methanal.Util.addElementClass(widget.node, 'hidden');
+    }
+    if (widget.widgetParent.checkActive) {
+        widget.widgetParent.checkActive();
+    }
+};
+
+
+
+/**
  * A generic container for form inputs.
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
@@ -1010,12 +1033,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
      * @type active: C{boolean}
      */
     function setActive(self, active) {
-        self.active = active;
-        self.node.style.display = active ? 'block' : 'none';
-        Methanal.Util.addElementClass(self.node, 'dependancy-child');
-        if (self.widgetParent.checkActive) {
-            self.widgetParent.checkActive();
-        }
+        Methanal.View._setActive(self, active);
     },
 
 
@@ -1056,6 +1074,12 @@ Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow').methods(
     function clearError(self) {
         Methanal.View.FormRow.upcall(self, 'clearError');
         Methanal.Util.replaceNodeText(self._errorTextNode, '');
+    },
+
+
+    function setActive(self, active) {
+        Methanal.View.FormRow.upcall(self, 'setActive', active);
+        Methanal.Util.addElementClass(self.node, 'dependancy-child');
     });
 
 
@@ -1294,9 +1318,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      * @type active: C{boolean}
      */
     function setActive(self, active) {
-        self.active = active;
-        self.node.style.display = active ? 'block' : 'none';
-        self.widgetParent.checkActive();
+        Methanal.View._setActive(self, active);
         self.getForm().validate(self);
     },
 
