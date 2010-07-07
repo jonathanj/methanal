@@ -335,6 +335,38 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertArraysEqual(
             gatherNth(100, 1),
             [1]);
+    },
+
+
+    /**
+     * L{Methanal.Util.filter} gathers only those elements from a sequence for
+     * which the predicate is true. A predicate of C{null} will filter values
+     * whose truth value is false, e.g. C{0}, C{''} etc.  A predicate of
+     * C{undefined} will filter values that are C{null} or C{undefined}.
+     * Otherwise the predicate must be a function.
+     */
+    function test_filter(self) {
+        var filter = Methanal.Util.filter;
+        var seq = [0, undefined, 1, null, 2, '', 3];
+
+        function isOdd(x) {
+            return x % 2 !== 0;
+        };
+
+        self.assertArraysEqual(
+            filter(null, seq),
+            [1, 2, 3]);
+
+        self.assertArraysEqual(
+            filter(undefined, seq),
+            [0, 1, 2, '', 3]);
+
+        self.assertArraysEqual(
+            filter(isOdd, filter(null, seq)),
+            [1, 3]);
+
+        self.assertThrows(Error,
+            function () { filter('hello', seq); });
     });
 
 

@@ -365,6 +365,8 @@ Methanal.Util.rjust = function rjust(s, width, padding/*= " "*/) {
 
 /**
  * Apply C{f} over each value in C{seq} and gather the results.
+ *
+ * @rtype: C{Array}
  */
 Methanal.Util.map = function map(f, seq) {
     if (typeof f !== 'function') {
@@ -373,6 +375,39 @@ Methanal.Util.map = function map(f, seq) {
     var results = [];
     for (var i = 0; i < seq.length; ++i) {
         results.push(f(seq[i]));
+    }
+    return results;
+};
+
+
+
+/**
+ * Gather elements from C{seq} for which C{pred(seq[index])} is C{true}.
+ *
+ * There are two special cases for C{pred}:
+ *
+ *   1. C{null} means filter out things that are not a true value (like
+ *      filter(None, seq) in Python), e.g. C{null}, C{undefined}, C{''}, C{0},
+ *      etc.
+ *
+ *   2. C{undefined} means filter out things that are C{null} or C{undefined}.
+ *
+ * @rtype: C{Array}
+ */
+Methanal.Util.filter = function filter(pred, seq) {
+    if (pred === null) {
+        pred = function (x) { return !!x; }
+    } else if (pred === undefined) {
+        pred = function (x) { return x !== null && x !== undefined; }
+    } else if (typeof pred !== 'function') {
+        throw new Error('"pred" must be a function or null');
+    }
+    var results = [];
+    for (var i = 0; i < seq.length; ++i) {
+        var x = seq[i];
+        if (pred(x)) {
+            results.push(x);
+        }
     }
     return results;
 };
