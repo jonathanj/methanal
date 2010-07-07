@@ -557,3 +557,16 @@ button.roll-up {
 .hidden {
     display: none !important;
 }
+
+.dependancy-parent {
+    border-left: 3px solid #6094a4;
+    margin-left: -3px;
+    background-image: url("/static/Methanal/images/icons/dependency_parent.gif");
+    background-repeat: no-repeat;
+    background-position: left center;
+}
+
+.dependancy-child {
+    border-left: 3px solid #9fc4cf;
+    margin-left: -3px;
+}
