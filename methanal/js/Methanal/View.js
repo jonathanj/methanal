@@ -96,7 +96,9 @@ Divmod.Error.subclass(Methanal.View, 'MissingControlError').methods(
  *
  * @type update: C{function} taking C{String}, C{Array}
  * @ivar update: Called for each output control name with a sequence of values
- *     from handler functions
+ *     from handler functions, which can optionally return a C{boolean}
+ *     indicating whether anything changed in an update, which is then returned
+ *     from L{changed}.
  */
 Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
     function __init__(self, getData, update) {
@@ -117,6 +119,7 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      *     relevant
      */
     function _updateOutputs(self, outputs) {
+        var updated = false;
         for (var output in outputs) {
             var results = [];
             for (var handlerID in self._outputToHandlers[output]) {
@@ -124,9 +127,10 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
                 results.push(handler.value);
             }
             if (results.length > 0) {
-                self.update(output, results);
+                updated |= self.update(output, results);
             }
         }
+        return updated;
     },
 
 
@@ -198,6 +202,9 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      *
      * @type  input: C{String}
      * @param input: Input control name
+     *
+     * @rtype:  C{boolean}
+     * @return: Did any changes in the outputs occur during the updates?
      */
     function changed(self, input) {
         var handlers = self._inputToHandlers[input];
@@ -210,7 +217,7 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
             }
         }
 
-        self._updateOutputs(outputs);
+        return self._updateOutputs(outputs);
     });
 
 
@@ -288,8 +295,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         var control = self.getControl(name);
         result = Methanal.Util.reduce(_and, values, true);
         self.freeze();
+        var changed = result !== control.active;
         control.setActive(result);
         self.thaw();
+        return changed;
     },
 
 
@@ -311,11 +320,11 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         self._validatorCache = Methanal.View._HandlerCache(
             getData,
-            function (name, values) { self._validatorUpdate(name, values); });
+            function (name, values) { return self._validatorUpdate(name, values); });
 
         self._depCache = Methanal.View._HandlerCache(
             getData,
-            function (name, values) { self._depUpdate(name, values); });
+            function (name, values) { return self._depUpdate(name, values); });
 
         self.controlsLoaded = false;
         self.fullyLoaded = false;
