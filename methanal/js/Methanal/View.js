@@ -258,6 +258,9 @@ Divmod.Error.subclass(Methanal.View, 'UnexpectedControl');
  * @type fullyLoaded: C{boolean}
  * @ivar fullyLoaded: Have all the form inputs reported that they're finished
  *     loading?
+ *
+ * @type enableControlStriping: C{boolean}
+ * @ivar enableControlStriping: Perform visual striping of active form controls?
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
     /**
@@ -411,7 +414,18 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         self.controlsLoaded = true;
         self._finishLoading();
-        self.stripeControls();
+    },
+
+
+    /**
+     * Perform control striping.
+     *
+     * If L{enableControlStriping} is C{false}, striping is not performed.
+     */
+    function _stripeControls(self) {
+        if (self.enableControlStriping) {
+            self.stripeControls();
+        }
     },
 
 
@@ -419,7 +433,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * Perform control striping.
      */
     function stripeControls(self) {
-        Methanal.Util.nthItem(self._controlNamesOrdered, 2, 0,
+        var activeControlNames = Methanal.Util.filter(function (name) {
+            var control = self.getControl(name);
+            Methanal.Util.removeElementClass(
+                control.widgetParent.node, 'methanal-control-even');
+            return control.active;
+        }, self._controlNamesOrdered);
+
+        Methanal.Util.nthItem(activeControlNames, 2, 0,
             function (controlName) {
                 var node = self.getControl(controlName).widgetParent.node;
                 Methanal.Util.addElementClass(node, 'methanal-control-even');
@@ -446,6 +467,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             node.title = 'Other fields depend on this field';
         }
         self.refresh();
+        self._stripeControls();
     },
 
 
@@ -526,8 +548,11 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * An event that is called when a form input's value is changed.
      */
     function valueChanged(self, control) {
-        self._depCache.changed(control.name);
+        var depsChanged = self._depCache.changed(control.name);
         self.validate(control);
+        if (depsChanged) {
+            self._stripeControls();
+        }
     },
 
 
@@ -771,6 +796,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function __init__(self, node, viewOnly, controlNames) {
+        self.enableControlStriping = true;
         Methanal.View.LiveForm.upcall(self, '__init__', node);
         self.viewOnly = viewOnly;
         if (!(controlNames instanceof Array)) {
