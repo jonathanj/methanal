@@ -514,13 +514,15 @@ class TextInput(FormInput):
     jsClass = u'Methanal.View.TextInput'
 
 
-    def __init__(self, embeddedLabel=False, **kw):
+    def __init__(self, embeddedLabel=False, stripWhitespace=True, **kw):
         super(TextInput, self).__init__(**kw)
         self.embeddedLabel = embeddedLabel
+        self.stripWhitespace = stripWhitespace
 
 
     def getArgs(self):
-        return {u'embeddedLabel': self.embeddedLabel}
+        return {u'embeddedLabel':   self.embeddedLabel,
+                u'stripWhitespace': self.stripWhitespace}
 
 
 
@@ -703,6 +705,7 @@ class VerifiedPasswordInput(TextInput):
 
 
     def __init__(self, minPasswordLength=None, strengthCriteria=None, **kw):
+        kw.setdefault('stripWhitespace', False)
         super(VerifiedPasswordInput, self).__init__(**kw)
         self.minPasswordLength = minPasswordLength
         if strengthCriteria is None:

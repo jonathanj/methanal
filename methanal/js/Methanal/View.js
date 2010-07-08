@@ -1457,6 +1457,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
     function __init__(self, node, args) {
         Methanal.View.TextInput.upcall(self, '__init__', node, args);
         self.embeddedLabel = args.embeddedLabel;
+        self.stripWhitespace = args.stripWhitespace;
         self._tooltipNode = null;
         self._useDisplayValue = false;
     },
@@ -1587,7 +1588,11 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
         if (self._labelled) {
             return '';
         }
-        return Methanal.View.TextInput.upcall(self, 'getValue');
+        var value = Methanal.View.TextInput.upcall(self, 'getValue');
+        if (value && self.stripWhitespace) {
+            value = Methanal.Util.trim(value);
+        }
+        return value;
     },
 
 

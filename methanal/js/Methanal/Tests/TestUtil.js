@@ -367,6 +367,35 @@ Methanal.Tests.Util.TestCase.subclass(
 
         self.assertThrows(Error,
             function () { filter('hello', seq); });
+    },
+
+
+    /**
+     * L{Methanal.Util.trimLeft} trims leading whitespace,
+     * L{Methanal.Util.trimRight} trims trailing whitespace and
+     * L{Methanal.Util.trim} trims trailing and leading whitespace.
+     */
+    function test_trim(self) {
+        var s = '  foo bar baz ';
+        var t = 'foo';
+
+        self.assertIdentical(
+            Methanal.Util.trimLeft(s),
+            'foo bar baz ');
+        self.assertIdentical(
+            Methanal.Util.trimLeft(t), t);
+
+        self.assertIdentical(
+            Methanal.Util.trimRight(s),
+            '  foo bar baz');
+        self.assertIdentical(
+            Methanal.Util.trimRight(t), t);
+
+        self.assertIdentical(
+            Methanal.Util.trim(s),
+            'foo bar baz');
+        self.assertIdentical(
+            Methanal.Util.trim(t), t);
     });
 
 

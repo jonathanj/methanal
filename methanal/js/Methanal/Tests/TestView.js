@@ -507,6 +507,9 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
 
                 control.setValue('hello');
                 self.assertIdentical(control.getValue(), 'hello');
+
+                control.setValue('  hello ');
+                self.assertIdentical(control.getValue(), '  hello ');
             });
     },
 
@@ -576,6 +579,24 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertIdentical(called, 1);
                 control.onKeyUp(control.inputNode);
                 self.assertIdentical(called, 2);
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.TextInput.getValue} strips whitespace when
+     * L{Methanal.View.TextInput.stripWhitespace} is C{true}.
+     */
+    function test_getValueStripped(self) {
+        self.testControl({value: null},
+            function (control) {
+                control.stripWhitespace = true;
+
+                control.setValue(' foo bar baz ');
+                self.assertIdentical(control.getValue(), 'foo bar baz');
+
+                control.setValue('foo');
+                self.assertIdentical(control.getValue(), 'foo');
             });
     });
 
