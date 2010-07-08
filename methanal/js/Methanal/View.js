@@ -96,7 +96,9 @@ Divmod.Error.subclass(Methanal.View, 'MissingControlError').methods(
  *
  * @type update: C{function} taking C{String}, C{Array}
  * @ivar update: Called for each output control name with a sequence of values
- *     from handler functions
+ *     from handler functions, which can optionally return a C{boolean}
+ *     indicating whether anything changed in an update, which is then returned
+ *     from L{changed}.
  */
 Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
     function __init__(self, getData, update) {
@@ -117,6 +119,7 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      *     relevant
      */
     function _updateOutputs(self, outputs) {
+        var updated = false;
         for (var output in outputs) {
             var results = [];
             for (var handlerID in self._outputToHandlers[output]) {
@@ -124,9 +127,10 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
                 results.push(handler.value);
             }
             if (results.length > 0) {
-                self.update(output, results);
+                updated |= self.update(output, results);
             }
         }
+        return updated;
     },
 
 
@@ -198,6 +202,9 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      *
      * @type  input: C{String}
      * @param input: Input control name
+     *
+     * @rtype:  C{boolean}
+     * @return: Did any changes in the outputs occur during the updates?
      */
     function changed(self, input) {
         var handlers = self._inputToHandlers[input];
@@ -210,7 +217,7 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
             }
         }
 
-        self._updateOutputs(outputs);
+        return self._updateOutputs(outputs);
     });
 
 
@@ -251,6 +258,9 @@ Divmod.Error.subclass(Methanal.View, 'UnexpectedControl');
  * @type fullyLoaded: C{boolean}
  * @ivar fullyLoaded: Have all the form inputs reported that they're finished
  *     loading?
+ *
+ * @type enableControlStriping: C{boolean}
+ * @ivar enableControlStriping: Perform visual striping of active form controls?
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
     /**
@@ -288,8 +298,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         var control = self.getControl(name);
         result = Methanal.Util.reduce(_and, values, true);
         self.freeze();
+        var changed = result !== control.active;
         control.setActive(result);
         self.thaw();
+        return changed;
     },
 
 
@@ -311,11 +323,11 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         self._validatorCache = Methanal.View._HandlerCache(
             getData,
-            function (name, values) { self._validatorUpdate(name, values); });
+            function (name, values) { return self._validatorUpdate(name, values); });
 
         self._depCache = Methanal.View._HandlerCache(
             getData,
-            function (name, values) { self._depUpdate(name, values); });
+            function (name, values) { return self._depUpdate(name, values); });
 
         self.controlsLoaded = false;
         self.fullyLoaded = false;
@@ -406,6 +418,37 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
+     * Perform control striping.
+     *
+     * If L{enableControlStriping} is C{false}, striping is not performed.
+     */
+    function _stripeControls(self) {
+        if (self.enableControlStriping) {
+            self.stripeControls();
+        }
+    },
+
+
+    /**
+     * Perform control striping.
+     */
+    function stripeControls(self) {
+        var activeControlNames = Methanal.Util.filter(function (name) {
+            var control = self.getControl(name);
+            Methanal.Util.removeElementClass(
+                control.widgetParent.node, 'methanal-control-even');
+            return control.active;
+        }, self._controlNamesOrdered);
+
+        Methanal.Util.nthItem(activeControlNames, 2, 0,
+            function (controlName) {
+                var node = self.getControl(controlName).widgetParent.node;
+                Methanal.Util.addElementClass(node, 'methanal-control-even');
+            });
+    },
+
+
+    /**
      * Perform final form initialisation tasks.
      *
      * Once all controls in L{controlNames} have reported in and L{setActions}
@@ -423,6 +466,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             Methanal.Util.addElementClass(node, 'dependancy-parent');
         }
         self.refresh();
+        self._stripeControls();
     },
 
 
@@ -503,8 +547,11 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * An event that is called when a form input's value is changed.
      */
     function valueChanged(self, control) {
-        self._depCache.changed(control.name);
+        var depsChanged = self._depCache.changed(control.name);
         self.validate(control);
+        if (depsChanged) {
+            self._stripeControls();
+        }
     },
 
 
@@ -748,9 +795,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function __init__(self, node, viewOnly, controlNames) {
+        self.enableControlStriping = true;
         Methanal.View.LiveForm.upcall(self, '__init__', node);
         self.viewOnly = viewOnly;
-        self.controlNames = controlNames;
+        if (!(controlNames instanceof Array)) {
+            throw new Error('"controlNames" must be an Array of control names');
+        }
+        self.controlNames = Methanal.Util.arrayToMapping(controlNames);
+        self._controlNamesOrdered = controlNames;
         self.formInit();
     },
 
@@ -1126,6 +1178,10 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'GroupInput').methods(
         self.name = name;
         self.setValid();
         self.controlNames = controlNames;
+        self._controlNamesOrdered = [];
+        for (var key in self.controlNames) {
+            self._controlNamesOrdered.push(key);
+        }
     },
 
 

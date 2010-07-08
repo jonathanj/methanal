@@ -290,6 +290,83 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertArraysEqual(
             Methanal.Util.divmod(23, 12),
             [1, 11]);
+    },
+
+
+    /**
+     * L{Methanal.Util.nthItem} applies a function to the nth item in an
+     * C{Array}.
+     */
+    function test_nthItem(self) {
+        var seq = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+        function gatherNth(start, n) {
+            var res = []
+            Methanal.Util.nthItem(seq, start, n, function (v) {
+                res.push(v);
+            });
+            return res;
+        }
+
+        self.assertArraysEqual(
+            gatherNth(-1, 3),
+            [3, 2, 1]);
+
+        self.assertArraysEqual(
+            gatherNth(1, 0),
+            seq);
+
+        self.assertArraysEqual(
+            gatherNth(2, 0),
+            [2, 4, 6, 8, 10]);
+
+        self.assertArraysEqual(
+            gatherNth(2, 1),
+            [1, 3, 5, 7, 9]);
+
+        self.assertArraysEqual(
+            gatherNth(3, 3),
+            [3, 6, 9]);
+
+        self.assertArraysEqual(
+            gatherNth(100, 0),
+            []);
+
+        self.assertArraysEqual(
+            gatherNth(100, 1),
+            [1]);
+    },
+
+
+    /**
+     * L{Methanal.Util.filter} gathers only those elements from a sequence for
+     * which the predicate is true. A predicate of C{null} will filter values
+     * whose truth value is false, e.g. C{0}, C{''} etc.  A predicate of
+     * C{undefined} will filter values that are C{null} or C{undefined}.
+     * Otherwise the predicate must be a function.
+     */
+    function test_filter(self) {
+        var filter = Methanal.Util.filter;
+        var seq = [0, undefined, 1, null, 2, '', 3];
+
+        function isOdd(x) {
+            return x % 2 !== 0;
+        };
+
+        self.assertArraysEqual(
+            filter(null, seq),
+            [1, 2, 3]);
+
+        self.assertArraysEqual(
+            filter(undefined, seq),
+            [0, 1, 2, '', 3]);
+
+        self.assertArraysEqual(
+            filter(isOdd, filter(null, seq)),
+            [1, 3]);
+
+        self.assertThrows(Error,
+            function () { filter('hello', seq); });
     });
 
 

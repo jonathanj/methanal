@@ -15,8 +15,12 @@
     float: left;
 }
 
-.methanal-control-odd {
-    background-color: #ddd;
+.methanal-form-group .methanal-control-even {
+    background-color: #d3d3ea;
+}
+
+.methanal-control-even {
+    background-color: #f0f0fc;
 }
 
 .methanal-control-error {
