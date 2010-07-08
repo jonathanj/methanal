@@ -400,7 +400,7 @@ Methanal.Util.filter = function filter(pred, seq) {
     } else if (pred === undefined) {
         pred = function (x) { return x !== null && x !== undefined; }
     } else if (typeof pred !== 'function') {
-        throw new Error('"pred" must be a function or null');
+        throw new Error('"pred" must be a function, null or undefined');
     }
     var results = [];
     for (var i = 0; i < seq.length; ++i) {
