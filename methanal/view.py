@@ -509,6 +509,14 @@ class TextAreaInput(FormInput):
 class TextInput(FormInput):
     """
     Text input.
+
+    @type embeddedLabel: C{bool}
+    @ivar embeddedLabel: Place a label in the text input control when the
+        input is empty?
+
+    @type stripWhitespace: C{bool}
+    @ivar stripWhitespace: Strip trailing and leading whitespace from user
+        input?
     """
     fragmentName = 'methanal-text-input'
     jsClass = u'Methanal.View.TextInput'
