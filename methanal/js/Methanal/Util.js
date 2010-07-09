@@ -969,3 +969,36 @@ Methanal.Util.nthItem = function nthItem(seq, a, b, fn) {
         }
     }
 };
+
+
+
+/**
+ * Trim leading whitespace from a string.
+ */
+Methanal.Util.trimLeft = function trimLeft(s) {
+    while (s.length && s.charAt(0) === ' ') {
+        s = s.substring(1);
+    }
+    return s;
+};
+
+
+
+/**
+ * Trim trailing whitespace from a string.
+ */
+Methanal.Util.trimRight = function trimRight(s) {
+    while (s.length && s.charAt(s.length - 1) === ' ') {
+        s = s.substring(0, s.length - 1);
+    }
+    return s;
+};
+
+
+
+/**
+ * Trim trailing and leading whitespace from a string.
+ */
+Methanal.Util.trim = function trim(s) {
+    return Methanal.Util.trimLeft(Methanal.Util.trimRight(s));
+};
