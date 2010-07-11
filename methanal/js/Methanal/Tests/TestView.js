@@ -35,6 +35,40 @@ Methanal.View.LiveForm.subclass(
 
 
 /**
+ * Create a control container.
+ *
+ * @type  widgetParent: C{Nevow.Athena.Widget}
+ * @param widgetParent: Container parent widget.
+ *
+ * @param containerType: Container type constructor.
+ *
+ * @type  children: C{Array} of C{Nevow.Athena.Widget}
+ * @param children: Controls to add as children of the container.
+ *
+ * @return: A control container of type C{containerType} with C{children} as
+ *     child controls.
+ */
+Methanal.Tests.TestView.createContainer = function createContainer(
+    widgetParent, containerType, children) {
+    var container = containerType(
+        Nevow.Test.WidgetUtil.makeWidgetNode());
+    Methanal.Tests.Util.makeWidgetChildNode(
+        container, 'span', 'error-text');
+
+    for (var i = 0; i < children.length; ++i) {
+        var child = children[i];
+        container.addChildWidget(child);
+        container.node.appendChild(child.node);
+    }
+
+    widgetParent.addChildWidget(container);
+
+    return container;
+};
+
+
+
+/**
  * Tests for L{Methanal.View.LiveForm}.
  */
 Methanal.Tests.Util.TestCase.subclass(
@@ -143,15 +177,11 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create the control container.
      */
-    function createContainer(self, child) {
-        var row = Methanal.View.FormRow(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
-        Methanal.Tests.Util.makeWidgetChildNode(row, 'span', 'error-text')
-
-        row.addChildWidget(child);
-        row.node.appendChild(child.node);
-
-        return row;
+    function createContainer(self, widgetParent, child) {
+        return Methanal.Tests.TestView.createContainer(
+            widgetParent,
+            Methanal.View.FormRow,
+            [child]);
     },
 
 
@@ -177,8 +207,7 @@ Methanal.Tests.Util.TestCase.subclass(
         var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
         var containers = [];
         map(function (control) {
-            var container = self.createContainer(control);
-            form.addChildWidget(container);
+            var container = self.createContainer(form, control);
             document.body.appendChild(container.node);
             containers.push(container);
         }, controls);
@@ -1187,17 +1216,14 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     /**
      * Specially designed to accept multiple children.
      */
-    function createContainer(self, children) {
-        var group = Methanal.View.InputContainer(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
+    function createContainer(self, widgetParent, children) {
+        var containedChildren = Methanal.Util.map(function (child) {
+            return Methanal.Tests.TestView.TestFormGroup.upcall(
+                self, 'createContainer', widgetParent, child);
+        }, children);
 
-        for (var i = 0; i < children.length; ++i) {
-            var row = Methanal.Tests.TestView.TestFormGroup.upcall(
-                self, 'createContainer', children[i]);
-            group.addChildWidget(row);
-            group.node.appendChild(row.node);
-        }
-        return group;
+        return Methanal.Tests.TestView.createContainer(
+            widgetParent, Methanal.View.InputContainer, containedChildren);
     },
 
 
