@@ -698,7 +698,7 @@ Methanal.Tests.Util.TestCase.subclass(
      * Create a L{Methanal.Widgets.ModalDialogForm}.
      */
     function createDialogForm(self) {
-        var controlNames = {};
+        var controlNames = [];
         form = Methanal.Tests.TestWidgets.MockModalDialogForm(controlNames);
         Methanal.Util.nodeInserted(form);
         return form
