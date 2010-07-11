@@ -52,7 +52,12 @@ Divmod.Class.subclass(Methanal.View, '_Handler').methods(
     function update(self) {
         var values = [];
         for (var j = 0; j < self.inputs.length; ++j) {
-            var value = self.cache.getData(self.inputs[j]);
+            var name = self.inputs[j];
+            if (!self.cache.isActive(name)) {
+                self.value = self.cache.failureValue;
+                return;
+            }
+            var value = self.cache.getData(name);
             values.push(value);
         }
         self.value = self.fn.apply(null, values);
@@ -99,11 +104,20 @@ Divmod.Error.subclass(Methanal.View, 'MissingControlError').methods(
  *     from handler functions, which can optionally return a C{boolean}
  *     indicating whether anything changed in an update, which is then returned
  *     from L{changed}.
+ *
+ * @type isActive: C{function} taking C{String}
+ * @ivar isActive: Function used for determining whether a control, specified
+ *     by name, is active.
+ *
+ * @ivar failureValue: Value to use for L{_Handler.value} when an inactive
+ *     control is encountered during an update.
  */
 Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
-    function __init__(self, getData, update) {
+    function __init__(self, getData, update, isActive, failureValue) {
         self.getData = getData;
         self.update = update;
+        self.isActive = isActive;
+        self.failureValue = failureValue;
         self._inputToHandlers = {};
         self._outputToHandlers = {};
         self._handlers = {};
@@ -321,13 +335,21 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             return self.getControlValue(name);
         }
 
+        function isActive(name) {
+            return self.getControl(name).active;
+        }
+
         self._validatorCache = Methanal.View._HandlerCache(
             getData,
-            function (name, values) { return self._validatorUpdate(name, values); });
+            function (name, values) { return self._validatorUpdate(name, values); },
+            isActive,
+            undefined);
 
         self._depCache = Methanal.View._HandlerCache(
             getData,
-            function (name, values) { return self._depUpdate(name, values); });
+            function (name, values) { return self._depUpdate(name, values); },
+            isActive,
+            false);
 
         self.controlsLoaded = false;
         self.fullyLoaded = false;
