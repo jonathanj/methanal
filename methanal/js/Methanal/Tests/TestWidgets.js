@@ -23,7 +23,7 @@ Methanal.Widgets.Action.subclass(
 Methanal.Tests.Util.TestCase.subclass(
     Methanal.Tests.TestWidgets, 'TableTest').methods(
     /**
-     * Create a L{Methanal.Wigets.Table} widget.
+     * Create a L{Methanal.Widgets.Table} widget.
      *
      * @param columnValues: Mapping of column names to mappings of C{'type'},
      *     C{'value'} and C{'link'}, used for creating cells.
@@ -650,4 +650,93 @@ Methanal.Tests.Util.TestCase.subclass(
         tab3.detach = detach;
         tabView.removeTab(tab3);
         self.assertNodeHidden(node);
+    });
+
+
+
+/**
+ * L{Methanal.Widgets.ModalDialogForm} mock implementation.
+ */
+Methanal.Widgets.ModalDialogForm.subclass(
+    Methanal.Tests.TestWidgets, 'MockModalDialogForm').methods(
+    function __init__(self, controlNames, viewOnly) {
+        viewOnly = viewOnly || false;
+
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        Methanal.Tests.TestWidgets.MockModalDialogForm.upcall(
+            self, '__init__', node, viewOnly, controlNames);
+
+        Methanal.Tests.Util.setUpForm(self);
+    },
+
+
+    function focusFirstInput(self) {
+    });
+
+
+
+/**
+ * Tests for L{Methanal.Widgets.ModalDialog} and
+ * L{Methanal.Widgets.ModalDialogForm}.
+ */
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestWidgets, 'ModalDialogTest').methods(
+    /**
+     * Create a L{Methanal.Widgets.ModalDialog}.
+     */
+    function createDialog(self) {
+        var parentNode = document.createElement('div');
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        parentNode.appendChild(node);
+        var m = Methanal.Widgets.ModalDialog(node);
+        Methanal.Util.nodeInserted(m);
+        return m
+    },
+
+
+    /**
+     * Create a L{Methanal.Widgets.ModalDialogForm}.
+     */
+    function createDialogForm(self) {
+        var controlNames = [];
+        form = Methanal.Tests.TestWidgets.MockModalDialogForm(controlNames);
+        Methanal.Util.nodeInserted(form);
+        return form
+    },
+
+
+    /**
+     * L{Methanal.Widgets.ModalDialogForm} only closes a modal dialog if the
+     * form was successfully submitted.
+     */
+    function test_closeOnSuccess(self) {
+        var form = self.createDialogForm();
+        var dlg = self.createDialog();
+        form.setWidgetParent(dlg);
+
+        var closed;
+
+        dlg.close = function close() {
+            closed = true;
+        };
+
+        function succeed(methodName, data) {
+            closed = false;
+            return Divmod.Defer.succeed(data);
+        };
+
+        function fail(methodName, data) {
+            closed = false;
+            return Divmod.Defer.fail('too bad');
+        };
+
+        form.callRemote = succeed;
+        form.submit();
+        self.assertIdentical(closed, true,
+            'Dialog was NOT closed');
+
+        form.callRemote = fail;
+        form.submit();
+        self.assertIdentical(closed, false,
+            'Dialog was closed');
     });

@@ -1299,13 +1299,12 @@ Methanal.View.LiveForm.subclass(Methanal.Widgets, 'ModalDialogForm').methods(
     },
 
 
-    function submit(self) {
-        var d = Methanal.Widgets.ModalDialogForm.upcall(self, 'submit');
-        d.addCallback(function (result) {
-            self.widgetParent.close();
-            return result;
-        });
-        return d;
+    /**
+     * Close the form's L{ModalDialog} parent on successful form submission.
+     */
+    function submitSuccess(self, value) {
+        self.widgetParent.close();
+        return null;
     },
 
 
