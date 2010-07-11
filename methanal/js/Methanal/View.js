@@ -318,8 +318,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         self.subforms = {};
 
         function getData(name) {
-            return self.getControl(name).getValue();
-        };
+            return self.getControlValue(name);
+        }
 
         self._validatorCache = Methanal.View._HandlerCache(
             getData,
@@ -495,6 +495,23 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             throw Methanal.View.MissingControlError(controlName);
         }
         return control;
+    },
+
+
+    /**
+     * Get a form input's value by name.
+     *
+     * @type controlName: C{String}
+     *
+     * @raise MissingControlError: If the control given by L{controlName}
+     *     does not exist
+     *
+     * @return: If the input is active then the result of its C{getValue}
+     *     method is returned, otherwise C{null} is returned.
+     */
+    function getControlValue(self, controlName) {
+        var control = self.getControl(controlName);
+        return control.active ? control.getValue() : null;
     },
 
 
@@ -870,8 +887,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function submit(self) {
         var data = {};
         for (var name in self.controls) {
-            var input = self.getControl(name);
-            data[input.name] = input.active ? input.getValue() : null;
+            data[name] = self.getControlValue(name);
         }
         for (var name in self.subforms) {
             var form = self.subforms[name];
@@ -1213,8 +1229,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'GroupInput').methods(
     function getValue(self) {
         var data = {};
         for (var name in self.controls) {
-            var input = self.getControl(name);
-            data[input.name] = input.active ? input.getValue() : null;
+            data[name] = self.getControlValue(name);
         }
         for (var name in self.subforms) {
             var form = self.subforms[name];
