@@ -31,8 +31,6 @@ class Enum(object):
 
     L{Enum} objects implement the iterator protocol.
 
-    @ivar doc: A brief description of the enumeration's intent
-
     @ivar _order: A list of enumeration items, used to preserve the original
         order of the enumeration
 
@@ -45,9 +43,7 @@ class Enum(object):
         """
         Initialise an enumeration.
 
-        @param doc: See L{Enum.doc}
-
-        @type  values: C{iterable} of L{EnumItem}
+        @type values: C{iterable} of L{EnumItem}
         """
         self.doc = doc
 
@@ -100,12 +96,9 @@ class Enum(object):
         return cls(doc=doc, values=values)
 
 
-    def get(self, value):
-        """
-        Get an enumeration item for a given enumeration value.
+    # IEnumeration
 
-        @rtype: L{EnumItem}
-        """
+    def get(self, value):
         item = self._values.get(value)
         if item is None:
             raise InvalidEnumItem(value)
@@ -113,9 +106,6 @@ class Enum(object):
 
 
     def getDesc(self, value):
-        """
-        Get the description for a given enumeration value.
-        """
         try:
             return self.get(value).desc
         except InvalidEnumItem:
@@ -123,9 +113,6 @@ class Enum(object):
 
 
     def getExtra(self, value, extraName, default=None):
-        """
-        Get the extra value for C{extraName} or use C{default}.
-        """
         try:
             return self.get(value).get(extraName, default)
         except InvalidEnumItem:
@@ -133,28 +120,12 @@ class Enum(object):
 
 
     def find(self, **names):
-        """
-        Find the first L{EnumItem} with matching extra values.
-
-        @param **names: Extra values to match
-
-        @rtype:  L{EnumItem}
-        @return: The first matching L{EnumItem} or C{None} if there are no
-            matches
-        """
         for res in self.findAll(**names):
             return res
         return None
 
 
     def findAll(self, **names):
-        """
-        Find all L{EnumItem}s with matching extra values.
-
-        @param **names: Extra values to match
-
-        @rtype:  C{iterable} of L{EnumItem}
-        """
         values = names.items()
         if len(values) != 1:
             raise ValueError('Only one query is allowed at a time')
@@ -164,8 +135,6 @@ class Enum(object):
             if item.get(name) == value:
                 yield item
 
-
-    # IEnumeration
 
     def asPairs(self):
         return [(i.value, i.desc) for i in self]
