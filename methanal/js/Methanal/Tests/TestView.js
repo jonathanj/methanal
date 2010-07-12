@@ -156,11 +156,28 @@ Methanal.Tests.Util.TestCase.subclass(
 
 
     /**
-     * L{Methanal.View.gatherRows} recursively gathers only active
-     * L{Methanal.View.FormRow} widgets and applies a function, if specified,
-     * to every C{FormRow} regardless of its active state.
+     * Visit all C{FormRow}s in C{widgetParent} and return an C{Array} of all
+     * active rows.
      */
-    function test_gatherRows(self) {
+    function gatherActiveRows(self, widgetParent, fn) {
+        var rows = [];
+        Methanal.View.visitRows(widgetParent, function (row) {
+            if (fn !== undefined) {
+                fn(row);
+            }
+            if (row.active) {
+                rows.push(row);
+            }
+        });
+        return rows;
+    },
+
+
+    /**
+     * L{Methanal.View.visitRows} recursively visits L{Methanal.View.FormRow}
+     * widgets and applies a function to every C{FormRow}.
+     */
+    function test_visitRows(self) {
         function createRows(widgetParent, n) {
             var rows = [];
             for (var i = 0; i < n; ++i) {
@@ -173,20 +190,16 @@ Methanal.Tests.Util.TestCase.subclass(
 
         var form = self.createForm();
         var rows = createRows(form, 3);
-        self.assertArraysEqual(
-            Methanal.View.gatherRows(form),
-            rows);
+        self.assertArraysEqual(self.gatherActiveRows(form), rows);
 
         var group = Methanal.Tests.TestView.createContainer(
             form, Methanal.View.InputContainer, []);
         var innerRows = createRows(group, 3);
-        self.assertArraysEqual(
-            Methanal.View.gatherRows(group),
-            innerRows);
+        self.assertArraysEqual(self.gatherActiveRows(group), innerRows);
 
         // The form contains all descendent FormRows.
         self.assertArraysEqual(
-            Methanal.View.gatherRows(form),
+            self.gatherActiveRows(form),
             rows.concat(innerRows));
 
         function frob(row) {
@@ -196,13 +209,13 @@ Methanal.Tests.Util.TestCase.subclass(
         form = self.createForm();
         rows = createRows(form, 3);
         rows[1].active = false;
-        var gathered = Methanal.View.gatherRows(form, frob);
-        // gatherRows only gathers active rows.
+        var gathered = self.gatherActiveRows(form, frob);
+        // gatherActiveRows only gathers active rows.
         self.assertArraysEqual(
             gathered,
             [rows[0], rows[2]]);
 
-        // gatherRows applies fn to every row, regardless of its active state.
+        // gatherActiveRows applies fn to every row, regardless of its active state.
         for (var i = 0; i < rows.length; ++i) {
             self.assertIdentical(rows[i].frobbed, true);
         }

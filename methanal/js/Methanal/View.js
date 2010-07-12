@@ -239,23 +239,22 @@ Divmod.Error.subclass(Methanal.View, 'UnexpectedControl');
 
 
 /**
- * Gather L{Methanal.View.FormRow} descendant widgets from a parent.
+ * Visit descendant L{Methanal.View.FormRow} widgets.
  *
- * Recurse into active child widgets that are a L{Methanal.View.InputContainer}
+ * Recurse into child widgets that are a L{Methanal.View.InputContainer}
  * instance (and not a C{FormRow}).
  *
  * @type  widgetParent: C{Nevow.Athena.Widget}
  * @param widgetParent: Parent widget to find C{FormRow}s in.
  *
  * @type  fn: C{Function}
- * @param fn: Callable to apply to each C{FormRow}, or C{undefined} to do
- *     nothing.
+ * @param fn: Callable to apply to each C{FormRow}.
  *
  * @rtype:  C{Array} of L{Methanal.View.FormRow}
  * @return: All active C{FormRow}s that are descendants of C{widgetParent}.
  */
-Methanal.View.gatherRows = function gatherRows(widgetParent, fn/*=undefined*/) {
-    function _gather(parent, rows) {
+Methanal.View.visitRows = function visitRows(widgetParent, fn) {
+    function _visit(parent) {
         var childWidgets = parent.childWidgets;
         if (!childWidgets) {
             return;
@@ -263,21 +262,14 @@ Methanal.View.gatherRows = function gatherRows(widgetParent, fn/*=undefined*/) {
         for (var i = 0; i < childWidgets.length; ++i) {
             var widget = childWidgets[i];
             if (widget instanceof Methanal.View.FormRow) {
-                if (fn !== undefined) {
-                    fn(widget);
-                }
-                if (widget.active) {
-                    rows.push(widget);
-                }
+                fn(widget);
             } else if (widget instanceof Methanal.View.InputContainer) {
-                _gather(widget, rows);
+                _visit(widget);
             }
         }
     }
 
-    var rows = [];
-    _gather(widgetParent, rows)
-    return rows;
+    _visit(widgetParent);
 };
 
 
@@ -477,9 +469,13 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * Perform control striping.
      */
     function stripeControls(self) {
-        var rows = Methanal.View.gatherRows(self, function (row) {
+        var rows = [];
+        Methanal.View.visitRows(self, function (row) {
             Methanal.Util.removeElementClass(
                 row.node, 'methanal-control-even');
+            if (row.active) {
+                rows.push(row);
+            }
         });
 
         Methanal.Util.nthItem(rows, 2, 0,
