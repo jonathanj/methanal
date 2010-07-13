@@ -594,7 +594,7 @@ class ChoiceInputTests(ChoiceInputTestsMixin, FormInputTests):
             (u'foo', u'Foo'),
             (u'bar', u'Bar')])
         self.createControl(dict(values=values))
-        self.assertEquals(len(self.flushWarnings()), 1)
+        self.assertEquals(len(self.flushWarnings()), 2)
 
 
 
@@ -891,7 +891,7 @@ class GroupedSelectInputTests(ChoiceInputTests):
             (u'foo', u'Foo'),
             (u'bar', u'Bar')])
         self.createControl(dict(values=values))
-        self.assertEquals(len(self.flushWarnings()), 2)
+        self.assertEquals(len(self.flushWarnings()), 3)
 
 
     def test_renderOptions(self):

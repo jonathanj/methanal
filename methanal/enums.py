@@ -1,19 +1,25 @@
 import textwrap
 from zope.interface import implements
 
+from twisted.python.versions import Version
+from twisted.python.deprecate import deprecated
+
 from methanal.errors import InvalidEnumItem
 from methanal.imethanal import IEnumeration
 
 
 
+@deprecated(Version('methanal', 0, 2, 1))
 def ListEnumeration(theList):
     """
     An L{IEnumeration} adapter for the C{list} type.
+
+    This is deprecated, use L{Enum.fromPairs} instead.
     """
     # If this isn't a grouped input, turn it into one with one unnamed group.
     if (theList and
         len(theList[0]) > 1 and
-        type(theList[0][1]) not in (tuple, list)):
+        not isinstance(theList[0][1], (tuple, list))):
         theList = [(None, theList)]
 
     items = []
