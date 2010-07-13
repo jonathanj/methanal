@@ -66,10 +66,13 @@ class Enum(object):
 
     def __repr__(self):
         lines = textwrap.wrap(textwrap.dedent(self.doc.strip()))
-        line = lines[0]
-        if len(lines) > 1:
-            line += '...'
-        return '<%s """%s""">' % (
+        line = 'undocumented'
+        if lines:
+            line = lines[0]
+            if len(lines) > 1:
+                line += '...'
+            line = '"""%s"""' % (line,)
+        return '<%s %s>' % (
             type(self).__name__,
             line)
 

@@ -272,6 +272,16 @@ class EnumTests(_EnumTestsMixin, unittest.TestCase):
             ' In vitae sem...""">')
 
 
+    def test_reprEnumUndocumented(self):
+        """
+        L{methanal.enums.Enum} has a useful representation even when the
+        enumeration has no description.
+        """
+        self.assertEquals(
+            repr(enums.Enum('', [])),
+            '<Enum undocumented>')
+
+
 
 class EnumItemTests(unittest.TestCase):
     """
