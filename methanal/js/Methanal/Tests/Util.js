@@ -45,3 +45,21 @@ function makeWidgetChildNode(widget, tagName, id) {
     widget.node.appendChild(node);
     return node;
 };
+
+
+
+/**
+ * Quickly add form actions and other essential nodes to a C{LiveForm}.
+ */
+Methanal.Tests.Util.setUpForm = function setUpForm(form) {
+    var makeWidgetChildNode = Methanal.Tests.Util.makeWidgetChildNode;
+    makeWidgetChildNode(form, 'span', 'form-error');
+
+    var actions = Methanal.View.ActionContainer(
+        Nevow.Test.WidgetUtil.makeWidgetNode(), {'actionIDs': {}});
+    makeWidgetChildNode(actions, 'img', 'throbber');
+
+    form.addChildWidget(actions);
+    form.node.appendChild(actions.node);
+    document.body.appendChild(form.node);
+};

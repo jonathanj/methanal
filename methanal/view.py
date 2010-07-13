@@ -174,8 +174,8 @@ class SimpleForm(ThemedElement):
 
 
     def getInitialArguments(self):
-        keys = (c.name for c in self.getAllControls())
-        return [dict.fromkeys(keys, 1)]
+        keys = [c.name for c in self.getAllControls()]
+        return [keys]
 
 
     def getAllControls(self):
@@ -511,18 +511,28 @@ class TextAreaInput(FormInput):
 class TextInput(FormInput):
     """
     Text input.
+
+    @type embeddedLabel: C{bool}
+    @ivar embeddedLabel: Place a label in the text input control when the
+        input is empty?
+
+    @type stripWhitespace: C{bool}
+    @ivar stripWhitespace: Strip trailing and leading whitespace from user
+        input?
     """
     fragmentName = 'methanal-text-input'
     jsClass = u'Methanal.View.TextInput'
 
 
-    def __init__(self, embeddedLabel=False, **kw):
+    def __init__(self, embeddedLabel=False, stripWhitespace=True, **kw):
         super(TextInput, self).__init__(**kw)
         self.embeddedLabel = embeddedLabel
+        self.stripWhitespace = stripWhitespace
 
 
     def getArgs(self):
-        return {u'embeddedLabel': self.embeddedLabel}
+        return {u'embeddedLabel':   self.embeddedLabel,
+                u'stripWhitespace': self.stripWhitespace}
 
 
 
@@ -705,6 +715,7 @@ class VerifiedPasswordInput(TextInput):
 
 
     def __init__(self, minPasswordLength=None, strengthCriteria=None, **kw):
+        kw.setdefault('stripWhitespace', False)
         super(VerifiedPasswordInput, self).__init__(**kw)
         self.minPasswordLength = minPasswordLength
         if strengthCriteria is None:

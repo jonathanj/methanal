@@ -67,3 +67,7 @@ form {
     margin-bottom: -0.5em;
     padding: 0.25em;
 }
+
+.dependancy-parent {
+    background-position: 3px center;
+}
