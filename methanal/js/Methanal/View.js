@@ -239,6 +239,42 @@ Divmod.Error.subclass(Methanal.View, 'UnexpectedControl');
 
 
 /**
+ * Visit descendant L{Methanal.View.FormRow} widgets.
+ *
+ * Recurse into child widgets that are a L{Methanal.View.InputContainer}
+ * instance (and not a C{FormRow}).
+ *
+ * @type  widgetParent: C{Nevow.Athena.Widget}
+ * @param widgetParent: Parent widget to find C{FormRow}s in.
+ *
+ * @type  fn: C{Function}
+ * @param fn: Callable to apply to each C{FormRow}.
+ *
+ * @rtype:  C{Array} of L{Methanal.View.FormRow}
+ * @return: All active C{FormRow}s that are descendants of C{widgetParent}.
+ */
+Methanal.View.visitRows = function visitRows(widgetParent, fn) {
+    function _visit(parent) {
+        var childWidgets = parent.childWidgets;
+        if (!childWidgets) {
+            return;
+        }
+        for (var i = 0; i < childWidgets.length; ++i) {
+            var widget = childWidgets[i];
+            if (widget instanceof Methanal.View.FormRow) {
+                fn(widget);
+            } else if (widget instanceof Methanal.View.InputContainer) {
+                _visit(widget);
+            }
+        }
+    }
+
+    _visit(widgetParent);
+};
+
+
+
+/**
  * Base class for things that behave like forms.
  *
  * @type _validatorCache: L{Methanal.View._HandlerCache}
@@ -433,17 +469,19 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * Perform control striping.
      */
     function stripeControls(self) {
-        var activeControlNames = Methanal.Util.filter(function (name) {
-            var control = self.getControl(name);
+        var rows = [];
+        Methanal.View.visitRows(self, function (row) {
             Methanal.Util.removeElementClass(
-                control.widgetParent.node, 'methanal-control-even');
-            return control.active;
-        }, self._controlNamesOrdered);
+                row.node, 'methanal-control-even');
+            if (row.active) {
+                rows.push(row);
+            }
+        });
 
-        Methanal.Util.nthItem(activeControlNames, 2, 0,
-            function (controlName) {
-                var node = self.getControl(controlName).widgetParent.node;
-                Methanal.Util.addElementClass(node, 'methanal-control-even');
+        Methanal.Util.nthItem(rows, 2, 0,
+            function (row) {
+                Methanal.Util.addElementClass(
+                    row.node, 'methanal-control-even');
             });
     },
 

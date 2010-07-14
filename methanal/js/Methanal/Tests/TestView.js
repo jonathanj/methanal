@@ -26,6 +26,40 @@ Methanal.View.LiveForm.subclass(
 
 
 /**
+ * Create a control container.
+ *
+ * @type  widgetParent: C{Nevow.Athena.Widget}
+ * @param widgetParent: Container parent widget.
+ *
+ * @param containerType: Container type constructor.
+ *
+ * @type  children: C{Array} of C{Nevow.Athena.Widget}
+ * @param children: Controls to add as children of the container.
+ *
+ * @return: A control container of type C{containerType} with C{children} as
+ *     child controls.
+ */
+Methanal.Tests.TestView.createContainer = function createContainer(
+    widgetParent, containerType, children) {
+    var container = containerType(
+        Nevow.Test.WidgetUtil.makeWidgetNode());
+    Methanal.Tests.Util.makeWidgetChildNode(
+        container, 'span', 'error-text');
+
+    for (var i = 0; i < children.length; ++i) {
+        var child = children[i];
+        container.addChildWidget(child);
+        container.node.appendChild(child.node);
+    }
+
+    widgetParent.addChildWidget(container);
+
+    return container;
+};
+
+
+
+/**
  * Tests for L{Methanal.View.LiveForm}.
  */
 Methanal.Tests.Util.TestCase.subclass(
@@ -109,6 +143,73 @@ Methanal.Tests.Util.TestCase.subclass(
         form.callRemote = fail;
         form.submit();
         self.assertIdentical(success, false);
+    },
+
+
+    /**
+     * Visit all C{FormRow}s in C{widgetParent} and return an C{Array} of all
+     * active rows.
+     */
+    function gatherActiveRows(self, widgetParent, fn) {
+        var rows = [];
+        Methanal.View.visitRows(widgetParent, function (row) {
+            if (fn !== undefined) {
+                fn(row);
+            }
+            if (row.active) {
+                rows.push(row);
+            }
+        });
+        return rows;
+    },
+
+
+    /**
+     * L{Methanal.View.visitRows} recursively visits L{Methanal.View.FormRow}
+     * widgets and applies a function to every C{FormRow}.
+     */
+    function test_visitRows(self) {
+        function createRows(widgetParent, n) {
+            var rows = [];
+            for (var i = 0; i < n; ++i) {
+                var row = Methanal.Tests.TestView.createContainer(
+                    widgetParent, Methanal.View.FormRow, []);
+                rows.push(row);
+            }
+            return rows;
+        }
+
+        var form = self.createForm();
+        var rows = createRows(form, 3);
+        self.assertArraysEqual(self.gatherActiveRows(form), rows);
+
+        var group = Methanal.Tests.TestView.createContainer(
+            form, Methanal.View.InputContainer, []);
+        var innerRows = createRows(group, 3);
+        self.assertArraysEqual(self.gatherActiveRows(group), innerRows);
+
+        // The form contains all descendent FormRows.
+        self.assertArraysEqual(
+            self.gatherActiveRows(form),
+            rows.concat(innerRows));
+
+        function frob(row) {
+            row.frobbed = true;
+        }
+
+        form = self.createForm();
+        rows = createRows(form, 3);
+        rows[1].active = false;
+        var gathered = self.gatherActiveRows(form, frob);
+        // gatherActiveRows only gathers active rows.
+        self.assertArraysEqual(
+            gathered,
+            [rows[0], rows[2]]);
+
+        // gatherActiveRows applies fn to every row, regardless of its active state.
+        for (var i = 0; i < rows.length; ++i) {
+            self.assertIdentical(rows[i].frobbed, true);
+        }
     });
 
 
@@ -134,15 +235,11 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create the control container.
      */
-    function createContainer(self, child) {
-        var row = Methanal.View.FormRow(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
-        Methanal.Tests.Util.makeWidgetChildNode(row, 'span', 'error-text')
-
-        row.addChildWidget(child);
-        row.node.appendChild(child.node);
-
-        return row;
+    function createContainer(self, widgetParent, child) {
+        return Methanal.Tests.TestView.createContainer(
+            widgetParent,
+            Methanal.View.FormRow,
+            [child]);
     },
 
 
@@ -168,8 +265,7 @@ Methanal.Tests.Util.TestCase.subclass(
         var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
         var containers = [];
         map(function (control) {
-            var container = self.createContainer(control);
-            form.addChildWidget(container);
+            var container = self.createContainer(form, control);
             document.body.appendChild(container.node);
             containers.push(container);
         }, controls);
@@ -1178,17 +1274,14 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     /**
      * Specially designed to accept multiple children.
      */
-    function createContainer(self, children) {
-        var group = Methanal.View.InputContainer(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
+    function createContainer(self, widgetParent, children) {
+        var containedChildren = Methanal.Util.map(function (child) {
+            return Methanal.Tests.TestView.TestFormGroup.upcall(
+                self, 'createContainer', widgetParent, child);
+        }, children);
 
-        for (var i = 0; i < children.length; ++i) {
-            var row = Methanal.Tests.TestView.TestFormGroup.upcall(
-                self, 'createContainer', children[i]);
-            group.addChildWidget(row);
-            group.node.appendChild(row.node);
-        }
-        return group;
+        return Methanal.Tests.TestView.createContainer(
+            widgetParent, Methanal.View.InputContainer, containedChildren);
     },
 
 
