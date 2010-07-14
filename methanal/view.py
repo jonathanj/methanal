@@ -1,3 +1,4 @@
+import itertools
 from warnings import warn
 
 from decimal import Decimal
@@ -16,6 +17,7 @@ from nevow.athena import expose
 from xmantissa.ixmantissa import IWebTranslator
 from xmantissa.webtheme import ThemedElement
 
+from methanal import errors
 from methanal.imethanal import IEnumeration
 from methanal.model import ItemModel, Model, paramFromAttribute
 from methanal.util import getArgsDict
@@ -732,7 +734,9 @@ class ChoiceInput(FormInput):
     Abstract input with multiple options.
 
     @type values: L{IEnumeration}
-    @ivar values: An enumeration to be used for choice options
+    @ivar values: An enumeration to be used for choice options. C{ChoiceInput}
+        will group enumeration values by their C{'group'} extra value, if one
+        exists.
     """
     def __init__(self, values, **kw):
         super(ChoiceInput, self).__init__(**kw)
@@ -744,23 +748,94 @@ class ChoiceInput(FormInput):
         self.values = _values
 
 
+    def _makeOptions(self, pattern, enums):
+        """
+        Create "option" elements, based on C{pattern}, from C{enums}.
+        """
+        for enum in enums:
+            o = pattern()
+            o.fillSlots('value', enum.get('id', enum.value))
+            o.fillSlots('description', enum.desc)
+            yield o
+
+
     @renderer
     def options(self, req, tag):
         """
         Render all available options.
         """
-        option = tag.patternGenerator('option')
-        for value, description in self.values.asPairs():
-            o = option()
-            o.fillSlots('value', value)
-            o.fillSlots('description', description)
-            yield o
+        optionPattern = tag.patternGenerator('option')
+        groupPattern = tag.patternGenerator('optgroup')
+
+        groups = itertools.groupby(self.values, lambda e: e.get('group'))
+        for group, enums in groups:
+            options = self._makeOptions(optionPattern, enums)
+            if group is not None:
+                g = groupPattern()
+                g.fillSlots('label', group)
+                yield g[options]
+            else:
+                yield options
+
+
+    def _invokeOne(self, value):
+        if value:
+            item = self.values.find(id=value)
+            if item is None:
+                item = self.values.get(value)
+                # We got tricked into fetching an enumeration item by value
+                # instead of id.
+                if item.get('id') is not None:
+                    raise errors.InvalidEnumItem(value)
+            value = item.value
+        return value
+
+
+    def invoke(self, data):
+        """
+        Set the model parameter's value from form data.
+        """
+        value = data[self.param.name]
+        self.param.value = self._invokeOne(value)
+
+
+    def _getOneValue(self, value):
+        if value is None:
+            return None
+        item = self.values.get(value)
+        return item.get('id', item.value)
+
+
+    def getValue(self):
+        """
+        Get the model parameter's value.
+        """
+        return self._getOneValue(self.param.value)
 
 
 registerAdapter(ListEnumeration, list, IEnumeration)
 
 
 
+class MultiChoiceInputMixin(object):
+    """
+    A mixin for supporting multiple values in a L{ChoiceInput}.
+    """
+    def invoke(self, data):
+        value = data[self.param.name]
+        if value is None:
+            value = []
+        self.param.value = map(self._invokeOne, value)
+
+
+    def getValue(self):
+        if self.param.value is None:
+            return []
+        return map(self._getOneValue, self.param.value)
+
+
+
+# XXX: All his friends are deprecated, remove this too.
 class _ObjectChoiceMixinBase(object):
     """
     Common base class for L{ObjectChoiceMixin} and L{ObjectMultiChoiceMixin}.
@@ -782,6 +857,20 @@ class _ObjectChoiceMixinBase(object):
             objects[value] = obj
             objectIDs.append((value, desc))
         super(_ObjectChoiceMixinBase, self).__init__(values=objectIDs, **kw)
+
+
+    def invoke(self, data):
+        """
+        Set the model parameter's value from form data.
+        """
+        self.param.value = data[self.param.name]
+
+
+    def getValue(self):
+        """
+        Get the model parameter's value.
+        """
+        return self.param.value
 
 
     def encodeValue(self, value):
@@ -814,6 +903,7 @@ class _ObjectChoiceMixinBase(object):
 
 
 
+# XXX: All his friends are deprecated, remove this too.
 class ObjectChoiceMixin(_ObjectChoiceMixinBase):
     """
     A mixin for supporting arbitrary Python objects in a L{ChoiceInput}.
@@ -828,6 +918,7 @@ class ObjectChoiceMixin(_ObjectChoiceMixinBase):
 
 
 
+# XXX: All his friends are deprecated, remove this too.
 class ObjectMultiChoiceMixin(_ObjectChoiceMixinBase):
     """
     A mixin for supporting many arbitrary Python objects in a L{ChoiceInput}.
@@ -850,17 +941,10 @@ class RadioGroupInput(ChoiceInput):
     fragmentName = 'methanal-radio-input'
     jsClass = u'Methanal.View.RadioGroupInput'
 
-    @renderer
-    def options(self, req, tag):
-        """
-        Render all available options.
-        """
-        option = tag.patternGenerator('option')
-        for value, description in self.values.asPairs():
-            o = option()
+    def _makeOptions(self, pattern, enums):
+        options = super(RadioGroupInput, self)._makeOptions(pattern, enums)
+        for o in options:
             o.fillSlots('name', self.name)
-            o.fillSlots('value', value)
-            o.fillSlots('description', description)
             yield o
 
 
@@ -868,11 +952,15 @@ class RadioGroupInput(ChoiceInput):
 class ObjectRadioGroupInput(ObjectChoiceMixin, RadioGroupInput):
     """
     Variant of L{RadioGroupInput} for arbitrary Python objects.
+
+    Deprecated. Use L{RadioGroupInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectRadioGroupInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectRadioGroupInput.__init__)
 
 
 
-class MultiCheckboxInput(ChoiceInput):
+class MultiCheckboxInput(MultiChoiceInputMixin, ChoiceInput):
     """
     Multiple-checkboxes input.
     """
@@ -884,7 +972,11 @@ class MultiCheckboxInput(ChoiceInput):
 class ObjectMultiCheckboxInput(ObjectMultiChoiceMixin, MultiCheckboxInput):
     """
     Variant of L{MultiCheckboxInput} for arbitrary Python objects.
+
+    Deprecated. Use L{MultiCheckboxInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectMultiCheckboxInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectMultiCheckboxInput.__init__)
 
 
 
@@ -900,7 +992,11 @@ class SelectInput(ChoiceInput):
 class ObjectSelectInput(ObjectChoiceMixin, SelectInput):
     """
     Variant of L{SelectInput} for arbitrary Python objects.
+
+    Deprecated. Use L{SelectInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectSelectInput.__init__)
 
 
 
@@ -913,7 +1009,7 @@ IntegerSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 0))(
 
 
 
-class MultiSelectInput(ChoiceInput):
+class MultiSelectInput(MultiChoiceInputMixin, ChoiceInput):
     """
     Multiple-selection list box input.
     """
@@ -925,7 +1021,11 @@ class MultiSelectInput(ChoiceInput):
 class ObjectMultiSelectInput(ObjectMultiChoiceMixin, MultiSelectInput):
     """
     Variant of L{MultiSelectInput} for arbitrary Python objects.
+
+    Deprecated. Use L{MultiSelectInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectMultiSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectMultiSelectInput.__init__)
 
 
 
@@ -938,27 +1038,23 @@ class GroupedSelectInput(SelectInput):
         (u'Group name', [(u'value', u'Description'),
                          ...]),
          ...)
-    """
-    @renderer
-    def options(self, req, tag):
-        option = tag.patternGenerator('option')
-        optgroup = tag.patternGenerator('optgroup')
 
-        for groupName, values in self.values.asPairs():
-            g = optgroup().fillSlots('label', groupName)
-            for value, description in values:
-                o = option()
-                o.fillSlots('value', value)
-                o.fillSlots('description', description)
-                g[o]
-            yield g
+    Deprecated. Use L{methanal.view.SelectInput} with L{methanal.enums.Enum}
+    values with a C{'group'} extra value instead.
+    """
+GroupedSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    GroupedSelectInput.__init__)
 
 
 
 class ObjectGroupedSelectInput(ObjectChoiceMixin, SelectInput):
     """
     Variant of L{GroupedSelectInput} for arbitrary Python objects.
+
+    Deprecated. Use L{SelectInput} with L{methanal.enums.ObjectEnum}.
     """
+ObjectGroupedSelectInput.__init__ = deprecated(Version('methanal', 0, 2, 1))(
+    ObjectGroupedSelectInput.__init__)
 
 
 

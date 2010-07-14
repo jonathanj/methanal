@@ -562,6 +562,17 @@ button.roll-up {
     display: none !important;
 }
 
+.methanal-choice-group {
+    border: solid #ddd;
+    border-width: 0 0 0 1px;
+    margin: 0.5em;
+    padding: 0.3em 0 0.3em 0.5em;
+}
+
+.methanal-choice-group h4 {
+    margin: 0 0 0.25em 0;
+}
+
 .dependancy-parent {
     border-left: 3px solid #6094a4;
     margin-left: -3px;

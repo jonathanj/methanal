@@ -1827,7 +1827,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'MultiInputBase').methods(
     function getInputNode(self) {
-        return self.getInputNodes()[0];
+        return self.node.getElementsByTagName('input')[0];
     },
 
 
