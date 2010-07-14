@@ -421,10 +421,9 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
                 control.append(1, 'd2');
                 control.setValue('1');
                 self.assertIdentical(control.inputNode.value, '1');
-                // XXX: This should work, but the mock DOM stuff doesn't coerce
-                // the values of select inputs.
-                //control.setValue(1);
-                //self.assertIdentical(control.inputNode.value, '1');
+                // Coerce values of select inputs and options.
+                control.setValue(1);
+                self.assertIdentical(control.inputNode.value, '1');
             });
     },
 

@@ -63,3 +63,50 @@ Methanal.Tests.Util.setUpForm = function setUpForm(form) {
     form.node.appendChild(actions.node);
     document.body.appendChild(form.node);
 };
+
+
+
+/**
+ * Create an accessor descriptor for a setter or getter property.
+ */
+Methanal.Tests.Util.accessorDescriptor =
+function accessorDescriptor(field, fun) {
+    var desc = {
+        enumerable: true,
+        configurable: true};
+    desc[field] = fun;
+    return desc;
+}
+
+
+
+/**
+ * Define a getter property for an attribute named C{prop} on C{obj} with the
+ * function C{get}.
+ */
+Methanal.Tests.Util.defineGetter = function defineGetter(obj, prop, get) {
+    if (Object.defineProperty) {
+        return Object.defineProperty(
+            obj, prop, Methanal.Tests.Util.accessorDescriptor('get', get));
+    }
+    if (Object.prototype.__defineGetter__) {
+        return obj.__defineGetter__(prop, get);
+    }
+    throw new Error('Getter properties not supported!');
+}
+
+
+/**
+ * Define a setter property for an attribute named C{prop} on C{obj} with the
+ * function C{set}.
+ */
+Methanal.Tests.Util.defineSetter = function defineSetter(obj, prop, set) {
+    if (Object.defineProperty) {
+        return Object.defineProperty(
+            obj, prop, Methanal.Tests.Util.accessorDescriptor('set', set));
+    }
+    if (Object.prototype.__defineSetter__) {
+        return obj.__defineSetter__(prop, set);
+    }
+    throw new Error('Setter properties not supported!');
+}
