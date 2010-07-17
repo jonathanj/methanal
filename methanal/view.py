@@ -632,11 +632,63 @@ class DateInput(TextInput):
 
 
 
-class IntegerInput(TextInput):
+class NumericInput(TextInput):
+    """
+    Base class for numeric inputs.
+
+    @ivar minimumValue: Minimum allowed value, defaults to the smallest integer
+        value allowed in SQLite.
+
+    @ivar maximumValue: Maximum allowed value, defaults to the largest integer
+        value allowed in SQLite.
+    """
+    MINIMUM = -9223372036854775808
+    MAXIMUM =  9223372036854775807
+
+
+    def __init__(self, minimumValue=None, maximumValue=None, **kw):
+        super(NumericInput, self).__init__(**kw)
+        if minimumValue is None:
+            minimumValue = self.MINIMUM
+        self.minimumValue = minimumValue
+
+        if maximumValue is None:
+            maximumValue = self.MAXIMUM
+        self.maximumValue = maximumValue
+
+
+    def checkValue(self, value):
+        """
+        Check that C{value} is within the minimum and maximum ranges. Raise
+        C{ValueError} if C{value} is outside of the allowed range.
+        """
+        if value is None:
+            return
+        if value > self.maximumValue:
+            raise ValueError('%s is larger than %s' % (
+                value, self.maximumValue))
+        elif value < self.minimumValue:
+            raise ValueError('%s is smaller than %s' % (
+                value, self.minimumValue))
+
+
+    def convertValue(self, value):
+        return value
+
+
+    def invoke(self, data):
+        value = self.convertValue(data[self.param.name])
+        self.checkValue(value)
+        self.param.value = value
+
+
+
+class IntegerInput(NumericInput):
     """
     Integer input.
     """
     jsClass = u'Methanal.View.IntegerInput'
+
 
     def getValue(self):
         value = self.param.value
@@ -646,7 +698,7 @@ class IntegerInput(TextInput):
 
 
 
-class DecimalInput(TextInput):
+class DecimalInput(NumericInput):
     """
     Decimal input.
     """
@@ -667,6 +719,12 @@ class DecimalInput(TextInput):
         self.decimalPlaces = decimalPlaces
 
 
+    def convertValue(self, value):
+        if value is not None:
+            value = Decimal(str(value))
+        return value
+
+
     def getArgs(self):
         return {u'decimalPlaces': self.decimalPlaces}
 
@@ -677,14 +735,6 @@ class DecimalInput(TextInput):
             return u''
 
         return float(value)
-
-
-    def invoke(self, data):
-        value = data[self.param.name]
-        if value is None:
-            self.param.value = None
-        else:
-            self.param.value = Decimal(str(value))
 
 
 
