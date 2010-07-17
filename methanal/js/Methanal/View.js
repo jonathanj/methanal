@@ -989,17 +989,21 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     /**
-     * Callback for successful form submission.
+     * Callback for successful form submission. The return value will be sent
+     * back to the server.
      */
     function submitSuccess(self, value) {
+        return null;
     },
 
 
     /**
-     * Callback for a failure form submission.
+     * Callback for a failure form submission. The return value will be sent
+     * back to the server.
      */
     function submitFailure(self, failure) {
         self.setError(failure);
+        return null;
     },
 
 
