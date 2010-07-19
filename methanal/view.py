@@ -657,6 +657,12 @@ class NumericInput(TextInput):
         self.maximumValue = maximumValue
 
 
+    def getArgs(self):
+        return {
+            u'lowerBound': self.minimumValue - 1,
+            u'upperBound': self.maximumValue + 1}
+
+
     def checkValue(self, value):
         """
         Check that C{value} is within the minimum and maximum ranges. Raise

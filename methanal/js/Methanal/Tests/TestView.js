@@ -979,6 +979,47 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertInvalidInput(control, 'a');
                 self.assertInvalidInput(control, '1.2');
             });
+    },
+
+
+    /**
+     * L{Methanal.View.IntegerInput} validates that values fall within a certain
+     * exclusive range.
+     */
+    function test_bounds(self) {
+        self.testControl({value: null,
+                          lowerBound: -11,
+                          upperBound:   8,},
+            function (control) {
+                self.assertValidInput(control, '-10');
+                self.assertInvalidInput(control, '-11');
+                self.assertValidInput(control, '7');
+                self.assertInvalidInput(control, '8');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.IntegerInput} validates that values fall within a certain
+     * exclusive range, even for really big numbers that have precision
+     * problems in Javascript.
+     */
+    function test_bigBounds(self) {
+        // These turn into -9223372036854776000 and 9223372036854776000.
+        self.testControl({value: null,
+                          lowerBound: -9223372036854775809,
+                          upperBound:  9223372036854775808},
+            function (control) {
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '1');
+                self.assertInvalidInput(control, '-9223372036854775800');
+                self.assertInvalidInput(control, '-9223372036854775809');
+                self.assertInvalidInput(control, '-92233720368547758090');
+                self.assertInvalidInput(control,  '9223372036854775800');
+                self.assertInvalidInput(control,  '9223372036854775808');
+                self.assertInvalidInput(control,  '92233720368547758080');
+            });
     });
 
 
@@ -1054,6 +1095,55 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertValidInput(control, '1.23');
                 self.assertInvalidInput(control, 'a');
                 self.assertInvalidInput(control, '1.234');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.DecimalInput} validates that values fall within a certain
+     * exclusive range.
+     */
+    function test_bounds(self) {
+        self.testControl({value: null,
+                          decimalPlaces: 2,
+                          lowerBound: -10.5,
+                          upperBound:   7.5,},
+            function (control) {
+                self.assertValidInput(control, '-10');
+                self.assertValidInput(control, '-10.4');
+                self.assertInvalidInput(control, '-11');
+                self.assertInvalidInput(control, '-10.6');
+                self.assertValidInput(control, '7');
+                self.assertValidInput(control, '7.4');
+                self.assertInvalidInput(control, '8');
+                self.assertInvalidInput(control, '7.6');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.DecimalInput} validates that values fall within a certain
+     * exclusive range, even for really big numbers that have precision
+     * problems in Javascript.
+     */
+    function test_bigBounds(self) {
+        // These turn into -9223372036854776000 and 9223372036854776000.
+        self.testControl({value: null,
+                          decimalPlaces: 2,
+                          lowerBound: -9223372036854775809.5,
+                          upperBound:  9223372036854775808.5},
+            function (control) {
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '1');
+                self.assertInvalidInput(control, '-9223372036854775800');
+                self.assertInvalidInput(control, '-9223372036854775809');
+                self.assertInvalidInput(control, '-9223372036854775808.5');
+                self.assertInvalidInput(control, '-92233720368547758090');
+                self.assertInvalidInput(control,  '9223372036854775800');
+                self.assertInvalidInput(control,  '9223372036854775808');
+                self.assertInvalidInput(control,  '9223372036854775807.5');
+                self.assertInvalidInput(control,  '92233720368547758080');
             });
     });
 

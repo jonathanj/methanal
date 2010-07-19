@@ -2219,6 +2219,13 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
  *     for validity
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'NumericInput').methods(
+    function __init__(self, node, args) {
+        self.lowerBound = args.lowerBound;
+        self.upperBound = args.upperBound;
+        Methanal.View.NumericInput.upcall(self, '__init__', node, args);
+    },
+
+
     function getValue(self) {
         var value = Methanal.View.NumericInput.upcall(self, 'getValue');
         if (!value) {
@@ -2232,8 +2239,14 @@ Methanal.View.TextInput.subclass(Methanal.View, 'NumericInput').methods(
 
 
     function baseValidator(self, value) {
-        if (value === undefined || isNaN(value)) {
+        if (value === null) {
+            return;
+        } else if (value === undefined || isNaN(value)) {
             return 'Numerical value only';
+        } else if (value <= self.lowerBound) {
+            return 'Value too small; must be greater than ' + self.lowerBound;
+        } else if (value >= self.upperBound) {
+            return 'Value too large; must be less than ' + self.upperBound;
         }
     });
 
