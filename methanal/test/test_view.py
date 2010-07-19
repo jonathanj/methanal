@@ -267,7 +267,55 @@ class DateInputTests(FormInputTests):
 
 
 
-class IntegerInputTests(FormInputTests):
+class NumericInputTestsMixin(object):
+    """
+    Tests mixin for numeric inputs.
+    """
+    def _testMinimumMaximum(self, control, acceptable, tooSmall, tooLarge):
+        """
+        Assert that C{control} sets its parameter's value to C{None} value or
+        C{acceptable}, when invoked with these values. When invoked with
+        C{tooSmall} or C{tooLarge} an exception is raised indicating that the
+        value is too small or too large.
+        """
+        param = control.parent.param
+
+        data = {param.name: None}
+        control.invoke(data)
+        self.assertIdentical(param.value, None)
+
+        data = {param.name: acceptable}
+        control.invoke(data)
+        self.assertEquals(param.value, acceptable)
+
+        data = {param.name: tooSmall}
+        e = self.assertRaises(ValueError, control.invoke, data)
+        self.assertIn('is smaller than', str(e))
+
+        data = {param.name: tooLarge}
+        e = self.assertRaises(ValueError, control.invoke, data)
+        self.assertIn('is larger than', str(e))
+
+
+    def test_minimumMaximumDefaultValues(self):
+        """
+        Numeric inputs default to not accepting values smaller than C{-(2 **
+        63)} or larger than C{2 ** 63 }.
+        """
+        control = self.createControl(dict())
+        self._testMinimumMaximum(control, 42, -(2 ** 63) - 1, 2 ** 63)
+
+
+    def test_minimumMaximumOverrideValues(self):
+        """
+        Numeric inputs can override their minimum and maximum value range.
+        """
+        control = self.createControl(dict(minimumValue=0, maximumValue=10))
+        self._testMinimumMaximum(control, 5, -1, 42)
+
+
+
+class IntegerInputTests(FormInputTests, NumericInputTestsMixin):
     """
     Tests for L{methanal.view.IntegerInput}.
     """
@@ -294,7 +342,7 @@ class IntegerInputTests(FormInputTests):
 
 
 
-class DecimalInputTests(FormInputTests):
+class DecimalInputTests(FormInputTests, NumericInputTestsMixin):
     """
     Tests for L{methanal.view.DecimalInput}.
     """
