@@ -891,6 +891,11 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             self.getControl(name).reset();
         }
         self.refresh();
+        // XXX: This isn't strictly correct since the initial values are not
+        // updated on successful submission and resetting could in fact change
+        // the values from what was last stored on the server-side, but it is
+        // close enough for now.
+        self.formModified(false);
     },
 
 
