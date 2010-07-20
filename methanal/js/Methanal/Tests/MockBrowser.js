@@ -31,6 +31,17 @@ Divmod.MockBrowser.Element.subclass(
 
 /**
  * HTMLSelectElement mock implementation.
+ *
+ * Assigning to the C{'value'} attribute tries to follow the behaviour of HTML5
+ * (which is generally the behaviour that Firefox (as of 3.6.7) follows too)::
+ *     The value IDL attribute, on getting, must return the value of the first option
+ *     element in the list of options in tree order that has its selectedness set to
+ *     true, if any. If there isn't one, then it must return the empty string.
+ *
+ *     On setting, the value attribute must set the selectedness of all the option
+ *     elements in the list of options to false, and then first the option element in
+ *     the list of options, in tree order, whose value is equal to the given new
+ *     value, if any, must have its selectedness set to true.
  */
 Methanal.Tests.MockBrowser.Element.subclass(
     Methanal.Tests.MockBrowser, 'MockHTMLSelectElement').methods(
@@ -38,6 +49,29 @@ Methanal.Tests.MockBrowser.Element.subclass(
         Methanal.Tests.MockBrowser.MockHTMLSelectElement.upcall(
             self, '__init__', 'select');
         self.options = [];
+
+        Methanal.Tests.Util.defineGetter(self, 'value', function () {
+            for (var i = 0; i < self.options.length; ++i) {
+                var option = self.options[i];
+                if (option.selected) {
+                    return option.value;
+                }
+            }
+            return '';
+        });
+
+        Methanal.Tests.Util.defineSetter(self, 'value', function (v) {
+            var found = false;
+            for (var i = 0; i < self.options.length; ++i) {
+                var option = self.options[i];
+                if (found === false && v == option.value) {
+                    option.selected = true;
+                    found = true;
+                } else {
+                    option.selected = false;
+                }
+            }
+        });
     },
 
 
@@ -53,6 +87,49 @@ Methanal.Tests.MockBrowser.Element.subclass(
             self.options.splice(index, 0, element);
         }
         element.index = index;
+    });
+
+
+
+/**
+ * HTMLOptionElement mock implementation.
+ *
+ * Assignments to the C{'value'} attribute try to follow the behaviour of
+ * Firefox (as of 3.6.7), generally this means the value is coerced to a
+ * C{String}.
+ */
+Methanal.Tests.MockBrowser.Element.subclass(
+    Methanal.Tests.MockBrowser, 'MockHTMLOptionElement').methods(
+    function __init__(self) {
+        Methanal.Tests.MockBrowser.MockHTMLOptionElement.upcall(
+            self, '__init__', 'option');
+        self.selected = false;
+        self._value = '';
+
+        Methanal.Tests.Util.defineGetter(self, 'value', function () {
+            return self._value;
+        });
+
+        Methanal.Tests.Util.defineSetter(self, 'value', function (v) {
+            if (v === undefined) {
+                /* Seriously, this is real (Firefox 3.6.7):
+                 *  >>> o
+                 *  <option value="">
+                 *  >>> o.value = undefined;
+                 *  >>> o.value
+                 *  "undefined"
+                 *  >>> o.value = null;
+                 *  >>> o.value
+                 *  ""
+                 */
+                v = 'undefined';
+            } else if (v === null) {
+                v = '';
+            } else {
+                v = v.toString();
+            }
+            self._value = v;
+        });
     });
 
 
@@ -190,6 +267,8 @@ if (document instanceof Divmod.MockBrowser.Document) {
         document = Methanal.Tests.MockBrowser.Document();
         document.registerElementTag(
             'select', Methanal.Tests.MockBrowser.MockHTMLSelectElement);
+        document.registerElementTag(
+            'option', Methanal.Tests.MockBrowser.MockHTMLOptionElement);
         document.registerElementTag(
             'table', Methanal.Tests.MockBrowser.MockHTMLTableElement);
         document.registerElementTag(
