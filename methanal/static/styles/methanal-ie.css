@@ -71,3 +71,8 @@ form {
 .dependancy-parent {
     background-position: 3px center;
 }
+
+.modified-indicator {
+    display: inline-block;
+    vertical-align: top;
+}
