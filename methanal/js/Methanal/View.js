@@ -928,6 +928,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             return value;
         });
         d.addCallback(function (value) {
+            self.formModified(false);
             return self.submitSuccess(value);
         });
         d.addErrback(function (value) {
@@ -1023,6 +1024,30 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         }
         self.submit();
         return false;
+    },
+
+
+    /**
+     * Visually indicate that the form's modification state has changed.
+     *
+     * @type  modified: C{Boolean}
+     * @param modified: Have inputs been modified from their original value?
+     */
+    function formModified(self, modified) {
+        if (!self.fullyLoaded) {
+            return;
+        }
+
+        var fn = modified ?
+            Methanal.Util.addElementClass :
+            Methanal.Util.removeElementClass;
+        fn(self.actions.node, 'form-modified');
+    },
+
+
+    function valueChanged(self, control) {
+        Methanal.View.LiveForm.upcall(self, 'valueChanged', control);
+        self.formModified(true);
     },
 
 

@@ -76,6 +76,20 @@ Methanal.Tests.Util.TestCase.subclass(
 
 
     /**
+     * Create an input.
+     */
+    function createControl(self, args) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var control = Methanal.View.TextInput(node, args);
+        node.appendChild(document.createElement('input'));
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error');
+        Methanal.Tests.Util.makeWidgetChildNode(
+            control, 'span', 'displayValue');
+        return control;
+    },
+
+
+    /**
      * Freezing and thawing the form increments and decrements the frozen
      * counter. Attempting to thaw a form without a freeze call results in
      * an exception.
@@ -210,6 +224,31 @@ Methanal.Tests.Util.TestCase.subclass(
         for (var i = 0; i < rows.length; ++i) {
             self.assertIdentical(rows[i].frobbed, true);
         }
+    },
+
+
+    /**
+     * L{Methanal.View.LiveForm.valueChanged} calls
+     * L{Methanal.View.LiveForm.formModified} to indicate that the form's
+     * modification state changed.
+     */
+    function test_formModified(self) {
+        var form = self.createForm();
+        var control = self.createControl({});
+        var row = Methanal.Tests.TestView.createContainer(
+            form, Methanal.View.FormRow, [control]);
+        form.addChildWidget(row);
+        form.node.appendChild(row.node);
+        Methanal.Util.nodeInserted(row);
+
+        var containsElementClass = Methanal.Util.containsElementClass;
+        self.assertIdentical(
+            containsElementClass(form.actions.node, 'form-modified'),
+            false);
+        control.onChange();
+        self.assertIdentical(
+            containsElementClass(form.actions.node, 'form-modified'),
+            true);
     });
 
 

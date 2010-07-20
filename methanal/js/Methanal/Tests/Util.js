@@ -61,5 +61,6 @@ Methanal.Tests.Util.setUpForm = function setUpForm(form) {
 
     form.addChildWidget(actions);
     form.node.appendChild(actions.node);
+    form.setActions(actions);
     document.body.appendChild(form.node);
 };
