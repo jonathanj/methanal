@@ -1,1 +1,0 @@
-Prevent hiding parent containers if any child container is set inactive regardless of other child containers.
