@@ -930,6 +930,11 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             self.getControl(name).reset();
         }
         self.refresh();
+        // XXX: This isn't strictly correct since the initial values are not
+        // updated on successful submission and resetting could in fact change
+        // the values from what was last stored on the server-side, but it is
+        // close enough for now.
+        self.formModified(false);
     },
 
 
@@ -966,6 +971,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             return value;
         });
         d.addCallback(function (value) {
+            self.formModified(false);
             return self.submitSuccess(value);
         });
         d.addErrback(function (value) {
@@ -1061,6 +1067,30 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         }
         self.submit();
         return false;
+    },
+
+
+    /**
+     * Visually indicate that the form's modification state has changed.
+     *
+     * @type  modified: C{Boolean}
+     * @param modified: Have inputs been modified from their original value?
+     */
+    function formModified(self, modified) {
+        if (!self.fullyLoaded) {
+            return;
+        }
+
+        var fn = modified ?
+            Methanal.Util.addElementClass :
+            Methanal.Util.removeElementClass;
+        fn(self.actions.node, 'form-modified');
+    },
+
+
+    function valueChanged(self, control) {
+        Methanal.View.LiveForm.upcall(self, 'valueChanged', control);
+        self.formModified(true);
     },
 
 
