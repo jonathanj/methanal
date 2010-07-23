@@ -1,1 +1,0 @@
-Prevent trying to append null nodes to the DOM when table actions return false from "enableForRow".
