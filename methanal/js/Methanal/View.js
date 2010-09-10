@@ -871,10 +871,16 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  *     container widget's C{nodeInserted} method has been called
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
-    function __init__(self, node, viewOnly, controlNames) {
+    function __init__(self, node, args, controlNames) {
         self.enableControlStriping = true;
         Methanal.View.LiveForm.upcall(self, '__init__', node);
-        self.viewOnly = viewOnly;
+        if (typeof args === 'boolean') {
+            Divmod.msg(
+                'DEPRECATED: Use an argument dictionary instead of the' +
+                '"viewOnly" boolean parameter');
+            args = {'viewOnly': args};
+        }
+        self.viewOnly = args.viewOnly;
         if (!(controlNames instanceof Array)) {
             throw new Error('"controlNames" must be an Array of control names');
         }
