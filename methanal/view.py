@@ -253,7 +253,11 @@ class LiveForm(SimpleForm):
 
     def getInitialArguments(self):
         args = super(LiveForm, self).getInitialArguments()
-        return [self.viewOnly] + args
+        return [getArgsDict(self)] + args
+
+
+    def getArgs(self):
+        return {u'viewOnly': self.viewOnly}
 
 
     @renderer

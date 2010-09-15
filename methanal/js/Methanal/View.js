@@ -863,6 +863,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  * @type viewOnly: C{boolean}
  * @ivar viewOnly: Should the submit button for this form be visible?
  *
+ * @type hideModificationIndicator: C{boolean}
+ * @ivar hideModificationIndicator: Hide the modification indicator for this
+ *     form? Defaults to C{false}.
+ *
  * @type controlNames: C{object} of C{String}
  * @ivar controlNames: Names of form inputs as a mapping
  *
@@ -871,10 +875,17 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  *     container widget's C{nodeInserted} method has been called
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
-    function __init__(self, node, viewOnly, controlNames) {
+    function __init__(self, node, args, controlNames) {
         self.enableControlStriping = true;
         Methanal.View.LiveForm.upcall(self, '__init__', node);
-        self.viewOnly = viewOnly;
+        if (typeof args === 'boolean') {
+            Divmod.msg(
+                'DEPRECATED: Use an argument dictionary instead of the' +
+                '"viewOnly" boolean parameter');
+            args = {'viewOnly': args};
+        }
+        self.viewOnly = args.viewOnly;
+        self.hideModificationIndicator = args.hideModificationIndicator;
         if (!(controlNames instanceof Array)) {
             throw new Error('"controlNames" must be an Array of control names');
         }
@@ -1081,10 +1092,12 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             return;
         }
 
-        var fn = modified ?
-            Methanal.Util.addElementClass :
-            Methanal.Util.removeElementClass;
-        fn(self.actions.node, 'form-modified');
+        if (!self.hideModificationIndicator) {
+            var fn = modified ?
+                Methanal.Util.addElementClass :
+                Methanal.Util.removeElementClass;
+            fn(self.actions.node, 'form-modified');
+        }
     },
 
 
