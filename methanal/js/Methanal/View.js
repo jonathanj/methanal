@@ -879,9 +879,9 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         self.enableControlStriping = true;
         Methanal.View.LiveForm.upcall(self, '__init__', node);
         if (typeof args === 'boolean') {
-            Divmod.msg(
-                'DEPRECATED: Use an argument dictionary instead of the' +
-                '"viewOnly" boolean parameter');
+            Divmod.warn(
+                'Use an argument dictionary instead of the "viewOnly"' +
+                'boolean parameter', Divmod.DeprecationWarning);
             args = {'viewOnly': args};
         }
         self.viewOnly = args.viewOnly;

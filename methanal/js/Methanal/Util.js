@@ -221,7 +221,9 @@ Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
 
 // XXX: DEPRECATED.
 Methanal.Util.detachWidget = function detachWidget(widget) {
-    Divmod.msg('Deprecated: Use Nevow.Athena.Widget instead');
+    Divmod.warn(
+        'detachWidget is deprecated, use Nevow.Athena.Widget.detach',
+        Divmod.DeprecationWarning);
     widget.detach();
 };
 
