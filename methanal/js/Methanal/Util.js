@@ -219,7 +219,6 @@ Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
 
 
 
-// XXX: DEPRECATED.
 Methanal.Util.detachWidget = function detachWidget(widget) {
     Divmod.warn(
         'detachWidget is deprecated, use Nevow.Athena.Widget.detach',
@@ -1003,4 +1002,17 @@ Methanal.Util.trimRight = function trimRight(s) {
  */
 Methanal.Util.trim = function trim(s) {
     return Methanal.Util.trimLeft(Methanal.Util.trimRight(s));
+};
+
+
+
+/**
+ * Create a new function with partial application of the given arguments.
+ */
+Methanal.Util.partial = function partial(f /*...*/) {
+    var boundArgs = Array.prototype.slice.call(arguments, 1);
+    return function (/*...*/) {
+        var args = Array.prototype.slice.call(arguments);
+        return f.apply(null, boundArgs.concat(args));
+    }
 };

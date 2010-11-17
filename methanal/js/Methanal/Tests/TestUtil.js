@@ -396,6 +396,19 @@ Methanal.Tests.Util.TestCase.subclass(
             'foo bar baz');
         self.assertIdentical(
             Methanal.Util.trim(t), t);
+    },
+
+
+    /**
+     * Create a new function with partial application of the given arguments.
+     */
+    function test_partial(self) {
+        function add(a, b) {
+            return a + b;
+        }
+        var p = Methanal.Util.partial(add, 2);
+        self.assertIdentical(p(2), 4);
+        self.assertIdentical(p(3), 5);
     });
 
 
