@@ -544,21 +544,40 @@ Divmod.Class.subclass(Methanal.Util, 'StringSet').methods(
  *                              'hours':   5,
  *                              'minutes': 37})
  *
- * @type  values: C{object} mapping C{String} to C{Number}
- * @param values: Mapping of time units to duration, valid units are: C{days},
- *     C{hours}, C{minutes}, C{seconds}, C{milliseconds}
+ * @type values: C{object} mapping C{String} to C{Number}
+ * @ivar values: Mapping of time units to duration, valid units are: C{days},
+ *     C{hours}, C{minutes}, C{seconds}, C{milliseconds}.
  *
- * @rtype:  C{Number}
- * @return: The amount of time L{values} represents, in milliseconds
+ * @type offset: C{Number}
+ * @ivar offset: Amount of time represented by L{values}, in milliseconds.
  */
-Methanal.Util.TimeDelta = function TimeDelta(values) {
-    var _offset = (values.days || 0) * 3600 * 24 * 1000;
-    _offset += (values.hours || 0) * 3600 * 1000;
-    _offset += (values.minutes || 0) * 60 * 1000;
-    _offset += (values.seconds || 0) * 1000;
-    _offset += (values.milliseconds || 0);
-    return _offset;
-};
+Divmod.Class.subclass(Methanal.Util, 'TimeDelta').methods(
+    function __init__(self, values) {
+        var offset = (values.days || 0) * 3600 * 24 * 1000;
+        offset += (values.hours || 0) * 3600 * 1000;
+        offset += (values.minutes || 0) * 60 * 1000;
+        offset += (values.seconds || 0) * 1000;
+        offset += (values.milliseconds || 0);
+        self.values = values;
+        self.offset = offset;
+    },
+
+
+    function asHumanly(self) {
+        var attrs = [
+            'days', 'hours', 'minutes', 'seconds', 'milliseconds'];
+        var values = [];
+        for (var i = 0; i < attrs.length; ++i) {
+            var attr = attrs[i];
+            var v = Math.abs(self.values[attr]);
+            if (v) {
+                values.push(
+                    v.toString() + ' ' +
+                    attr.substring(0, attr.length - (v > 1 ? 0 : 1)));
+            }
+        }
+        return values.join(', ') + (self.offset > 0 ? '' : ' ago');
+    });
 
 
 
@@ -697,15 +716,15 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
     /**
      * Offset the current instance by some amount of time.
      *
-     * @type  delta: C{Number}
-     * @param delta: An amount of time to offset the current instance by, in
-     *      milliseconds
+     * @type  delta: L{Methanal.Util.TimeDelta} or C{Number}
+     * @param delta: An amount of time to offset the current instance by.
      *
      * @rtype: L{Methanal.Util.Time}
      * @return: A new instance representing the newly offset time
      */
-    function offset(self, delta) {
-        var t = Methanal.Util.Time.fromTimestamp(self.asTimestamp() + delta);
+    function offset(self, timedelta) {
+        var offset = timedelta.offset || timedelta;
+        var t = Methanal.Util.Time.fromTimestamp(self.asTimestamp() + offset);
         t._oneDay = self._oneDay;
         t._timezoneOffset = self._timezoneOffset;
         return t;
