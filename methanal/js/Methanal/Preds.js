@@ -245,3 +245,52 @@ Methanal.Preds.isChars = function isChars(expn, value) {
 Methanal.Preds.regex = function regex(expn, value) {
     return expn.test(value);
 };
+
+
+
+/**
+ * Value is within a timedelta and a start date.
+ *
+ * @type timedelta: L{Methanal.Util.TimeDelta}
+ *
+ * @type start: L{Methanal.Util.Time}
+ *
+ * @type value: C{Date}
+ */
+Methanal.Preds.dateSince = function dateSince(timedelta, start, value) {
+    var t = start.offset(timedelta).asDate();
+    return timedelta.offset > 0 ? value > t : value < t;
+};
+
+
+
+/**
+ * Value is within a timedelta and the current time.
+ *
+ * @type timedelta: L{Methanal.Util.TimeDelta}
+ *
+ * @type value: C{Date}
+ */
+Methanal.Preds.dateWithin = function dateWithin(timedelta, value) {
+    return Methanal.Preds.dateSince(timedelta, Methanal.Util.Time(), value);
+};
+
+
+
+/**
+ * Value is a future date.
+ *
+ * @type value: C{Date}
+ */
+Methanal.Preds.futureDate = function futureDate(value) {
+    return (new Date()) <= value;
+};
+
+
+
+/**
+ * Value is a past date.
+ *
+ * @type value: C{Date}
+ */
+Methanal.Preds.pastDate = Methanal.Preds.invert(Methanal.Preds.futureDate);

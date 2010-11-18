@@ -291,4 +291,88 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertInvalid(email, 'hello@world');
         self.assertInvalid(email, '@bar.com');
         self.assertInvalid(email, '@bar.comhaha');
+    },
+
+
+    /**
+     * Value is within a timedelta and a start date.
+     */
+    function test_dateSince(self) {
+        var now = Methanal.Util.Time();
+        var tomorrow = now.offset(
+            Methanal.Util.TimeDelta({'days': 1}));
+        var nextDay = now.offset(
+            Methanal.Util.TimeDelta({'days': 2})).asDate();
+
+        var dateSince = Methanal.Validators.dateSince;
+        self.assertValid(
+            dateSince(Methanal.Util.TimeDelta({'hours': 1}), tomorrow),
+            nextDay);
+        self.assertInvalid(
+            dateSince(Methanal.Util.TimeDelta({'days': 1}), tomorrow),
+            nextDay);
+    },
+
+
+    /**
+     * Value is within a timedelta and the current time.
+     */
+    function test_dateWithin(self) {
+        var now = Methanal.Util.Time();
+        var tomorrow = now.offset(
+            Methanal.Util.TimeDelta({'days': 1})).asDate();
+
+        var dateWithin = Methanal.Validators.dateWithin;
+        self.assertValid(
+            dateWithin(Methanal.Util.TimeDelta({'hours': 1})), tomorrow);
+        self.assertValid(
+            dateWithin(Methanal.Util.TimeDelta({'hours': 23,
+                                                'minutes': 59,
+                                                'seconds': 59})), tomorrow);
+        self.assertInvalid(
+            dateWithin(Methanal.Util.TimeDelta({'days': 1})), tomorrow);
+
+        var yesterday = now.offset(
+            Methanal.Util.TimeDelta({'days': -1})).asDate();
+        self.assertValid(
+            dateWithin(Methanal.Util.TimeDelta({'hours': -1})), yesterday);
+        self.assertValid(
+            dateWithin(Methanal.Util.TimeDelta({'hours': -23,
+                                                'minutes': -59,
+                                                'seconds': -59})), yesterday);
+        // XXX: Fudge it slightly since dateWithin uses the current time and
+        // sometimes things take some time.
+        self.assertInvalid(
+            dateWithin(Methanal.Util.TimeDelta({'days': -1, 'minutes': -1})),
+            yesterday);
+    },
+
+
+    /**
+     * Value is a future date.
+     */
+    function test_futureDate(self) {
+        var now = Methanal.Util.Time();
+        var yesterday = now.offset(
+            Methanal.Util.TimeDelta({'days': -1})).asDate();
+        var tomorrow = now.offset(
+            Methanal.Util.TimeDelta({'days': 1})).asDate();
+        var futureDate = Methanal.Validators.futureDate;
+        self.assertValid(futureDate, tomorrow);
+        self.assertInvalid(futureDate, yesterday);
+    },
+
+
+    /**
+     * Value is a past date.
+     */
+    function test_pastDate(self) {
+        var now = Methanal.Util.Time();
+        var yesterday = now.offset(
+            Methanal.Util.TimeDelta({'days': -1})).asDate();
+        var tomorrow = now.offset(
+            Methanal.Util.TimeDelta({'days': 1})).asDate();
+        var pastDate = Methanal.Validators.pastDate;
+        self.assertInvalid(pastDate, tomorrow);
+        self.assertValid(pastDate, yesterday);
     });

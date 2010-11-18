@@ -256,3 +256,46 @@ Methanal.Validators.validEmail = function validEmail(/*...*/) {
         Divmod.DeprecationWarning);
     return Methanal.Validators.email.apply(null, arguments);
 };
+
+
+
+/**
+ * Value is within a timedelta and a start date.
+ */
+Methanal.Validators.dateSince = function dateWithin(timedelta, start) {
+    var future = timedelta.offset > 0;
+    return Methanal.Validators.pred(
+        Methanal.Util.partial(Methanal.Preds.dateSince, timedelta, start),
+        'Date must be no more than ' + timedelta.asHumanly() +
+        ' in the ' + (future ? 'future' : 'past') + ' since ' +
+        start.asHumanly());
+};
+
+
+
+/**
+ * Value is within a timedelta and the current time.
+ */
+Methanal.Validators.dateWithin = function dateWithin(timedelta) {
+    var future = timedelta.offset > 0;
+    return Methanal.Validators.pred(
+        Methanal.Util.partial(Methanal.Preds.dateWithin, timedelta),
+        'Date must be no more than ' + timedelta.asHumanly() +
+        ' in the ' + (future ? 'future' : 'past'));
+};
+
+
+
+/**
+ * Value is a future date.
+ */
+Methanal.Validators.futureDate = Methanal.Validators.pred(
+    Methanal.Preds.futureDate, 'Date may not be in the past');
+
+
+
+/**
+ * Value is a past date.
+ */
+Methanal.Validators.pastDate = Methanal.Validators.pred(
+    Methanal.Preds.pastDate, 'Date may not be in the future');
