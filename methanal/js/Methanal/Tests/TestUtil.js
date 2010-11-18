@@ -409,6 +409,36 @@ Methanal.Tests.Util.TestCase.subclass(
         var p = Methanal.Util.partial(add, 2);
         self.assertIdentical(p(2), 4);
         self.assertIdentical(p(3), 5);
+    },
+
+
+    /**
+     * L{Methanal.Util.split} splits a C{String} on a C{String} delimiter,
+     * optionally limiting the number of splits that occur and returning the
+     * remainder of the string, unsplit, as the final component of an C{Array}.
+     */
+    function test_split(self) {
+        var split = Methanal.Util.split;
+
+        self.assertArraysEqual(
+            split('foo bar  baz', ' '),
+            ['foo', 'bar', '', 'baz'])
+
+        self.assertArraysEqual(
+            split('foo bar  baz', ' '),
+            'foo bar  baz'.split(' '));
+
+        self.assertArraysEqual(
+            split('foo bar  baz', ' ', 1),
+            ['foo', 'bar  baz']);
+
+        self.assertArraysEqual(
+            split('foo bar  baz', ' ', 2),
+            ['foo', 'bar', ' baz']);
+
+        self.assertArraysEqual(
+            split('foo bar  baz', ' ', 3),
+            split('foo bar  baz', ' '));
     });
 
 

@@ -1035,3 +1035,23 @@ Methanal.Util.partial = function partial(f /*...*/) {
         return f.apply(null, boundArgs.concat(args));
     }
 };
+
+
+
+/**
+ * Splits L{s} on L{delim}, optionally limiting the number of items split.
+ *
+ * @param maxsplit: Maximum number of splits to do, if provided. Additional
+ *     items are returned unsplit as the final array component.
+ *
+ * @rtype: C{Array}
+ */
+Methanal.Util.split = function split(s, delim, maxsplit/*optional*/) {
+    var parts = s.split(delim);
+    if (maxsplit !== undefined && parts.length > maxsplit) {
+        var newparts = parts.splice(0, maxsplit);
+        newparts.push(parts.join(delim));
+        parts = newparts;
+    }
+    return parts;
+};
