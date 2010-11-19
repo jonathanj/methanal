@@ -602,7 +602,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
     function __init__(self) {
         var d = new Date();
         self._timezoneOffset = d.getTimezoneOffset() * 60 * 1000;
-        self._timestamp = d.getTime() - self._timezoneOffset;
+        self._timestamp = d.getTime();
         self._oneDay = false;
     },
 
@@ -611,7 +611,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * Local time C{Date} representation.
      */
     function asDate(self) {
-        return new Date(self._timestamp + self._timezoneOffset);
+        return new Date(self._timestamp);
     },
 
 
@@ -619,7 +619,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * UTC C{Date} representation.
      */
     function asUTCDate(self) {
-        return new Date(self._timestamp);
+        return new Date(self._timestamp - self._timezoneOffset);
     },
 
 
@@ -747,7 +747,7 @@ Methanal.Util.Time._monthNames = [
 Methanal.Util.Time.fromDate = function fromDate(dateObj) {
     var t = Methanal.Util.Time();
     t._timezoneOffset = dateObj.getTimezoneOffset() * 60 * 1000;
-    t._timestamp = dateObj.getTime() - t._timezoneOffset;
+    t._timestamp = dateObj.getTime();
     return t;
 };
 
