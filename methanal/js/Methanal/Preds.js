@@ -255,10 +255,14 @@ Methanal.Preds.regex = function regex(expn, value) {
  *
  * @type start: L{Methanal.Util.Time}
  *
- * @type value: C{Date}
+ * @type value: C{Date} or C{Number}
  */
 Methanal.Preds.dateSince = function dateSince(timedelta, start, value) {
     var t = start.offset(timedelta).asDate();
+    // Make some lives easier.
+    if (value && !(value instanceof Date)) {
+        value = new Date(value);
+    }
     return timedelta.offset > 0 ? value > t : value < t;
 };
 
