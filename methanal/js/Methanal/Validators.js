@@ -262,7 +262,7 @@ Methanal.Validators.validEmail = function validEmail(/*...*/) {
 /**
  * Value is within a timedelta and a start date.
  */
-Methanal.Validators.dateSince = function dateWithin(timedelta, start) {
+Methanal.Validators.dateSince = function dateSince(timedelta, start) {
     var future = timedelta.offset > 0;
     return Methanal.Validators.pred(
         Methanal.Util.partial(Methanal.Preds.dateSince, timedelta, start),

@@ -263,7 +263,7 @@ Methanal.Preds.dateSince = function dateSince(timedelta, start, value) {
     if (value && !(value instanceof Date)) {
         value = new Date(value);
     }
-    return timedelta.offset > 0 ? value > t : value < t;
+    return timedelta.offset > 0 ? value < t : value > t;
 };
 
 

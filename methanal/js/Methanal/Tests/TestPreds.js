@@ -358,13 +358,13 @@ Methanal.Tests.Util.TestCase.subclass(
 
         var dateSince = Methanal.Preds.dateSince;
         self.assertTrue(
-            dateSince, Methanal.Util.TimeDelta({'hours': 1}), tomorrow,
+            dateSince, Methanal.Util.TimeDelta({'days': 2}), tomorrow,
             nextDay.asDate());
         self.assertTrue(
-            dateSince, Methanal.Util.TimeDelta({'hours': 1}), tomorrow,
+            dateSince, Methanal.Util.TimeDelta({'days': 2}), tomorrow,
             nextDay.asTimestamp());
         self.assertFalse(
-            dateSince, Methanal.Util.TimeDelta({'days': 1}), tomorrow,
+            dateSince, Methanal.Util.TimeDelta({'hours': 1}), tomorrow,
             nextDay.asDate());
         self.assertFalse(
             dateSince, Methanal.Util.TimeDelta({'days': 1}), tomorrow,
@@ -378,40 +378,36 @@ Methanal.Tests.Util.TestCase.subclass(
     function test_dateWithin(self) {
         var now = Methanal.Util.Time();
         var tomorrow = now.offset(
-            Methanal.Util.TimeDelta({'days': 1}));
+            Methanal.Util.TimeDelta({'days': 1, 'minutes': 10}));
 
         var dateWithin = Methanal.Preds.dateWithin;
         self.assertTrue(
             dateWithin, Methanal.Util.TimeDelta({'hours': 1}),
-            tomorrow.asDate());
+            now.offset(Methanal.Util.TimeDelta({'minutes': 30})).asDate());
         self.assertTrue(
-            dateWithin, Methanal.Util.TimeDelta({'hours': 23,
-                                                 'minutes': 59,
-                                                 'seconds': 59}),
+            dateWithin, Methanal.Util.TimeDelta({'days': 1,
+                                                 'minutes': 30}),
             tomorrow.asTimestamp());
         self.assertFalse(
             dateWithin, Methanal.Util.TimeDelta({'days': 1}),
             tomorrow.asDate());
 
         var yesterday = now.offset(
-            Methanal.Util.TimeDelta({'days': -1}));
+            Methanal.Util.TimeDelta({'days': -1, 'minutes': -10}));
         self.assertTrue(
             dateWithin, Methanal.Util.TimeDelta({'hours': -1}),
-            yesterday.asTimestamp());
+            now.offset(Methanal.Util.TimeDelta({'minutes': -30})).asDate());
         self.assertTrue(
-            dateWithin, Methanal.Util.TimeDelta({'hours': -23,
-                                                 'minutes': -59,
-                                                 'seconds': -59}),
+            dateWithin, Methanal.Util.TimeDelta({'days': -1,
+                                                 'minutes': -30}),
             yesterday.asDate());
         // XXX: Fudge it slightly since dateWithin uses the current time and
         // sometimes things take some time.
         self.assertFalse(
-            dateWithin,
-            Methanal.Util.TimeDelta({'days': -1, 'minutes': -1}),
+            dateWithin, Methanal.Util.TimeDelta({'days': -1}),
             yesterday.asDate());
         self.assertFalse(
-            dateWithin,
-            Methanal.Util.TimeDelta({'days': -1, 'minutes': -1}),
+            dateWithin, Methanal.Util.TimeDelta({'days': -1}),
             yesterday.asTimestamp());
     },
 
