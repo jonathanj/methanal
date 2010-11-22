@@ -6,7 +6,7 @@
 
 
 Methanal.Tests.Util.TestCase.subclass(
-    Methanal.Tests.TestPreds, 'TestPreds').methods(
+    Methanal.Tests.TestPreds, 'PredsTestCase').methods(
     /**
      * Assert that C{value} predicates C{pred}.
      */
@@ -27,6 +27,26 @@ Methanal.Tests.Util.TestCase.subclass(
     },
 
 
+    /**
+     * Return C{true}.
+     */
+    function T(self) {
+        return true;
+    },
+
+
+    /**
+     * Return C{false}.
+     */
+    function F(self) {
+        return false;
+    });
+
+
+
+
+Methanal.Tests.TestPreds.PredsTestCase.subclass(
+    Methanal.Tests.TestPreds, 'TestPreds').methods(
     /**
      * Predicate is inverted.
      */
@@ -65,8 +85,6 @@ Methanal.Tests.Util.TestCase.subclass(
 
     /**
      * Logically AND values together.
-     *
-     * @type  values: C{Array} of C{Boolean}.
      */
     function test_AND(self) {
         var AND = Methanal.Preds.AND;
@@ -79,9 +97,21 @@ Methanal.Tests.Util.TestCase.subclass(
 
 
     /**
+     * Logical intersection of combined predicate results.
+     */
+    function test_intersection(self) {
+        var intersection = Methanal.Preds.intersection;
+        var T = self.T, F = self.F;
+        self.assertTrue(intersection([T]));
+        self.assertTrue(intersection([T, T]));
+        self.assertFalse(intersection([F]));
+        self.assertFalse(intersection([F, F]));
+        self.assertFalse(intersection([F, T]));
+    },
+
+
+    /**
      * Logically OR values together.
-     *
-     * @type  values: C{Array} of C{Boolean}.
      */
     function test_OR(self) {
         var OR = Methanal.Preds.OR;
@@ -90,6 +120,20 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertFalse(OR, [false]);
         self.assertFalse(OR, [false, false]);
         self.assertTrue(OR, [false, true]);
+    },
+
+
+    /**
+     * Logical union of combined predicate results.
+     */
+    function test_union(self) {
+        var union = Methanal.Preds.union;
+        var T = self.T, F = self.F;
+        self.assertTrue(union([T]));
+        self.assertTrue(union([T, T]));
+        self.assertFalse(union([F]));
+        self.assertFalse(union([F, F]));
+        self.assertTrue(union([F, T]));
     },
 
 
@@ -105,6 +149,20 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertFalse(XOR, [false]);
         self.assertFalse(XOR, [false, false]);
         self.assertTrue(XOR, [false, true]);
+    },
+
+
+    /**
+     * Logical symmetric difference of combined predicate results.
+     */
+    function test_symmetricDifference(self) {
+        var symmetricDifference = Methanal.Preds.symmetricDifference;
+        var T = self.T, F = self.F;
+        self.assertTrue(symmetricDifference([T]));
+        self.assertFalse(symmetricDifference([T, T]));
+        self.assertFalse(symmetricDifference([F]));
+        self.assertFalse(symmetricDifference([F, F]));
+        self.assertTrue(symmetricDifference([F, T]));
     },
 
 

@@ -7,7 +7,7 @@
 
 
 Methanal.Tests.Util.TestCase.subclass(
-    Methanal.Tests.TestValidators, 'TestValidators').methods(
+    Methanal.Tests.TestValidators, 'ValidatorsTestCase').methods(
     /**
      * Assert that C{value} is a valid input for C{validator}.
      */
@@ -29,9 +29,12 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertNotIdentical(validator.apply(null, args), undefined,
             'Expected invalid input for ' + Methanal.Util.repr(validator) +
             ', got: ' + Methanal.Util.repr(args));
-    },
+    });
 
 
+
+Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
+    Methanal.Tests.TestValidators, 'TestValidators').methods(
     /**
      * Validator with an inverted predicate.
      */

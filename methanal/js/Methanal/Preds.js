@@ -37,7 +37,20 @@ Methanal.Preds.AND = function AND(values) {
         function _and(a, b) { return a && b; }, values);
 };
 
-Methanal.Preds.intersection = Methanal.Preds.AND;
+
+
+/**
+ * Logical intersection of combined predicate results.
+ *
+ * @type  fs: C{Array} of C{Function}s
+ * @param fs: Predicates whose results will be combined.
+ *
+ * @rtype: C{Function} taking varargs.
+ * @return: Function that can be called, with varargs, to perform the
+ *     combining.
+ */
+Methanal.Preds.intersection = Methanal.Util.partial(
+    Methanal.Preds.combine, Methanal.Preds.AND);
 
 
 
@@ -51,7 +64,20 @@ Methanal.Preds.OR = function OR(values) {
         function _or(a, b) { return a || b; }, values);
 };
 
-Methanal.Preds.union = Methanal.Preds.OR;
+
+
+/**
+ * Logical union of combined predicate results.
+ *
+ * @type  fs: C{Array} of C{Function}s
+ * @param fs: Predicates whose results will be combined.
+ *
+ * @rtype: C{Function} taking varargs.
+ * @return: Function that can be called, with varargs, to perform the
+ *     combining.
+ */
+Methanal.Preds.union = Methanal.Util.partial(
+    Methanal.Preds.combine, Methanal.Preds.OR);
 
 
 
@@ -65,7 +91,20 @@ Methanal.Preds.XOR = function XOR(values) {
         function _xor(a, b) { return !!(a ^ b); }, values);
 };
 
-Methanal.Preds.difference = Methanal.Preds.XOR;
+
+
+/**
+ * Logical symmetric difference of combined predicate results.
+ *
+ * @type  fs: C{Array} of C{Function}s
+ * @param fs: Predicates whose results will be combined.
+ *
+ * @rtype: C{Function} taking varargs.
+ * @return: Function that can be called, with varargs, to perform the
+ *     combining.
+ */
+Methanal.Preds.symmetricDifference = Methanal.Util.partial(
+    Methanal.Preds.combine, Methanal.Preds.XOR);
 
 
 
