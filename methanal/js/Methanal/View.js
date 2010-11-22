@@ -184,8 +184,10 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      */
     function addHandler(self, fn, inputs, outputs) {
         if (fn === undefined) {
+            var repr = Methanal.Util.repr;
             throw Methanal.View.HandlerError(
-                'Specified handler function is not defined');
+                'Specified handler function is not defined (inputs: ' +
+                repr(inputs) + '; outputs: ' + repr(outputs));
         }
 
         var handler = Methanal.View._Handler(
