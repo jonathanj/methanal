@@ -1055,3 +1055,14 @@ Methanal.Util.split = function split(s, delim, maxsplit/*optional*/) {
     }
     return parts;
 };
+
+
+
+/**
+ * Copy properties from one object to another.
+ */
+Methanal.Util.copyProperties = function copyProperties(src, dst) {
+    for (var name in src) {
+        dst[name] = src[name];
+    }
+};
