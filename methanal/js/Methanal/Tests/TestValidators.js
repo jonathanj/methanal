@@ -37,8 +37,7 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_invert(self) {
         var x = Methanal.Validators.pred(
-            Methanal.Preds.invert(
-                Methanal.Util.partial(Methanal.Preds.lengthOf, 3)),
+            Methanal.Preds.invert(Methanal.Preds.lengthOf(3)),
             'Length cannot be 3');
         self.assertValid(x, 'a');
         self.assertValid(x, 'ab');

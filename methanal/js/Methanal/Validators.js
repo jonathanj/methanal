@@ -80,7 +80,7 @@ Methanal.Validators.hasLength = Methanal.Validators.pred(
  */
 Methanal.Validators.lengthOf = function lengthOf(n) {
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.lengthOf, n),
+        Methanal.Preds.lengthOf(n),
         'Value must be exactly ' + n.toString() + ' characters long');
 };
 
@@ -91,7 +91,7 @@ Methanal.Validators.lengthOf = function lengthOf(n) {
  */
 Methanal.Validators.lengthAtLeast = function lengthAtLeast(n) {
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.lengthAtLeast, n),
+        Methanal.Preds.lengthAtLeast(n),
         'Value must be at least ' + n.toString() + ' characters long');
 };
 
@@ -102,7 +102,7 @@ Methanal.Validators.lengthAtLeast = function lengthAtLeast(n) {
  */
 Methanal.Validators.lengthAtMost = function lengthAtMost(n) {
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.lengthAtMost, n),
+        Methanal.Preds.lengthAtMost(n),
         'Value must be at most ' + n.toString() + ' characters long');
 };
 
@@ -127,7 +127,7 @@ Methanal.Validators.notNull = Methanal.Validators.pred(
  */
 Methanal.Validators.between = function between(a, b) {
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.between, a, b),
+        Methanal.Preds.between(a, b),
         'Value must be between ' + a.toString() + ' and ' + b.toString());
 };
 
@@ -138,7 +138,7 @@ Methanal.Validators.between = function between(a, b) {
  */
 Methanal.Validators.lessThan = function lessThan(n) {
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.lessThan, n),
+        Methanal.Preds.lessThan(n),
         'Value must be less than ' + n.toString());
 };
 
@@ -149,7 +149,7 @@ Methanal.Validators.lessThan = function lessThan(n) {
  */
 Methanal.Validators.notGreaterThan = function notGreaterThan(n) {
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.notGreaterThan, n),
+        Methanal.Preds.notGreaterThan(n),
         'Value must be less than or equal to ' + n.toString());
 };
 
@@ -160,7 +160,7 @@ Methanal.Validators.notGreaterThan = function notGreaterThan(n) {
  */
 Methanal.Validators.greaterThan = function greaterThan(n) {
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.greaterThan, n),
+        Methanal.Preds.greaterThan(n),
         'Value must be greater than ' + n.toString());
 };
 
@@ -171,7 +171,7 @@ Methanal.Validators.greaterThan = function greaterThan(n) {
  */
 Methanal.Validators.notLessThan = function notLessThan(n) {
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.notLessThan, n),
+        Methanal.Preds.notLessThan(n),
         'Value must be greater than or equal to ' + n.toString());
 };
 
@@ -185,7 +185,7 @@ Methanal.Validators.notLessThan = function notLessThan(n) {
  */
 Methanal.Validators.oneOf = function oneOf(values) {
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.oneOf, values),
+        Methanal.Preds.oneOf(values),
         'Value must be one of: ' + Methanal.Util.repr(values));
 };
 
@@ -196,9 +196,10 @@ Methanal.Validators.oneOf = function oneOf(values) {
  * class.
  */
 Methanal.Validators.isChars = function isChars(expn) {
+    var pred = Methanal.Preds.isChars(expn);
     var extractExpn = new RegExp(expn, 'g');
     return function (value) {
-        if (!Methanal.Preds.isChars(expn, value)) {
+        if (!pred(value)) {
             return 'Invalid characters: ' + value.replace(extractExpn, ' ');
         }
     }
@@ -210,7 +211,7 @@ Methanal.Validators.isChars = function isChars(expn) {
  * Value consists of only digits.
  */
 Methanal.Validators.numeric = Methanal.Validators.pred(
-    Methanal.Util.partial(Methanal.Preds.regex, /^\d*$/),
+    Methanal.Preds.regex(/^\d*$/),
     'Value must be digits only');
 
 Methanal.Validators.digitsOnly = function digitsOnly(/*...*/) {
@@ -226,7 +227,7 @@ Methanal.Validators.digitsOnly = function digitsOnly(/*...*/) {
  * Value consists of only letters.
  */
 Methanal.Validators.alpha = Methanal.Validators.pred(
-    Methanal.Util.partial(Methanal.Preds.regex, /^[A-Za-z]*$/),
+    Methanal.Preds.regex(/^[A-Za-z]*$/),
     'Value must be letters only');
 
 
@@ -235,7 +236,7 @@ Methanal.Validators.alpha = Methanal.Validators.pred(
  * Value consists of only letters and digits.
  */
 Methanal.Validators.alphaNumeric = Methanal.Validators.pred(
-    Methanal.Util.partial(Methanal.Preds.regex, /^[0-9A-Za-z]*$/),
+    Methanal.Preds.regex(/^[0-9A-Za-z]*$/),
     'Value must be letters or digits only');
 
 
@@ -246,7 +247,7 @@ Methanal.Validators.alphaNumeric = Methanal.Validators.pred(
 Methanal.Validators.email = Methanal.Validators.ifThen(
     Methanal.Preds.hasLength,
     Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.regex,
+        Methanal.Preds.regex(
             /^([a-zA-Z0-9_\.\-+])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/),
         'Must be blank or a valid e-mail address'));
 
@@ -265,7 +266,7 @@ Methanal.Validators.validEmail = function validEmail(/*...*/) {
 Methanal.Validators.dateSince = function dateSince(timedelta, start) {
     var future = timedelta.offset > 0;
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.dateSince, timedelta, start),
+        Methanal.Preds.dateSince(timedelta, start),
         'Date must be no more than ' + timedelta.asHumanly() +
         ' in the ' + (future ? 'future' : 'past') + ' since ' +
         start.asHumanly());
@@ -279,7 +280,7 @@ Methanal.Validators.dateSince = function dateSince(timedelta, start) {
 Methanal.Validators.dateWithin = function dateWithin(timedelta) {
     var future = timedelta.offset > 0;
     return Methanal.Validators.pred(
-        Methanal.Util.partial(Methanal.Preds.dateWithin, timedelta),
+        Methanal.Preds.dateWithin(timedelta),
         'Date must be no more than ' + timedelta.asHumanly() +
         ' in the ' + (future ? 'future' : 'past'));
 };

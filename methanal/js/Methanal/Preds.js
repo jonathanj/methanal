@@ -98,12 +98,17 @@ Methanal.Preds.isFalse = function isFalse(value) {
 
 
 
+var partial = Methanal.Util.partial;
+
+
+
 /**
  * Value is identical to C{is}.
  */
-Methanal.Preds.valueIs = function valueIs(is, value) {
+function valueIs(is, value) {
     return value === is;
-};
+}
+Methanal.Preds.valueIs = partial(partial, valueIs);
 
 
 
@@ -128,27 +133,30 @@ Methanal.Preds.empty = function empty(value) {
 /**
  * Value has a length of exactly C{n}.
  */
-Methanal.Preds.lengthOf = function lengthOf(n, value) {
+function lengthOf(n, value) {
     return value != null && value.length === n;
-};
+}
+Methanal.Preds.lengthOf = partial(partial, lengthOf);
 
 
 
 /**
  * Value has a length of at least C{n}.
  */
-Methanal.Preds.lengthAtLeast = function lengthAtLeast(n, value) {
+function lengthAtLeast(n, value) {
     return value != null && value.length >= n;
-};
+}
+Methanal.Preds.lengthAtLeast = partial(partial, lengthAtLeast);
 
 
 
 /**
  * Value has a length of at most C{n}.
  */
-Methanal.Preds.lengthAtMost = function lengthAtMost(n, value) {
+function lengthAtMost(n, value) {
     return value != null && value.length <= n;
-};
+}
+Methanal.Preds.lengthAtMost = partial(partial, lengthAtMost);
 
 
 
@@ -170,45 +178,50 @@ Methanal.Preds.notNull = function notNull(value) {
  * @type  b: C{number}
  * @param b: The upper-bound inclusive value of the range
  */
-Methanal.Preds.between = function between(a, b, value) {
+function between(a, b, value) {
     return value >= a && value <= b;
-};
+}
+Methanal.Preds.between = partial(partial, between);
 
 
 
 /**
  * Value is less than C{n}.
  */
-Methanal.Preds.lessThan = function lessThan(n, value) {
+function lessThan(n, value) {
     return value < n;
-};
+}
+Methanal.Preds.lessThan = partial(partial, lessThan);
 
 
 
 /**
  * Value is not greater than (or, less than or equal to) C{n}.
  */
-Methanal.Preds.notGreaterThan = function notGreaterThan(n, value) {
+function notGreaterThan(n, value) {
     return value <= n;
-};
+}
+Methanal.Preds.notGreaterThan = partial(partial, notGreaterThan);
 
 
 
 /**
  * Value is greater than C{n}.
  */
-Methanal.Preds.greaterThan = function greaterThan(n, value) {
+function greaterThan(n, value) {
     return value > n;
-};
+}
+Methanal.Preds.greaterThan = partial(partial, greaterThan);
 
 
 
 /**
  * Value is not less than (or, greater than or equal to) C{n}.
  */
-Methanal.Preds.notLessThan = function notLessThan(n, value) {
+function notLessThan(n, value) {
     return value >= n;
-};
+}
+Methanal.Preds.notLessThan = partial(partial, notLessThan);
 
 
 
@@ -218,9 +231,10 @@ Methanal.Preds.notLessThan = function notLessThan(n, value) {
  * @type  values: C{Array}
  * @param values: Acceptable values
  */
-Methanal.Preds.oneOf = function oneOf(values, value) {
+function oneOf(values, value) {
     return Methanal.Util.arrayIndexOf(values, value) !== -1;
-};
+}
+Methanal.Preds.oneOf = partial(partial, oneOf);
 
 
 
@@ -230,10 +244,11 @@ Methanal.Preds.oneOf = function oneOf(values, value) {
  *
  * @type expn: C{String}
  */
-Methanal.Preds.isChars = function isChars(expn, value) {
+function isChars(expn, value) {
     var filterExpn = new RegExp('^(' + expn + ')+$');
     return filterExpn.test(value);
-};
+}
+Methanal.Preds.isChars = partial(partial, isChars);
 
 
 
@@ -242,9 +257,10 @@ Methanal.Preds.isChars = function isChars(expn, value) {
  *
  * @type expn: C{RegExp}
  */
-Methanal.Preds.regex = function regex(expn, value) {
+function regex(expn, value) {
     return expn.test(value);
-};
+}
+Methanal.Preds.regex = partial(partial, regex);
 
 
 
@@ -257,14 +273,15 @@ Methanal.Preds.regex = function regex(expn, value) {
  *
  * @type value: C{Date} or C{Number}
  */
-Methanal.Preds.dateSince = function dateSince(timedelta, start, value) {
+function dateSince(timedelta, start, value) {
     var t = start.offset(timedelta).asDate();
     // Make some lives easier.
     if (value && !(value instanceof Date)) {
         value = new Date(value);
     }
     return timedelta.offset > 0 ? value < t : value > t;
-};
+}
+Methanal.Preds.dateSince = partial(partial, dateSince);
 
 
 
@@ -275,8 +292,8 @@ Methanal.Preds.dateSince = function dateSince(timedelta, start, value) {
  *
  * @type value: C{Date}
  */
-Methanal.Preds.dateWithin = function dateWithin(timedelta, value) {
-    return Methanal.Preds.dateSince(timedelta, Methanal.Util.Time(), value);
+Methanal.Preds.dateWithin = function dateWithin(timedelta) {
+    return Methanal.Preds.dateSince(timedelta, Methanal.Util.Time());
 };
 
 

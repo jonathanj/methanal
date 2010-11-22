@@ -32,7 +32,7 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_invert(self) {
         var x = Methanal.Preds.invert(
-            Methanal.Util.partial(Methanal.Preds.lengthOf, 3));
+            Methanal.Util.partial(Methanal.Preds.lengthOf(3)));
         self.assertTrue(x, 'a');
         self.assertTrue(x, 'ab');
         self.assertFalse(x, 'abc');
@@ -144,16 +144,16 @@ Methanal.Tests.Util.TestCase.subclass(
     function test_valueIs(self) {
         var valueIs = Methanal.Preds.valueIs;
         var a = [];
-        self.assertTrue(valueIs, 5, 5);
-        self.assertTrue(valueIs, 'hello', 'hello');
-        self.assertTrue(valueIs, '', '');
-        self.assertTrue(valueIs, a, a);
-        self.assertFalse(valueIs, 4, 2);
-        self.assertFalse(valueIs, 'foo', 'bar');
-        self.assertFalse(valueIs, '', null);
-        self.assertFalse(valueIs, [], []);
-        self.assertFalse(valueIs, [1], [1]);
-        self.assertFalse(valueIs, undefined, null);
+        self.assertTrue(valueIs(5), 5);
+        self.assertTrue(valueIs('hello'), 'hello');
+        self.assertTrue(valueIs(''), '');
+        self.assertTrue(valueIs(a), a);
+        self.assertFalse(valueIs(4), 2);
+        self.assertFalse(valueIs('foo'), 'bar');
+        self.assertFalse(valueIs(''), null);
+        self.assertFalse(valueIs([]), []);
+        self.assertFalse(valueIs([1]), [1]);
+        self.assertFalse(valueIs(undefined), null);
     },
 
 
@@ -190,11 +190,11 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_lengthOf(self) {
         var lengthOf = Methanal.Preds.lengthOf;
-        self.assertTrue(lengthOf, 0, '');
-        self.assertTrue(lengthOf, 3, 'foo');
-        self.assertFalse(lengthOf, 3, '');
-        self.assertFalse(lengthOf, 3, null);
-        self.assertFalse(lengthOf, 3, undefined);
+        self.assertTrue(lengthOf(0), '');
+        self.assertTrue(lengthOf(3), 'foo');
+        self.assertFalse(lengthOf(3), '');
+        self.assertFalse(lengthOf(3), null);
+        self.assertFalse(lengthOf(3), undefined);
     },
 
 
@@ -203,13 +203,13 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_lengthAtLeast(self) {
         var lengthAtLeast = Methanal.Preds.lengthAtLeast;
-        self.assertTrue(lengthAtLeast, 2, 'quux');
-        self.assertTrue(lengthAtLeast, 2, 'foo');
-        self.assertTrue(lengthAtLeast, 2, 'hi');
-        self.assertFalse(lengthAtLeast, 2, 'a');
-        self.assertFalse(lengthAtLeast, 2, '');
-        self.assertFalse(lengthAtLeast, 2, null);
-        self.assertFalse(lengthAtLeast, 2, undefined);
+        self.assertTrue(lengthAtLeast(2), 'quux');
+        self.assertTrue(lengthAtLeast(2), 'foo');
+        self.assertTrue(lengthAtLeast(2), 'hi');
+        self.assertFalse(lengthAtLeast(2), 'a');
+        self.assertFalse(lengthAtLeast(2), '');
+        self.assertFalse(lengthAtLeast(2), null);
+        self.assertFalse(lengthAtLeast(2), undefined);
     },
 
 
@@ -218,13 +218,13 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_lengthAtMost(self) {
         var lengthAtMost = Methanal.Preds.lengthAtMost;
-        self.assertFalse(lengthAtMost, 2, 'quux');
-        self.assertFalse(lengthAtMost, 2, 'foo');
-        self.assertTrue(lengthAtMost, 2, 'hi');
-        self.assertTrue(lengthAtMost, 2, 'a');
-        self.assertTrue(lengthAtMost, 2, '');
-        self.assertFalse(lengthAtMost, 2, null);
-        self.assertFalse(lengthAtMost, 2, undefined);
+        self.assertFalse(lengthAtMost(2), 'quux');
+        self.assertFalse(lengthAtMost(2), 'foo');
+        self.assertTrue(lengthAtMost(2), 'hi');
+        self.assertTrue(lengthAtMost(2), 'a');
+        self.assertTrue(lengthAtMost(2), '');
+        self.assertFalse(lengthAtMost(2), null);
+        self.assertFalse(lengthAtMost(2), undefined);
     },
 
 
@@ -245,11 +245,11 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_between(self) {
         var between = Methanal.Preds.between;
-        self.assertTrue(between, 0, 3, 1);
-        self.assertTrue(between, 0, 3, 3);
-        self.assertTrue(between, -3, 3, 0);
-        self.assertFalse(between, -3, 3, 4);
-        self.assertFalse(between, -3, 3, -4);
+        self.assertTrue(between(0, 3), 1);
+        self.assertTrue(between(0, 3), 3);
+        self.assertTrue(between(-3, 3), 0);
+        self.assertFalse(between(-3, 3), 4);
+        self.assertFalse(between(-3, 3), -4);
     },
 
 
@@ -258,11 +258,11 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_lessThan(self) {
         var lessThan = Methanal.Preds.lessThan;
-        self.assertTrue(lessThan, 3, 2);
-        self.assertTrue(lessThan, 0, -1);
-        self.assertTrue(lessThan, -1, -2);
-        self.assertFalse(lessThan, 3, 3);
-        self.assertFalse(lessThan, 0, 3);
+        self.assertTrue(lessThan(3), 2);
+        self.assertTrue(lessThan(0), -1);
+        self.assertTrue(lessThan(-1), -2);
+        self.assertFalse(lessThan(3), 3);
+        self.assertFalse(lessThan(0), 3);
     },
 
 
@@ -271,11 +271,11 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_notGreaterThan(self) {
         var notGreaterThan = Methanal.Preds.notGreaterThan;
-        self.assertTrue(notGreaterThan, 3, 2);
-        self.assertTrue(notGreaterThan, 0, -1);
-        self.assertTrue(notGreaterThan, -1, -2);
-        self.assertTrue(notGreaterThan, 3, 3);
-        self.assertFalse(notGreaterThan, 0, 3);
+        self.assertTrue(notGreaterThan(3), 2);
+        self.assertTrue(notGreaterThan(0), -1);
+        self.assertTrue(notGreaterThan(-1), -2);
+        self.assertTrue(notGreaterThan(3), 3);
+        self.assertFalse(notGreaterThan(0), 3);
     },
 
 
@@ -284,12 +284,12 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_greaterThan(self) {
         var greaterThan = Methanal.Preds.greaterThan;
-        self.assertTrue(greaterThan, 2, 3);
-        self.assertTrue(greaterThan, -1, 0);
-        self.assertTrue(greaterThan, -2, -1);
-        self.assertFalse(greaterThan, 3, 3);
-        self.assertFalse(greaterThan, 0, -1);
-        self.assertFalse(greaterThan, 3, 1);
+        self.assertTrue(greaterThan(2), 3);
+        self.assertTrue(greaterThan(-1), 0);
+        self.assertTrue(greaterThan(-2), -1);
+        self.assertFalse(greaterThan(3), 3);
+        self.assertFalse(greaterThan(0), -1);
+        self.assertFalse(greaterThan(3), 1);
     },
 
 
@@ -298,12 +298,12 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_notLessThan(self) {
         var notLessThan = Methanal.Preds.notLessThan;
-        self.assertTrue(notLessThan, 2, 3);
-        self.assertTrue(notLessThan, -1, 0);
-        self.assertTrue(notLessThan, -2, -1);
-        self.assertTrue(notLessThan, 3, 3);
-        self.assertFalse(notLessThan, 0, -1);
-        self.assertFalse(notLessThan, 3, 1);
+        self.assertTrue(notLessThan(2), 3);
+        self.assertTrue(notLessThan(-1), 0);
+        self.assertTrue(notLessThan(-2), -1);
+        self.assertTrue(notLessThan(3), 3);
+        self.assertFalse(notLessThan(0), -1);
+        self.assertFalse(notLessThan(3), 1);
     },
 
 
@@ -312,11 +312,11 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_oneOf(self) {
         var oneOf = Methanal.Preds.oneOf;
-        self.assertTrue(oneOf, ['foo', 'bar'], 'foo');
-        self.assertFalse(oneOf, ['foo', 'bar'], 'baz');
-        self.assertFalse(oneOf, ['foo', 'bar'], '');
-        self.assertFalse(oneOf, [], 'foo');
-        self.assertFalse(oneOf, [], '');
+        self.assertTrue(oneOf(['foo', 'bar']), 'foo');
+        self.assertFalse(oneOf(['foo', 'bar']), 'baz');
+        self.assertFalse(oneOf(['foo', 'bar']), '');
+        self.assertFalse(oneOf([]), 'foo');
+        self.assertFalse(oneOf([]), '');
     },
 
 
@@ -326,11 +326,11 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_isChars(self) {
         var isChars = Methanal.Preds.isChars;
-        self.assertTrue(isChars, '[0-9]', '0123456789')
-        self.assertTrue(isChars, '[A-Z]', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-        self.assertTrue(isChars, '[a-z]', 'abcdefghijklmnopqrstuvwxyz')
-        self.assertTrue(isChars, "[a-z_']", "hello_world's")
-        self.assertFalse(isChars, '[0-9]', 'hello')
+        self.assertTrue(isChars('[0-9]'), '0123456789')
+        self.assertTrue(isChars('[A-Z]'), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
+        self.assertTrue(isChars('[a-z]'), 'abcdefghijklmnopqrstuvwxyz')
+        self.assertTrue(isChars("[a-z_']"), "hello_world's")
+        self.assertFalse(isChars('[0-9]'), 'hello')
     },
 
 
@@ -339,10 +339,10 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_regex(self) {
         var regex = Methanal.Preds.regex;
-        self.assertTrue(regex, /^\d+$/, '123');
-        self.assertTrue(regex, /^foo\d{2}$/, 'foo12');
-        self.assertFalse(regex, /^\d+$/, 'hello');
-        self.assertFalse(regex, /^foo\d{2}$/, 'bar12');
+        self.assertTrue(regex(/^\d+$/), '123');
+        self.assertTrue(regex(/^foo\d{2}$/), 'foo12');
+        self.assertFalse(regex(/^\d+$/), 'hello');
+        self.assertFalse(regex(/^foo\d{2}$/), 'bar12');
     },
 
 
@@ -358,16 +358,16 @@ Methanal.Tests.Util.TestCase.subclass(
 
         var dateSince = Methanal.Preds.dateSince;
         self.assertTrue(
-            dateSince, Methanal.Util.TimeDelta({'days': 2}), tomorrow,
+            dateSince(Methanal.Util.TimeDelta({'days': 2}), tomorrow),
             nextDay.asDate());
         self.assertTrue(
-            dateSince, Methanal.Util.TimeDelta({'days': 2}), tomorrow,
+            dateSince(Methanal.Util.TimeDelta({'days': 2}), tomorrow),
             nextDay.asTimestamp());
         self.assertFalse(
-            dateSince, Methanal.Util.TimeDelta({'hours': 1}), tomorrow,
+            dateSince(Methanal.Util.TimeDelta({'hours': 1}), tomorrow),
             nextDay.asDate());
         self.assertFalse(
-            dateSince, Methanal.Util.TimeDelta({'days': 1}), tomorrow,
+            dateSince(Methanal.Util.TimeDelta({'days': 1}), tomorrow),
             nextDay.asTimestamp());
     },
 
@@ -382,32 +382,32 @@ Methanal.Tests.Util.TestCase.subclass(
 
         var dateWithin = Methanal.Preds.dateWithin;
         self.assertTrue(
-            dateWithin, Methanal.Util.TimeDelta({'hours': 1}),
+            dateWithin(Methanal.Util.TimeDelta({'hours': 1})),
             now.offset(Methanal.Util.TimeDelta({'minutes': 30})).asDate());
         self.assertTrue(
-            dateWithin, Methanal.Util.TimeDelta({'days': 1,
-                                                 'minutes': 30}),
+            dateWithin(Methanal.Util.TimeDelta({'days': 1,
+                                                 'minutes': 30})),
             tomorrow.asTimestamp());
         self.assertFalse(
-            dateWithin, Methanal.Util.TimeDelta({'days': 1}),
+            dateWithin(Methanal.Util.TimeDelta({'days': 1})),
             tomorrow.asDate());
 
         var yesterday = now.offset(
             Methanal.Util.TimeDelta({'days': -1, 'minutes': -10}));
         self.assertTrue(
-            dateWithin, Methanal.Util.TimeDelta({'hours': -1}),
+            dateWithin(Methanal.Util.TimeDelta({'hours': -1})),
             now.offset(Methanal.Util.TimeDelta({'minutes': -30})).asDate());
         self.assertTrue(
-            dateWithin, Methanal.Util.TimeDelta({'days': -1,
-                                                 'minutes': -30}),
+            dateWithin(Methanal.Util.TimeDelta({'days': -1,
+                                                 'minutes': -30})),
             yesterday.asDate());
         // XXX: Fudge it slightly since dateWithin uses the current time and
         // sometimes things take some time.
         self.assertFalse(
-            dateWithin, Methanal.Util.TimeDelta({'days': -1}),
+            dateWithin(Methanal.Util.TimeDelta({'days': -1})),
             yesterday.asDate());
         self.assertFalse(
-            dateWithin, Methanal.Util.TimeDelta({'days': -1}),
+            dateWithin(Methanal.Util.TimeDelta({'days': -1})),
             yesterday.asTimestamp());
     },
 
