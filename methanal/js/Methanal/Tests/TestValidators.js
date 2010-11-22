@@ -228,6 +228,21 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
 
 
     /**
+     * Value contains a subset (in no particular order) of an C{Array}.
+     */
+    function test_arraySubset(self) {
+        var arraySubset = Methanal.Validators.arraySubset;
+        var x = ['a', 'b'];
+        self.assertValid(arraySubset([]), x);
+        self.assertValid(arraySubset(['a']), x);
+        self.assertValid(arraySubset(['b']), x);
+        self.assertValid(arraySubset(['a', 'b']), x);
+        self.assertInvalid(arraySubset(['c']), x);
+        self.assertInvalid(arraySubset(['a', 'c']), x);
+    },
+
+
+    /**
      * Value contains only characters matching a regular expression character
      * class.
      */

@@ -902,4 +902,16 @@ Divmod.UnitTest.TestCase.subclass(
         self.assertIdentical(node.getAttribute('id'), 'an_id');
         self.assertIdentical(node.getAttribute('class'), 'a_class');
         self.assertIdentical(node.getAttribute('foo'), 'bar');
+    },
+
+
+    /**
+     * Copy properties from one object to another.
+     */
+    function test_copyProperties(self) {
+        var src = {'a': 5};
+        var dst = {'b': 6};
+        Methanal.Util.copyProperties(src, dst);
+        self.assertIdentical(dst['b'], 6);
+        self.assertIdentical(dst['a'], 5);
     });

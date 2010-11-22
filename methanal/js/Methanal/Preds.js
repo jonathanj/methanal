@@ -278,6 +278,23 @@ Methanal.Preds.oneOf = partial(partial, oneOf);
 
 
 /**
+ * Value contains a subset (in no particular order) of an C{Array}.
+ *
+ * @type subset: C{Array}
+ */
+function arraySubset(subset, value) {
+    for (var i = 0; i < subset.length; ++i) {
+        if (Methanal.Util.arrayIndexOf(value, subset[i]) === -1) {
+            return false;
+        }
+    }
+    return true;
+}
+Methanal.Preds.arraySubset = partial(partial, arraySubset);
+
+
+
+/**
  * Value contains only characters matching a regular expression character
  * class.
  *

@@ -379,6 +379,21 @@ Methanal.Tests.TestPreds.PredsTestCase.subclass(
 
 
     /**
+     * Value contains a subset (in no particular order) of an C{Array}.
+     */
+    function test_arraySubset(self) {
+        var arraySubset = Methanal.Preds.arraySubset;
+        var x = ['a', 'b'];
+        self.assertTrue(arraySubset([]), x);
+        self.assertTrue(arraySubset(['a']), x);
+        self.assertTrue(arraySubset(['b']), x);
+        self.assertTrue(arraySubset(['a', 'b']), x);
+        self.assertFalse(arraySubset(['c']), x);
+        self.assertFalse(arraySubset(['a', 'c']), x);
+    },
+
+
+    /**
      * Value contains only characters matching a regular expression character
      * class.
      */

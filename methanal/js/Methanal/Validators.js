@@ -192,6 +192,19 @@ Methanal.Validators.oneOf = function oneOf(values) {
 
 
 /**
+ * Value contains a subset (in no particular order) of an C{Array}.
+ *
+ * @type subset: C{Array}
+ */
+Methanal.Validators.arraySubset = function arraySubset(subset) {
+    return Methanal.Validators.pred(
+        Methanal.Preds.arraySubset(subset),
+        'Value must contain: ' + subset.join(', '));
+};
+
+
+
+/**
  * Value contains only characters matching a regular expression character
  * class.
  */
