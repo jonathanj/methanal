@@ -178,6 +178,17 @@ Methanal.Validators.notLessThan = function notLessThan(n) {
 
 
 /**
+ * Value is a multiple of C{n}.
+ */
+Methanal.Validators.multipleOf = function multiple(n) {
+    return Methanal.Validators.pred(
+        Methanal.Preds.multipleOf(n),
+        'Value must be a multiple of ' + n.toString());
+};
+
+
+
+/**
  * Value is one of a given set.
  *
  * @type  values: C{Array}

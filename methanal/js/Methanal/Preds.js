@@ -265,6 +265,16 @@ Methanal.Preds.notLessThan = partial(partial, notLessThan);
 
 
 /**
+ * Value is a multiple of C{n}.
+ */
+function multipleOf(n, value) {
+    return value !== 0 && value % n === 0;
+}
+Methanal.Preds.multipleOf = partial(partial, multipleOf);
+
+
+
+/**
  * Value is one of a given set.
  *
  * @type  values: C{Array}

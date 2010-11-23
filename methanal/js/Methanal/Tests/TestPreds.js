@@ -366,6 +366,19 @@ Methanal.Tests.TestPreds.PredsTestCase.subclass(
 
 
     /**
+     * Value is a multiple of C{n}.
+     */
+    function test_multipleOf(self) {
+        var multipleOf = Methanal.Preds.multipleOf;
+        self.assertTrue(multipleOf(3), 3);
+        self.assertTrue(multipleOf(3), 6);
+        self.assertTrue(multipleOf(2), -8);
+        self.assertFalse(multipleOf(2), 1);
+        self.assertFalse(multipleOf(2), 0);
+    },
+
+
+    /**
      * Value is one of a given set.
      */
     function test_oneOf(self) {

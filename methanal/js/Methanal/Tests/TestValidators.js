@@ -215,6 +215,19 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
 
 
     /**
+     * Value is a multiple of C{n}.
+     */
+    function test_multipleOf(self) {
+        var multipleOf = Methanal.Validators.multipleOf;
+        self.assertValid(multipleOf(3), 3);
+        self.assertValid(multipleOf(3), 6);
+        self.assertValid(multipleOf(2), -8);
+        self.assertInvalid(multipleOf(2), 1);
+        self.assertInvalid(multipleOf(2), 0);
+    },
+
+
+    /**
      * Value is one of a given set.
      */
     function test_oneOf(self) {
