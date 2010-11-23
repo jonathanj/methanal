@@ -704,6 +704,21 @@ class IntegerInput(NumericInput):
 
 
 
+class FloatInput(NumericInput):
+    """
+    Float input.
+    """
+    jsClass = u'Methanal.View.FloatInput'
+
+
+    def getValue(self):
+        value = self.param.value
+        if value is None:
+            return u''
+        return float(value)
+
+
+
 class DecimalInput(NumericInput):
     """
     Decimal input.
@@ -1316,10 +1331,11 @@ class AutoItemView(ItemView):
 
 
 _inputTypes = {
-    boolean:    lambda env: CheckboxInput,
-    text:       lambda env: TextInput,
-    integer:    lambda env: IntegerInput,
-    timestamp:  lambda env:
+    boolean:        lambda env: CheckboxInput,
+    text:           lambda env: TextInput,
+    integer:        lambda env: IntegerInput,
+    ieee754_double: lambda env: FloatInput,
+    timestamp:      lambda env:
         lambda **kw: DateInput(timezone=env['timezone'], **kw)}
 
 def inputTypeFromAttribute(attr, **env):

@@ -2349,6 +2349,26 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'IntegerInput').methods(
 
 
 /**
+ * Float input.
+ */
+Methanal.View.NumericInput.subclass(Methanal.View, 'FloatInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.FloatInput.upcall(self, '__init__', node, args):
+        self._validInput = /^[-+]?\d+(:?\.\d+)?$/;
+    },
+
+
+    function getValue(self) {
+        var value = Methanal.View.FloatInput.upcall(self, 'getValue');
+        if (value) {
+            value = Methanal.Util.strToFloat(value);
+        }
+        return value;
+    });
+
+
+
+/**
  * Decimal number input.
  *
  * @type decimalPlaces: C{Integer}

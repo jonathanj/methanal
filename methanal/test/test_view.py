@@ -342,6 +342,33 @@ class IntegerInputTests(FormInputTests, NumericInputTestsMixin):
 
 
 
+class FloatInputTests(FormInputTests, NumericInputTestsMixin):
+    """
+    Tests for L{methanal.view.FloatInput}.
+    """
+    controlType = view.FloatInput
+
+
+    def test_getValue(self):
+        """
+        L{methanal.view.FloatInput.getValue} retrieves an empty string in the
+        C{None} case and a C{float} in the case where a value exists.
+        """
+        control = self.createControl(dict())
+        param = control.parent.param
+
+        param.value = None
+        self.assertEquals(control.getValue(), u'')
+
+        param.value = u'5'
+        self.assertTrue(isinstance(control.getValue(), float))
+        self.assertEquals(control.getValue(), 5.0)
+        param.value = 5.0
+        self.assertTrue(isinstance(control.getValue(), float))
+        self.assertEquals(control.getValue(), 5.0)
+
+
+
 class DecimalInputTests(FormInputTests, NumericInputTestsMixin):
     """
     Tests for L{methanal.view.DecimalInput}.

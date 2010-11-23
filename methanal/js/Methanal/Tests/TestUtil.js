@@ -204,6 +204,30 @@ Methanal.Tests.Util.TestCase.subclass(
 
 
     /**
+     * L{Methanal.Util.strToFloat} converts a float value, represented
+     * as a C{String}, to a C{Float}.
+     */
+    function test_strToFloat(self) {
+        var CASES = [
+            ['1234', 1234],
+            ['01234.56', 1234.56],
+            ['.0', 0],
+            ['-1', -1],
+            ['123.45abc', undefined],
+            ['abc123.45', undefined],
+            ['0x123', undefined]];
+
+        for (var i = 0; i < CASES.length; ++i) {
+            var input = CASES[i][0];
+            var expected = CASES[i][1];
+            var actual = Methanal.Util.strToFloat(input);
+            self.assert(expected === actual, 'input = ' + input +
+                ' :: expected = ' + expected + ' :: actual = ' + actual);
+        }
+    },
+
+
+    /**
      * Applies a function of two arguments cumulatively to the elements of a
      * list from left to right, so as to reduce the list to a single value.
      */

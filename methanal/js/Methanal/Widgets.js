@@ -187,6 +187,13 @@ Methanal.Widgets.Column.subclass(Methanal.Widgets, 'IntegerColumn');
 
 
 /**
+ * Column representing float values.
+ */
+Methanal.Widgets.Column.subclass(Methanal.Widgets, 'FloatColumn');
+
+
+
+/**
  * Column representing boolean values.
  */
 Methanal.Widgets.Column.subclass(Methanal.Widgets, 'BooleanColumn');
