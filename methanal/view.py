@@ -9,7 +9,7 @@ from twisted.python.components import registerAdapter
 from twisted.python.versions import Version
 from twisted.python.deprecate import deprecated
 
-from axiom.attributes import text, integer, timestamp, boolean
+from axiom.attributes import text, integer, timestamp, boolean, ieee754_double
 
 from nevow.page import renderer
 from nevow.athena import expose
