@@ -2353,7 +2353,7 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'IntegerInput').methods(
  */
 Methanal.View.NumericInput.subclass(Methanal.View, 'FloatInput').methods(
     function __init__(self, node, args) {
-        Methanal.View.FloatInput.upcall(self, '__init__', node, args):
+        Methanal.View.FloatInput.upcall(self, '__init__', node, args);
         self._validInput = /^[-+]?\d+(:?\.\d+)?$/;
     },
 
