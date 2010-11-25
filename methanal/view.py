@@ -711,6 +711,12 @@ class FloatInput(NumericInput):
     jsClass = u'Methanal.View.FloatInput'
 
 
+    def convertValue(self, value):
+        if value is not None:
+            value = float(value)
+        return value
+
+
     def getValue(self):
         value = self.param.value
         if value is None:
