@@ -286,9 +286,9 @@ Methanal.Tests.TestWidgets.SimpleColumnTest.subclass(
             'a': {value: 42.0,
                   link: null,
                   nodeValue: '42'},
-            'b': {value: 1,
+            'b': {value: 1.23,
                   link: 'quux',
-                  nodeValue: '5144'}};
+                  nodeValue: '1.23'}};
         Methanal.Tests.TestWidgets.TestFloatColumn.upcall(self, 'setUp');
     });
 
