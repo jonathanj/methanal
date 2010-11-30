@@ -368,6 +368,15 @@ class FloatInputTests(FormInputTests, NumericInputTestsMixin):
         self.assertEquals(control.getValue(), 5.0)
 
 
+    def test_minimumMaximumDefaultValues(self):
+        """
+        The limits for SQL and Python float types are the same value, so no
+        minimum or maximum checking is required in Methanal for the default
+        ranges.
+        """
+        pass
+
+
 
 class DecimalInputTests(FormInputTests, NumericInputTestsMixin):
     """
