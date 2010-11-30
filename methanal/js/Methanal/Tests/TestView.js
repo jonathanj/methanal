@@ -1006,6 +1006,34 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
 
 
     /**
+     * L{Methanal.View.IntegerInput.getValue} returns an integer value if the
+     * input node's value is a valid number, C{null} if it is blank and
+     * C{undefined} if the value is invalid.
+     */
+    function test_getValue(self) {
+        var CASES = [
+            [null,  null],
+            ['',    null],
+            ['abc', undefined],
+            ['0.5', undefined],
+            ['1a',  undefined],
+            ['0',   0],
+            ['-1',  -1],
+            ['42',  42]];
+
+        self.testControl({value: null},
+            function (control) {
+                Methanal.Tests.Util.assertCases(
+                    self,
+                    function (value) {
+                        control.setValue(value);
+                        return control.getValue();
+                    }, CASES);
+            });
+    },
+
+
+    /**
      * L{Methanal.View.IntegerInput} only accepts input that is a valid integer.
      */
     function test_inputValidation(self) {
@@ -1073,6 +1101,37 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
 
 
     /**
+     * L{Methanal.View.FloatInput.getValue} returns an float value if the
+     * input node's value is a valid number, C{null} if it is blank and
+     * C{undefined} if the value is invalid.
+     */
+    function test_getValue(self) {
+        var CASES = [
+            [null,  null],
+            ['',    null],
+            ['abc', undefined],
+            ['0.5', 0.5],
+            ['.5',  0.5],
+            ['-.5', -0.5],
+            ['1a',  undefined],
+            ['0',   0],
+            ['-1',  -1],
+            ['42',  42],
+            ['1.2', 1.2]];
+
+        self.testControl({value: null},
+            function (control) {
+                Methanal.Tests.Util.assertCases(
+                    self,
+                    function (value) {
+                        control.setValue(value);
+                        return control.getValue();
+                    }, CASES);
+            });
+    },
+
+
+    /**
      * L{Methanal.View.FloatInput} only accepts input that is a valid float.
      */
     function test_inputValidation(self) {
@@ -1082,9 +1141,12 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertValidInput(control, '');
                 self.assertValidInput(control, '1');
                 self.assertValidInput(control, '1.1');
-                self.assertValidInput(control, '1.0');
+                self.assertValidInput(control, '+1.0');
+                self.assertValidInput(control, '1.');
                 self.assertValidInput(control, '-1.0');
                 self.assertValidInput(control, '.1');
+                self.assertValidInput(control, '+.1');
+                self.assertValidInput(control, '-.1');
                 self.assertValidInput(control, '.0');
                 self.assertInvalidInput(control, 'a');
                 self.assertInvalidInput(control, '1.2.1');
