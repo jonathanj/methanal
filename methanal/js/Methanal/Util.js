@@ -133,9 +133,9 @@ Methanal.Util.replaceNodeText = function replaceNodeText(node, text) {
 
 
 /**
- * Return true iff the given string represents a base-10 numerical value.
+ * Return C{true} iff the given string represents a base-10 numerical value.
  */
-Methanal.Util._isNumericalString = function _isNumericalString(s) {
+Methanal.Util.isNumericalString = function isNumericalString(s) {
     if (typeof s !== 'string') {
         return false;
     } else if (s.indexOf('x') !== -1) {
@@ -155,13 +155,13 @@ Methanal.Util._isNumericalString = function _isNumericalString(s) {
  *
  * @type s: C{String}
  *
- * @rtype: C{Integer} or C{undefined}
+ * @rtype: C{Number} or C{undefined}
  */
 Methanal.Util.strToInt = function strToInt(s) {
-    if (Methanal.Util._isNumericalString(s)) {
-        return parseInt(s, 10);
+    if (!Methanal.Util.isNumericalString(s)) {
+        return undefined;
     }
-    return undefined;
+    return parseInt(s, 10);
 };
 
 
@@ -171,14 +171,14 @@ Methanal.Util.strToInt = function strToInt(s) {
  *
  * @type s: C{String}
  *
- * @rtype: C{Float} or C{undefined}
+ * @rtype: C{Number} or C{undefined}
  */
 Methanal.Util.strToFloat = function strToFloat(s) {
-    if (Methanal.Util._isNumericalString(s)) {
-        return parseFloat(s);
+    if (!Methanal.Util.isNumericalString(s)) {
+        return undefined;
     }
-    return undefined;
-}
+    return parseFloat(s);
+};
 
 
 

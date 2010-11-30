@@ -180,6 +180,26 @@ Methanal.Tests.Util.TestCase.subclass(
 
 
     /**
+     * Return C{true} iff the given string represents a base-10 numerical value.
+     */
+    function test_isNumericalString(self) {
+        var CASES = [
+            ['1234',    true],
+            ['1.23',    true],
+            ['0',       true],
+            ['01',      true],
+            [1234,      false],
+            [1.23,      false],
+            ['0x1',     false],
+            ['abc',     false],
+            [null,      false],
+            [undefined, false]];
+        Methanal.Tests.Util.assertCases(
+            self, Methanal.Util.isNumericalString, CASES);
+    },
+
+
+    /**
      * L{Methanal.Util.strToInt} converts a base-10 integer value, represented
      * as a C{String}, to an C{Integer}.
      */
