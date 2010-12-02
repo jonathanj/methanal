@@ -1,24 +1,33 @@
+import textwrap
 from zope.interface import implements
+
+from twisted.python.versions import Version
+from twisted.python.deprecate import deprecated
 
 from methanal.errors import InvalidEnumItem
 from methanal.imethanal import IEnumeration
 
 
 
-class ListEnumeration(object):
+@deprecated(Version('methanal', 0, 2, 1))
+def ListEnumeration(theList):
     """
-    An L{IEnumeration} implementation for the C{list} type.
+    An L{IEnumeration} adapter for the C{list} type.
+
+    This is deprecated, use L{Enum.fromPairs} instead.
     """
-    implements(IEnumeration)
+    # If this isn't a grouped input, turn it into one with one unnamed group.
+    if (theList and
+        len(theList[0]) > 1 and
+        not isinstance(theList[0][1], (tuple, list))):
+        theList = [(None, theList)]
 
+    items = []
+    for groupName, values in theList:
+        for value, desc in values:
+            items.append(EnumItem(value, desc, group=groupName))
 
-    def __init__(self, theList):
-        self.theList = theList
-
-
-    # IEnumeration
-    def asPairs(self):
-        return self.theList
+    return Enum('', items)
 
 
 
@@ -26,7 +35,7 @@ class Enum(object):
     """
     An enumeration.
 
-    @ivar doc: A brief description of the enumeration's intent
+    L{Enum} objects implement the iterator protocol.
 
     @ivar _order: A list of enumeration items, used to preserve the original
         order of the enumeration
@@ -40,20 +49,45 @@ class Enum(object):
         """
         Initialise an enumeration.
 
-        @param doc: See L{Enum.doc}
-
-        @type  values: C{iterable} of L{EnumItem}
+        @type values: C{iterable} of L{EnumItem}
         """
         self.doc = doc
 
         _order = self._order = []
         _values = self._values = {}
         for value in values:
-            if value.value in _values:
+            key = self._getValueMapping(value)
+            if key in _values:
                 raise ValueError(
-                    '%r is already a value in the enumeration' % (value.value,))
+                    '%r is already a value in the enumeration' % (key,))
             _order.append(value)
-            _values[value.value] = value
+            _values[key] = value
+
+
+    def __iter__(self):
+        for item in self._order:
+            if not item.hidden:
+                yield item
+
+
+    def __repr__(self):
+        lines = textwrap.wrap(textwrap.dedent(self.doc.strip()))
+        line = 'undocumented'
+        if lines:
+            line = lines[0]
+            if len(lines) > 1:
+                line += '...'
+            line = '"""%s"""' % (line,)
+        return '<%s %s>' % (
+            type(self).__name__,
+            line)
+
+
+    def _getValueMapping(self, value):
+        """
+        Determine the key to use when constructing a mapping for C{value}.
+        """
+        return value.value
 
 
     @classmethod
@@ -71,12 +105,9 @@ class Enum(object):
         return cls(doc=doc, values=values)
 
 
-    def get(self, value):
-        """
-        Get an enumeration item for a given enumeration value.
+    # IEnumeration
 
-        @rtype: L{EnumItem}
-        """
+    def get(self, value):
         item = self._values.get(value)
         if item is None:
             raise InvalidEnumItem(value)
@@ -84,9 +115,6 @@ class Enum(object):
 
 
     def getDesc(self, value):
-        """
-        Get the description for a given enumeration value.
-        """
         try:
             return self.get(value).desc
         except InvalidEnumItem:
@@ -94,9 +122,6 @@ class Enum(object):
 
 
     def getExtra(self, value, extraName, default=None):
-        """
-        Get the extra value for C{extraName} or use C{default}.
-        """
         try:
             return self.get(value).get(extraName, default)
         except InvalidEnumItem:
@@ -104,43 +129,52 @@ class Enum(object):
 
 
     def find(self, **names):
-        """
-        Find the first L{EnumItem} with matching extra values.
-
-        @param **names: Extra values to match
-
-        @rtype:  L{EnumItem}
-        @return: The first matching L{EnumItem} or C{None} if there are no
-            matches
-        """
         for res in self.findAll(**names):
             return res
         return None
 
 
     def findAll(self, **names):
-        """
-        Find all L{EnumItem}s with matching extra values.
-
-        @param **names: Extra values to match
-
-        @rtype:  C{iterable} of L{EnumItem}
-        """
         values = names.items()
         if len(values) != 1:
             raise ValueError('Only one query is allowed at a time')
 
         name, value = values[0]
-        for item in self._order:
+        for item in self:
             if item.get(name) == value:
                 yield item
 
 
-    # IEnumeration
     def asPairs(self):
-        return [(i.value, i.desc)
-                for i in self._order
-                if not i.hidden]
+        return [(i.value, i.desc) for i in self]
+
+
+
+class ObjectEnum(Enum):
+    """
+    An enumeration for arbitrary Python objects.
+
+    Pass the Python object as the C{value} parameter to L{EnumItem}.
+    C{ObjectEnum} will automatically create an C{'id'} extra value for
+    L{EnumItem}s that do not already have such a value.
+    """
+    def _getValueMapping(self, value):
+        key = unicode(id(value.value))
+        if value.get('id') is None:
+            value._extra['id'] = key
+        return key
+
+
+    def get(self, value):
+        value = unicode(id(value))
+        return super(ObjectEnum, self).get(value)
+
+
+    # IEnumeration
+
+    def asPairs(self):
+        return [(i.id, i.desc)
+                for i in self]
 
 
 
@@ -168,6 +202,14 @@ class EnumItem(object):
         self.desc = desc
         self.hidden = hidden
         self._extra = extra
+
+
+    def __repr__(self):
+        return '<%s value=%r desc=%r hidden=%r>' % (
+            type(self).__name__,
+            self.value,
+            self.desc,
+            self.hidden)
 
 
     def __getattr__(self, name):

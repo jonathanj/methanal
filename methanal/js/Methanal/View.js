@@ -52,7 +52,12 @@ Divmod.Class.subclass(Methanal.View, '_Handler').methods(
     function update(self) {
         var values = [];
         for (var j = 0; j < self.inputs.length; ++j) {
-            var value = self.cache.getData(self.inputs[j]);
+            var name = self.inputs[j];
+            if (!self.cache.isActive(name)) {
+                self.value = self.cache.failureValue;
+                return;
+            }
+            var value = self.cache.getData(name);
             values.push(value);
         }
         self.value = self.fn.apply(null, values);
@@ -96,12 +101,23 @@ Divmod.Error.subclass(Methanal.View, 'MissingControlError').methods(
  *
  * @type update: C{function} taking C{String}, C{Array}
  * @ivar update: Called for each output control name with a sequence of values
- *     from handler functions
+ *     from handler functions, which can optionally return a C{boolean}
+ *     indicating whether anything changed in an update, which is then returned
+ *     from L{changed}.
+ *
+ * @type isActive: C{function} taking C{String}
+ * @ivar isActive: Function used for determining whether a control, specified
+ *     by name, is active.
+ *
+ * @ivar failureValue: Value to use for L{_Handler.value} when an inactive
+ *     control is encountered during an update.
  */
 Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
-    function __init__(self, getData, update) {
+    function __init__(self, getData, update, isActive, failureValue) {
         self.getData = getData;
         self.update = update;
+        self.isActive = isActive;
+        self.failureValue = failureValue;
         self._inputToHandlers = {};
         self._outputToHandlers = {};
         self._handlers = {};
@@ -117,6 +133,7 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      *     relevant
      */
     function _updateOutputs(self, outputs) {
+        var updated = false;
         for (var output in outputs) {
             var results = [];
             for (var handlerID in self._outputToHandlers[output]) {
@@ -124,9 +141,10 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
                 results.push(handler.value);
             }
             if (results.length > 0) {
-                self.update(output, results);
+                updated |= self.update(output, results);
             }
         }
+        return updated;
     },
 
 
@@ -198,6 +216,9 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      *
      * @type  input: C{String}
      * @param input: Input control name
+     *
+     * @rtype:  C{boolean}
+     * @return: Did any changes in the outputs occur during the updates?
      */
     function changed(self, input) {
         var handlers = self._inputToHandlers[input];
@@ -210,7 +231,7 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
             }
         }
 
-        self._updateOutputs(outputs);
+        return self._updateOutputs(outputs);
     });
 
 
@@ -228,6 +249,42 @@ Divmod.Error.subclass(Methanal.View, 'FreezeThawMismatch');
  * loaded.
  */
 Divmod.Error.subclass(Methanal.View, 'UnexpectedControl');
+
+
+
+/**
+ * Visit descendant L{Methanal.View.FormRow} widgets.
+ *
+ * Recurse into child widgets that are a L{Methanal.View.InputContainer}
+ * instance (and not a C{FormRow}).
+ *
+ * @type  widgetParent: C{Nevow.Athena.Widget}
+ * @param widgetParent: Parent widget to find C{FormRow}s in.
+ *
+ * @type  fn: C{Function}
+ * @param fn: Callable to apply to each C{FormRow}.
+ *
+ * @rtype:  C{Array} of L{Methanal.View.FormRow}
+ * @return: All active C{FormRow}s that are descendants of C{widgetParent}.
+ */
+Methanal.View.visitRows = function visitRows(widgetParent, fn) {
+    function _visit(parent) {
+        var childWidgets = parent.childWidgets;
+        if (!childWidgets) {
+            return;
+        }
+        for (var i = 0; i < childWidgets.length; ++i) {
+            var widget = childWidgets[i];
+            if (widget instanceof Methanal.View.FormRow) {
+                fn(widget);
+            } else if (widget instanceof Methanal.View.InputContainer) {
+                _visit(widget);
+            }
+        }
+    }
+
+    _visit(widgetParent);
+};
 
 
 
@@ -251,6 +308,9 @@ Divmod.Error.subclass(Methanal.View, 'UnexpectedControl');
  * @type fullyLoaded: C{boolean}
  * @ivar fullyLoaded: Have all the form inputs reported that they're finished
  *     loading?
+ *
+ * @type enableControlStriping: C{boolean}
+ * @ivar enableControlStriping: Perform visual striping of active form controls?
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
     /**
@@ -288,8 +348,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         var control = self.getControl(name);
         result = Methanal.Util.reduce(_and, values, true);
         self.freeze();
+        var changed = result !== control.active;
         control.setActive(result);
         self.thaw();
+        return changed;
     },
 
 
@@ -306,16 +368,24 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         self.subforms = {};
 
         function getData(name) {
-            return self.getControl(name).getValue();
-        };
+            return self.getControlValue(name);
+        }
+
+        function isActive(name) {
+            return self.getControl(name).active;
+        }
 
         self._validatorCache = Methanal.View._HandlerCache(
             getData,
-            function (name, values) { self._validatorUpdate(name, values); });
+            function (name, values) { return self._validatorUpdate(name, values); },
+            isActive,
+            undefined);
 
         self._depCache = Methanal.View._HandlerCache(
             getData,
-            function (name, values) { self._depUpdate(name, values); });
+            function (name, values) { return self._depUpdate(name, values); },
+            isActive,
+            false);
 
         self.controlsLoaded = false;
         self.fullyLoaded = false;
@@ -406,6 +476,39 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
+     * Perform control striping.
+     *
+     * If L{enableControlStriping} is C{false}, striping is not performed.
+     */
+    function _stripeControls(self) {
+        if (self.enableControlStriping) {
+            self.stripeControls();
+        }
+    },
+
+
+    /**
+     * Perform control striping.
+     */
+    function stripeControls(self) {
+        var rows = [];
+        Methanal.View.visitRows(self, function (row) {
+            Methanal.Util.removeElementClass(
+                row.node, 'methanal-control-even');
+            if (row.active) {
+                rows.push(row);
+            }
+        });
+
+        Methanal.Util.nthItem(rows, 2, 0,
+            function (row) {
+                Methanal.Util.addElementClass(
+                    row.node, 'methanal-control-even');
+            });
+    },
+
+
+    /**
      * Perform final form initialisation tasks.
      *
      * Once all controls in L{controlNames} have reported in and L{setActions}
@@ -421,9 +524,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         for (var name in self._depCache._inputToHandlers) {
             var node = self.getControl(name).widgetParent.node;
             Methanal.Util.addElementClass(node, 'dependancy-parent');
-            node.title = 'Other fields depend on this field';
         }
         self.refresh();
+        self._stripeControls();
     },
 
 
@@ -452,6 +555,23 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             throw Methanal.View.MissingControlError(controlName);
         }
         return control;
+    },
+
+
+    /**
+     * Get a form input's value by name.
+     *
+     * @type controlName: C{String}
+     *
+     * @raise MissingControlError: If the control given by L{controlName}
+     *     does not exist
+     *
+     * @return: If the input is active then the result of its C{getValue}
+     *     method is returned, otherwise C{null} is returned.
+     */
+    function getControlValue(self, controlName) {
+        var control = self.getControl(controlName);
+        return control.active ? control.getValue() : null;
     },
 
 
@@ -504,8 +624,11 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * An event that is called when a form input's value is changed.
      */
     function valueChanged(self, control) {
-        self._depCache.changed(control.name);
+        var depsChanged = self._depCache.changed(control.name);
         self.validate(control);
+        if (depsChanged) {
+            self._stripeControls();
+        }
     },
 
 
@@ -740,6 +863,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  * @type viewOnly: C{boolean}
  * @ivar viewOnly: Should the submit button for this form be visible?
  *
+ * @type hideModificationIndicator: C{boolean}
+ * @ivar hideModificationIndicator: Hide the modification indicator for this
+ *     form? Defaults to C{false}.
+ *
  * @type controlNames: C{object} of C{String}
  * @ivar controlNames: Names of form inputs as a mapping
  *
@@ -748,10 +875,22 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  *     container widget's C{nodeInserted} method has been called
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
-    function __init__(self, node, viewOnly, controlNames) {
+    function __init__(self, node, args, controlNames) {
+        self.enableControlStriping = true;
         Methanal.View.LiveForm.upcall(self, '__init__', node);
-        self.viewOnly = viewOnly;
-        self.controlNames = controlNames;
+        if (typeof args === 'boolean') {
+            Divmod.msg(
+                'DEPRECATED: Use an argument dictionary instead of the' +
+                '"viewOnly" boolean parameter');
+            args = {'viewOnly': args};
+        }
+        self.viewOnly = args.viewOnly;
+        self.hideModificationIndicator = args.hideModificationIndicator;
+        if (!(controlNames instanceof Array)) {
+            throw new Error('"controlNames" must be an Array of control names');
+        }
+        self.controlNames = Methanal.Util.arrayToMapping(controlNames);
+        self._controlNamesOrdered = controlNames;
         self.formInit();
     },
 
@@ -802,6 +941,11 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             self.getControl(name).reset();
         }
         self.refresh();
+        // XXX: This isn't strictly correct since the initial values are not
+        // updated on successful submission and resetting could in fact change
+        // the values from what was last stored on the server-side, but it is
+        // close enough for now.
+        self.formModified(false);
     },
 
 
@@ -819,8 +963,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function submit(self) {
         var data = {};
         for (var name in self.controls) {
-            var input = self.getControl(name);
-            data[input.name] = input.active ? input.getValue() : null;
+            data[name] = self.getControlValue(name);
         }
         for (var name in self.subforms) {
             var form = self.subforms[name];
@@ -829,16 +972,22 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
         self.clearError();
         self.actions.disable();
+        self.freeze();
         self.actions.throbber.start();
 
         var d = self.callRemote('invoke', data);
         d.addBoth(function (value) {
+            self.thaw();
             self.actions.throbber.stop();
-            self.actions.enable();
             return value;
         });
-        d.addCallback(function (value) { return self.submitSuccess(value); });
-        d.addErrback(function (value) { return self.submitFailure(value); });
+        d.addCallback(function (value) {
+            self.formModified(false);
+            return self.submitSuccess(value);
+        });
+        d.addErrback(function (value) {
+            return self.submitFailure(value);
+        });
         return d;
     },
 
@@ -900,17 +1049,21 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     /**
-     * Callback for successful form submission.
+     * Callback for successful form submission. The return value will be sent
+     * back to the server.
      */
     function submitSuccess(self, value) {
+        return null;
     },
 
 
     /**
-     * Callback for a failure form submission.
+     * Callback for a failure form submission. The return value will be sent
+     * back to the server.
      */
     function submitFailure(self, failure) {
         self.setError(failure);
+        return null;
     },
 
 
@@ -929,6 +1082,32 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     /**
+     * Visually indicate that the form's modification state has changed.
+     *
+     * @type  modified: C{Boolean}
+     * @param modified: Have inputs been modified from their original value?
+     */
+    function formModified(self, modified) {
+        if (!self.fullyLoaded) {
+            return;
+        }
+
+        if (!self.hideModificationIndicator) {
+            var fn = modified ?
+                Methanal.Util.addElementClass :
+                Methanal.Util.removeElementClass;
+            fn(self.actions.node, 'form-modified');
+        }
+    },
+
+
+    function valueChanged(self, control) {
+        Methanal.View.LiveForm.upcall(self, 'valueChanged', control);
+        self.formModified(true);
+    },
+
+
+    /**
      * Enable the form for submission.
      */
     function setValid(self) {
@@ -942,6 +1121,29 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function setInvalid(self) {
         self.actions.disable();
     });
+
+
+
+/**
+ * Set a widget as active.
+ *
+ * The widget's visibility is determined by whether it is active or not,
+ * inactive widgets are not visible and their values are not used in form
+ * submission.
+ *
+ * @type active: C{boolean}
+ */
+Methanal.View._setActive = function _setActive(widget, active) {
+    widget.active = active;
+    if (active) {
+        Methanal.Util.removeElementClass(widget.node, 'hidden');
+    } else {
+        Methanal.Util.addElementClass(widget.node, 'hidden');
+    }
+    if (widget.widgetParent.checkActive) {
+        widget.widgetParent.checkActive();
+    }
+};
 
 
 
@@ -1010,12 +1212,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
      * @type active: C{boolean}
      */
     function setActive(self, active) {
-        self.active = active;
-        self.node.style.display = active ? 'block' : 'none';
-        Methanal.Util.addElementClass(self.node, 'dependancy-child');
-        if (self.widgetParent.checkActive) {
-            self.widgetParent.checkActive();
-        }
+        Methanal.View._setActive(self, active);
     },
 
 
@@ -1056,6 +1253,12 @@ Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow').methods(
     function clearError(self) {
         Methanal.View.FormRow.upcall(self, 'clearError');
         Methanal.Util.replaceNodeText(self._errorTextNode, '');
+    },
+
+
+    function setActive(self, active) {
+        Methanal.View.FormRow.upcall(self, 'setActive', active);
+        Methanal.Util.addElementClass(self.node, 'dependancy-child');
     });
 
 
@@ -1103,6 +1306,10 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'GroupInput').methods(
         self.name = name;
         self.setValid();
         self.controlNames = controlNames;
+        self._controlNamesOrdered = [];
+        for (var key in self.controlNames) {
+            self._controlNamesOrdered.push(key);
+        }
     },
 
 
@@ -1134,8 +1341,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'GroupInput').methods(
     function getValue(self) {
         var data = {};
         for (var name in self.controls) {
-            var input = self.getControl(name);
-            data[input.name] = input.active ? input.getValue() : null;
+            data[name] = self.getControlValue(name);
         }
         for (var name in self.subforms) {
             var form = self.subforms[name];
@@ -1294,9 +1500,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      * @type active: C{boolean}
      */
     function setActive(self, active) {
-        self.active = active;
-        self.node.style.display = active ? 'block' : 'none';
-        self.widgetParent.checkActive();
+        Methanal.View._setActive(self, active);
         self.getForm().validate(self);
     },
 
@@ -1380,6 +1584,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
     function __init__(self, node, args) {
         Methanal.View.TextInput.upcall(self, '__init__', node, args);
         self.embeddedLabel = args.embeddedLabel;
+        self.stripWhitespace = args.stripWhitespace;
         self._tooltipNode = null;
         self._useDisplayValue = false;
     },
@@ -1510,7 +1715,11 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
         if (self._labelled) {
             return '';
         }
-        return Methanal.View.TextInput.upcall(self, 'getValue');
+        var value = Methanal.View.TextInput.upcall(self, 'getValue');
+        if (value && self.stripWhitespace) {
+            value = Methanal.Util.trim(value);
+        }
+        return value;
     },
 
 
@@ -1745,7 +1954,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'CheckboxInput').methods(
  */
 Methanal.View.FormInput.subclass(Methanal.View, 'MultiInputBase').methods(
     function getInputNode(self) {
-        return self.getInputNodes()[0];
+        return self.node.getElementsByTagName('input')[0];
     },
 
 
@@ -2099,6 +2308,13 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
  *     for validity
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'NumericInput').methods(
+    function __init__(self, node, args) {
+        self.lowerBound = args.lowerBound;
+        self.upperBound = args.upperBound;
+        Methanal.View.NumericInput.upcall(self, '__init__', node, args);
+    },
+
+
     function getValue(self) {
         var value = Methanal.View.NumericInput.upcall(self, 'getValue');
         if (!value) {
@@ -2112,8 +2328,14 @@ Methanal.View.TextInput.subclass(Methanal.View, 'NumericInput').methods(
 
 
     function baseValidator(self, value) {
-        if (value === undefined || isNaN(value)) {
+        if (value === null) {
+            return;
+        } else if (value === undefined || isNaN(value)) {
             return 'Numerical value only';
+        } else if (value <= self.lowerBound) {
+            return 'Value too small; must be greater than ' + self.lowerBound;
+        } else if (value >= self.upperBound) {
+            return 'Value too large; must be less than ' + self.upperBound;
         }
     });
 

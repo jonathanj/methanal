@@ -11,6 +11,8 @@ from epsilon.extime import FixedOffset, Time
 
 from twisted.internet.defer import maybeDeferred
 from twisted.python.components import registerAdapter
+from twisted.python.versions import Version
+from twisted.python.deprecate import deprecated
 
 from axiom.item import SQLAttribute
 
@@ -28,6 +30,7 @@ from methanal.view import (liveFormFromAttributes, containerFromAttributes,
     ObjectSelectInput, SimpleForm, FormInput, LiveForm, SubmitAction,
     ActionButton, ActionContainer)
 from methanal.model import Value
+from methanal.errors import InvalidIdentifier
 
 
 
@@ -658,8 +661,8 @@ class TabView(ThemedElement):
         the fragment part of the current URL to track which tab is selected,
         this behaviour supercedes L{Tab.selected}.
 
-    @type _tabIDs: C{set}
-    @ivar _tabIDs: Collection of unique tab IDs currently being managed.
+    @type _tabsByID: C{dict} mapping C{unicode} to L{methanal.widgets.Tab}
+    @ivar _tabsByID: Mapping of unique tab IDs to tabs currently being managed.
 
     @type _tabGroups: C{dict} mapping C{unicode} to
         L{methanal.widgets.TabGroup}
@@ -675,7 +678,7 @@ class TabView(ThemedElement):
         @param tabs: Tab or tab groups to manage.
         """
         super(TabView, self).__init__(**kw)
-        self._tabIDs = set()
+        self._tabsByID = {}
         self._tabGroups = {}
         self.tabs = []
         self.topLevel = topLevel
@@ -689,76 +692,170 @@ class TabView(ThemedElement):
                 self._manageTab(tabOrGroup)
 
 
+    def __repr__(self):
+        return '<%s topLevel=%r tabs=%r>' % (
+            type(self).__name__,
+            self.topLevel,
+            self.tabs)
+
+
     def _manageGroup(self, group):
         """
         Begin managing a L{methanal.widgets.TabGroup}.
 
-        Tabs contained in a group are B{not} managed, L{_manageTab} should be
-        called for each tab.
-
-        @raise ValueError: If the group's identifier matches one that is
-            already being managed.
+        Tabs contained in a group are B{not} managed automatically,
+        L{_manageTab} should be called for each tab.
         """
-        if group.id in self._tabGroups:
-            raise ValueError('%r is a duplicate tab group identifier in %r' % (
-                group.id, self))
         self._tabGroups[group.id] = group
 
 
-    def _manageTab(self, tab):
+    def _manageTab(self, tab, overwrite=False):
         """
-        Begin managing a L{Tab} widget.
+        Begin managing a L{methanal.widgets.Tab} widget.
 
-        @raise ValueError: If the tab's identifier matches one that is already
-            being managed.
+        If a tab identifier is already being managed it is released before
+        managing the new widget.
         """
-        if tab.id in self._tabIDs:
-            raise ValueError(
-                '%r is a duplicate tab identifier in %r' % (tab.id, self))
-        self._tabIDs.add(tab.id)
+        if tab.id in self._tabsByID:
+            self._releaseTab(self.getTab(tab.id))
+        self._tabsByID[tab.id] = tab
         self.tabs.append(tab)
+        group = self._tabGroups.get(tab.group)
+        if group is not None:
+            group._manageTab(tab)
 
 
+    def _releaseTab(self, tab):
+        """
+        Stop managing a L{methanal.widgets.Tab} widget.
+        """
+        if tab not in self.tabs:
+            raise ValueError(
+                '%r is not managed by %r' % (tab.id, self))
+        del self._tabsByID[tab.id]
+        self.tabs.remove(tab)
+        group = self._tabGroups.get(tab.group)
+        if group is not None:
+            group._releaseTab(tab)
+
+
+    def getTab(self, id):
+        """
+        Get a L{methanal.widgets.Tab} by its unique identifier.
+        """
+        tab = self._tabsByID.get(id)
+        if tab is None:
+            raise InvalidIdentifier(
+                u'%r is not a valid tab identifier in %r' % (id, self))
+        return tab
+
+
+    def getTabIDs(self):
+        """
+        Get a C{list} of all the tab IDs in the group.
+        """
+        return [tab.id for tab in self.tabs]
+
+
+    def getGroup(self, id):
+        """
+        Get a L{methanal.widgets.TabGroup} by its unique identifier.
+        """
+        group = self._tabGroups.get(id)
+        if group is None:
+            raise InvalidIdentifier(
+                u'%r is not a valid group identifier in %r' % (id, self))
+        return group
+
+
+    @deprecated(Version('methanal', 0, 2, 1))
     def appendTab(self, tab):
         """
-        Append a L{Tab} widget.
+        Append a L{methanal.widgets.Tab} widget.
 
         @return: A C{Deferred} that fires when the widget has been inserted on
             the client side.
         """
-        return self.appendTabs([tab])
+        return self.updateTabs([tab])
 
 
-    def appendTabs(self, tabs):
+    def updateTabs(self, tabs, tabsToRemove=None):
         """
-        Append many L{methanal.widgets.Tab} widgets.
+        Update many L{methanal.widgets.Tab} widgets.
 
-        All tab widgets are passed to the client side and appended there, and
-        added to the relevant groups.
+        All tab widgets are passed to the client side, updated there (or
+        appended if they didn't previously exist) and added to the relevant
+        groups. Use L{methanal.widgets.TabGroup.mergeGroups} to simulate adding
+        to an existing group.
 
-        @return: A C{Deferred} that fires when the widgets have been inserted on
+        @return: A C{Deferred} that fires when the widgets have been updated on
             the client side.
         """
         for tab in tabs:
             self._manageTab(tab)
             tab.setFragmentParent(self)
-        return self.callRemote('_appendTabsFromServer', tabs, self._tabGroups)
+
+        tabIDsToRemove = []
+        if tabsToRemove is not None:
+            tabIDsToRemove = [tab.id for tab in tabsToRemove]
+
+        return self.callRemote(
+            '_updateTabsFromServer', tabs, tabIDsToRemove, self._tabGroups)
 
 
-    def appendGroup(self, group):
+    appendTabs = deprecated(Version('methanal', 0, 2, 1))(updateTabs)
+
+
+    def removeTabs(self, tabs):
         """
-        Append a L{methanal.widgets.TabGroup} and its tabs.
+        Remove many L{methanal.widgets.Tab} widgets.
+
+        Empty groups, caused by removing all contained tabs, are removed too.
+
+        @return: A C{Deferred} that fires when the widget has been removed on
+            the client side.
+        """
+        tabIDs = []
+        for tab in tabs:
+            tabIDs.append(tab.id)
+            self._releaseTab(tab)
+
+        return self.callRemote('_removeTabsFromServer', tabIDs, self._tabGroups)
+
+
+    def updateGroup(self, group):
+        """
+        Update a L{methanal.widgets.TabGroup} and its tabs.
+
+        Tabs specified in C{group} will replace those previously specified by
+        another group of the same name.
 
         @return: A C{Deferred} that fires when the widgets have been inserted on
             the client side.
         """
+        try:
+            oldGroup = self.getGroup(group.id)
+        except InvalidIdentifier:
+            oldGroup = None
+
+        tabsToRemove = []
+        if oldGroup is not None:
+            tabsToRemove = map(
+                self.getTab,
+                set(oldGroup.getTabIDs()) - set(group.getTabIDs()))
+            for tab in tabsToRemove:
+                self._releaseTab(tab)
+
         self._manageGroup(group)
-        return self.appendTabs(group.tabs)
+        return self.updateTabs(group.tabs, tabsToRemove)
+
+
+    appendGroup = deprecated(Version('methanal', 0, 2, 1))(updateGroup)
 
 
     def getInitialArguments(self):
         return [
-            dict.fromkeys(self._tabIDs, True),
+            dict.fromkeys(self._tabsByID.iterkeys(), True),
             self._tabGroups,
             self.topLevel]
 
@@ -774,7 +871,7 @@ class TabView(ThemedElement):
 
 
 
-class TabGroup(record('id title tabs')):
+class TabGroup(object):
     """
     Visually group labels of L{methanal.widgets.Tab}s together.
 
@@ -792,15 +889,59 @@ class TabGroup(record('id title tabs')):
 
     jsClass = u'Methanal.Widgets.TabGroup'
 
-    def __init__(self, *a, **kw):
-        super(TabGroup, self).__init__(*a, **kw)
-        for tab in self.tabs:
+    def __init__(self, id, title, tabs):
+        self.id = id
+        self.title = title
+        self.tabs = []
+        for tab in tabs:
+            self._manageTab(tab)
+
+
+    def __repr__(self):
+        return '<%s id=%r title=%r tabs=%r>' % (
+            type(self).__name__,
+            self.id,
+            self.title,
+            self.tabs)
+
+
+    def _manageTab(self, tab):
+        """
+        Manage a L{methanal.widgets.Tab} widget.
+        """
+        if tab not in self.tabs:
+            self.tabs.append(tab)
             tab.group = self.id
 
 
+    def _releaseTab(self, tab):
+        """
+        Stop managing a L{methanal.widgets.Tab} widget.
+        """
+        if tab in self.tabs:
+            self.tabs.remove(tab)
+            tab.group = None
+
+
+    def getTabIDs(self):
+        """
+        Get a C{list} of all the tab IDs in the group.
+        """
+        return [tab.id for tab in self.tabs]
+
+
+    @classmethod
+    def mergeGroups(cls, old, new):
+        """
+        Merge two L{methanal.widgets.TabGroup}s together.
+        """
+        return cls(new.id, new.title, old.tabs + new.tabs)
+
+
+    # IAthenaTransportable
+
     def getInitialArguments(self):
-        tabIDs = [tab.id for tab in self.tabs]
-        return [self.id, self.title, tabIDs]
+        return [self.id, self.title, self.getTabIDs()]
 
 
 
@@ -837,6 +978,15 @@ class Tab(ThemedElement):
         self.contentFactory = contentFactory
         self.selected = selected
         self.group = group
+
+
+    def __repr__(self):
+        return '<%s id=%r title=%r selected=%r group=%r>' % (
+            type(self).__name__,
+            self.id,
+            self.title,
+            self.selected,
+            self.group)
 
 
     def getInitialArguments(self):
@@ -887,6 +1037,10 @@ class StaticTab(Tab):
         return tag[self.getContent()]
 
 
+    def updateRemoteContent(self):
+        pass
+
+
 
 class DynamicTab(Tab):
     """
@@ -909,3 +1063,9 @@ class DemandTab(Tab):
     being discarded and a new fetch occurring.
     """
     jsClass = u'Methanal.Widgets.DemandTab'
+
+    def updateRemoteContent(self):
+        """
+        Force the remote content to be updated.
+        """
+        return self.callRemote('_setContentFromWidgetInfo', self.getContent())

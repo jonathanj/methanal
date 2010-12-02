@@ -19,9 +19,10 @@ from axiom.item import Item
 from nevow import athena, loaders
 from nevow.testutil import renderLivePage
 
+from methanal import view, errors
 from methanal.imethanal import IEnumeration
 from methanal.model import ItemModel, Value, DecimalValue, Model
-from methanal import view
+from methanal.enums import Enum, EnumItem, ObjectEnum
 
 
 
@@ -266,7 +267,55 @@ class DateInputTests(FormInputTests):
 
 
 
-class IntegerInputTests(FormInputTests):
+class NumericInputTestsMixin(object):
+    """
+    Tests mixin for numeric inputs.
+    """
+    def _testMinimumMaximum(self, control, acceptable, tooSmall, tooLarge):
+        """
+        Assert that C{control} sets its parameter's value to C{None} value or
+        C{acceptable}, when invoked with these values. When invoked with
+        C{tooSmall} or C{tooLarge} an exception is raised indicating that the
+        value is too small or too large.
+        """
+        param = control.parent.param
+
+        data = {param.name: None}
+        control.invoke(data)
+        self.assertIdentical(param.value, None)
+
+        data = {param.name: acceptable}
+        control.invoke(data)
+        self.assertEquals(param.value, acceptable)
+
+        data = {param.name: tooSmall}
+        e = self.assertRaises(ValueError, control.invoke, data)
+        self.assertIn('is smaller than', str(e))
+
+        data = {param.name: tooLarge}
+        e = self.assertRaises(ValueError, control.invoke, data)
+        self.assertIn('is larger than', str(e))
+
+
+    def test_minimumMaximumDefaultValues(self):
+        """
+        Numeric inputs default to not accepting values smaller than C{-(2 **
+        63)} or larger than C{2 ** 63 }.
+        """
+        control = self.createControl(dict())
+        self._testMinimumMaximum(control, 42, -(2 ** 63) - 1, 2 ** 63)
+
+
+    def test_minimumMaximumOverrideValues(self):
+        """
+        Numeric inputs can override their minimum and maximum value range.
+        """
+        control = self.createControl(dict(minimumValue=0, maximumValue=10))
+        self._testMinimumMaximum(control, 5, -1, 42)
+
+
+
+class IntegerInputTests(FormInputTests, NumericInputTestsMixin):
     """
     Tests for L{methanal.view.IntegerInput}.
     """
@@ -293,7 +342,7 @@ class IntegerInputTests(FormInputTests):
 
 
 
-class DecimalInputTests(FormInputTests):
+class DecimalInputTests(FormInputTests, NumericInputTestsMixin):
     """
     Tests for L{methanal.view.DecimalInput}.
     """
@@ -571,14 +620,15 @@ class ChoiceInputTests(ChoiceInputTestsMixin, FormInputTests):
         (TypeError, dict())]
 
 
-    def createControl(self, args):
+    def createControl(self, args, checkExpectedValues=True):
         """
         Create a L{methanal.view.ChoiceInput} from C{values}, assert that
         L{methanal.view.ChoiceInput.value} provides L{IEnumeration} and
         calling C{asPairs} results in the same values as C{values}.
         """
         control = super(ChoiceInputTests, self).createControl(args)
-        self.assertEquals(control.values.asPairs(), list(args.get('values')))
+        if checkExpectedValues:
+            self.assertEquals(control.values.asPairs(), list(args.get('values')))
         return control
 
 
@@ -592,7 +642,284 @@ class ChoiceInputTests(ChoiceInputTestsMixin, FormInputTests):
             (u'foo', u'Foo'),
             (u'bar', u'Bar')])
         self.createControl(dict(values=values))
-        self.assertEquals(len(self.flushWarnings()), 1)
+        self.assertEquals(len(self.flushWarnings()), 2)
+
+
+
+class SelectInputTests(ChoiceInputTests):
+    """
+    Tests for L{methanal.view.SelectInput}.
+    """
+    controlType = view.SelectInput
+
+    def test_renderGroupsOptions(self):
+        """
+        The options of a C{SelectInput} are rendered as groups if the enumeration
+        values specify a C{'group'} extra value.
+        """
+        values = Enum(
+            '',
+            [EnumItem(u'foo', u'Foo', group=u'Group'),
+             EnumItem(u'bar', u'Bar', group=u'Group')])
+
+        control = self.createControl(
+            dict(values=values), checkExpectedValues=False)
+
+        def verifyRendering(tree):
+            groupNodes = tree.findall('//select/optgroup')
+            groups = set(item.group for item in values)
+            self.assertEquals(len(groupNodes), len(groups))
+            for groupNode, item in zip(groupNodes, values):
+                self.assertEquals(groupNode.get('label'), item.group)
+
+                optionNodes = groupNode.findall('option')
+                self.assertEquals(len(optionNodes), len(list(values)))
+                for optionNode, innerItem in zip(optionNodes, values):
+                    self.assertEquals(optionNode.get('value'), innerItem.value)
+                    self.assertEquals(optionNode.text.strip(), innerItem.desc)
+
+        return renderWidget(control).addCallback(verifyRendering)
+
+
+    def test_renderObjectOptions(self):
+        """
+        If a C{SelectInput}'s values are an C{ObjectEnum} then the rendered
+        option values match the C{'id'} extra of the object enumeration.
+        """
+        object1 = object()
+        object2 = object()
+        values = ObjectEnum(
+            '',
+            [EnumItem(object1, u'Foo'),
+             EnumItem(object2, u'Bar', id=u'chuck')])
+
+        control = self.createControl(
+            dict(values=values), checkExpectedValues=False)
+
+        def verifyRendering(tree):
+            optionNodes = tree.findall('//option')
+            self.assertEquals(len(optionNodes), len(list(values)))
+            for optionNode, item in zip(optionNodes, values):
+                self.assertEquals(optionNode.get('value'), item.id)
+                self.assertEquals(optionNode.text.strip(), item.desc)
+
+        return renderWidget(control).addCallback(verifyRendering)
+
+
+    def test_getValueObjectEnum(self):
+        """
+        L{SelectInput.getValue} returns the C{'id'} extra value when backed by
+        an C{ObjectEnum}.
+        """
+        object1 = object()
+        object2 = object()
+        values = ObjectEnum(
+            '',
+            [EnumItem(object1, u'Foo'),
+             EnumItem(object2, u'Bar', id=u'chuck')])
+
+        control = self.createControl(
+            dict(values=values), checkExpectedValues=False)
+
+        param = control.parent.param
+
+        param.value = None
+        self.assertIdentical(control.getValue(), None)
+
+        for value in values:
+            param.value = value.value
+            self.assertEquals(control.getValue(), value.id)
+
+
+    def test_invokeObjectEnum(self):
+        """
+        When backed by an C{ObjectEnum}, L{SelectInput.invoke} sets the
+        parameter value to the Python object of L{EnumItem} with C{'id'} extra
+        matching the invocation data value and C{None} in the C{None} case.
+        """
+        object1 = object()
+        object2 = object()
+        values = ObjectEnum(
+            '',
+            [EnumItem(object1, u'Foo'),
+             EnumItem(object2, u'Bar', id=u'chuck')])
+
+        control = self.createControl(
+            dict(values=values), checkExpectedValues=False)
+
+        param = control.parent.param
+        data = {param.name: None}
+        control.invoke(data)
+        self.assertIdentical(param.value, None)
+
+        for value in values:
+            data = {param.name: value.id}
+            control.invoke(data)
+            self.assertIdentical(param.value, value.value)
+
+
+    def test_invokeObjectEnumTrickery(self):
+        """
+        L{SelectInput.invoke} falls back to locating enumeration items by value
+        when no C{'id'} extra value matches. However, this can lead to leaking
+        information about the enumeration values in the case of objects such as
+        strings and integers. In case we fallback to an item with a C{'id'}
+        extra, even if it doesn't match, C{InvalidEnumItem} is raised.
+        """
+        object1 = object()
+        values = ObjectEnum(
+            '',
+            [EnumItem(object1,     u'Foo'),
+             EnumItem(u'password', u'Bar', id=u'chuck')])
+
+        control = self.createControl(
+            dict(values=values), checkExpectedValues=False)
+
+        param = control.parent.param
+
+        data = {param.name: u'password'}
+        self.assertRaises(errors.InvalidEnumItem,
+            control.invoke, data)
+
+
+
+class MultiValueChoiceInputTestsMixin(object):
+    """
+    Tests mixin for L{methanal.view.ChoiceInput}s that support multiple values.
+    """
+    values = [
+        (u'foo', u'Foo'),
+        (u'bar', u'Bar'),
+        (u'baz', u'Baz')]
+
+    def test_getValueNoValues(self):
+        """
+        Multi-value L{ChoiceInput}s return an empty list from C{getValue} when
+        the parameter is C{None}, or empty.
+        """
+        control = self.createControl(dict(values=self.values))
+
+        control.parent.param.value = None
+        self.assertEquals(control.getValue(), [])
+
+        control.parent.param.value = []
+        self.assertEquals(control.getValue(), [])
+
+
+    def test_getValue(self):
+        """
+        Multi-value L{ChoiceInput}s return a C{list} of the selected values
+        from C{getValue}.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        for value, desc in self.values:
+            param.value = [value]
+            self.assertEquals(
+                control.getValue(),
+                [value])
+
+        v1, v2 = [self.values[0][0], self.values[1][0]]
+        param.value = [v1, v2]
+        self.assertEquals(
+            control.getValue(),
+            [v1, v2])
+
+
+    def test_invokeNoValues(self):
+        """
+        Multi-value L{ChoiceInput}s set their parameter value to an empty list
+        when invoked with C{None}, or empty.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+        control.invoke({param.name: None})
+        self.assertEquals(param.value, [])
+
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+        control.invoke({param.name: []})
+        self.assertEquals(param.value, [])
+
+
+    def test_invoke(self):
+        """
+        Multi-value L{ChoiceInput}s set their parameter value to a C{list}
+        containing the values of the invoked data.
+        """
+        control = self.createControl(dict(values=self.values))
+        param = control.parent.param
+
+        data = {param.name: None}
+        control.invoke(data)
+        self.assertEquals(param.value, [])
+
+        data = {param.name: [None]}
+        control.invoke(data)
+        self.assertEquals(param.value, [None])
+
+        for value, desc in self.values:
+            data = {param.name: [value]}
+            control.invoke(data)
+            self.assertEquals(param.value, [value])
+
+        v1, v2 = self.values[0][0], self.values[1][0]
+        data = {param.name: [v1, v2]}
+        control.invoke(data)
+        self.assertEquals(param.value, [v1, v2])
+
+
+    def test_invokeObjectEnum(self):
+        """
+        Invoking a multi-value L{ChoiceInput}s backed by an L{ObjectEnum} sets
+        their parameter value to a C{list} of objects referenced by ID in the
+        invocation data.
+        """
+        object1 = object()
+        values = ObjectEnum(
+            '',
+            [EnumItem(object1, u'Foo'),
+             EnumItem(u'buzz', u'Buzz', id=u'quux')])
+        control = self.createControl(
+            dict(values=values), checkExpectedValues=False)
+        param = control.parent.param
+
+        for value in values:
+            data = {param.name: [value.id]}
+            control.invoke(data)
+            self.assertEquals(param.value, [value.value])
+
+        vs = [v.value for v in values]
+        vIDs = [v.id for v in values]
+        data = {param.name: vIDs}
+        control.invoke(data)
+        self.assertEquals(param.value, vs)
+
+        data = {param.name: [u'buzz']}
+        self.assertRaises(errors.InvalidEnumItem, control.invoke, data)
+
+
+    def test_render(self):
+        """
+        Rendering the control raises no exceptions.
+        """
+        control = self.createControl(dict(values=self.values))
+        ds = []
+
+        def _render(value):
+            control.parent.param.value = value
+            ds.append(renderWidget(control))
+
+        _render(None)
+        for obj, desc in self.values:
+            _render([obj])
+        return gatherResults(ds)
+
+
+
+class MultiSelectInputTests(ChoiceInputTests, MultiValueChoiceInputTestsMixin):
+    controlType = view.MultiSelectInput
 
 
 
@@ -601,6 +928,18 @@ class GroupedSelectInputTests(ChoiceInputTests):
     Tests for L{methanal.view.GroupedSelectInput}.
     """
     controlType = view.GroupedSelectInput
+
+    def test_createDeprecated(self):
+        """
+        Passing values that are not adaptable to IEnumeration are converted
+        to a C{list}, adapted to L{IEnumeration} and a warning is emitted.
+        """
+        # Not a list.
+        values = tuple([
+            (u'foo', u'Foo'),
+            (u'bar', u'Bar')])
+        self.createControl(dict(values=values))
+        self.assertEquals(len(self.flushWarnings()), 3)
 
 
     def test_renderOptions(self):
@@ -611,7 +950,8 @@ class GroupedSelectInputTests(ChoiceInputTests):
         values = [(u'Group', [(u'foo', u'Foo'),
                               (u'bar', u'Bar')])]
 
-        control = self.createControl(dict(values=values))
+        control = self.createControl(
+            dict(values=values), checkExpectedValues=False)
 
         def verifyRendering(tree):
             groupNodes = tree.findall('//select/optgroup')
@@ -750,6 +1090,12 @@ class CheckboxInputTests(FormInputTests):
             self.assertEquals(input.tail.strip(), 'HELLO WORLD')
 
         return renderWidget(control).addCallback(verifyRendering)
+
+
+
+class MultiCheckboxInputTests(ChoiceInputTests,
+                              MultiValueChoiceInputTestsMixin):
+    controlType = view.MultiCheckboxInput
 
 
 

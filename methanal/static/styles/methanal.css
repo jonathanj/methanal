@@ -15,8 +15,12 @@
     float: left;
 }
 
-.methanal-control-odd {
-    background-color: #ddd;
+.methanal-form-group .methanal-control-even {
+    background-color: #d3d3ea;
+}
+
+.methanal-control-even {
+    background-color: #f0f0fc;
 }
 
 .methanal-control-error {
@@ -556,4 +560,43 @@ button.roll-up {
 
 .hidden {
     display: none !important;
+}
+
+.methanal-choice-group {
+    border: solid #ddd;
+    border-width: 0 0 0 1px;
+    margin: 0.5em;
+    padding: 0.3em 0 0.3em 0.5em;
+}
+
+.methanal-choice-group h4 {
+    margin: 0 0 0.25em 0;
+}
+
+.dependancy-parent {
+    border-left: 3px solid #6094a4;
+    margin-left: -3px;
+    background-image: url("/static/Methanal/images/icons/dependency_parent.gif");
+    background-repeat: no-repeat;
+    background-position: left center;
+}
+
+.dependancy-child {
+    border-left: 3px solid #9fc4cf;
+    margin-left: -3px;
+}
+
+.form-modified {
+    background: #fbede1;
+}
+
+.form-modified .modified-indicator {
+    visibility: visible;
+}
+
+.modified-indicator {
+    visibility: hidden;
+    background: url(/static/Methanal/images/icons/warning.png) no-repeat 2px center;
+    padding: 5px 2px 5px 20px;
+    display: inline-block;
 }

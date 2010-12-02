@@ -1,3 +1,47 @@
+Methanal 0.2.1 (2010-07-23)
+===================================
+
+Features
+--------
+ - Tab labels can now be visually grouped into containers with labels. (#534431)
+ - Numeric inputs will now accept user-specified bounds for the values they
+   will accept, defaulting to the bounds that Axiom / SQLite can accomodate.
+   (#605638)
+ - Input dependencies now have styling to indicate that they are a parent,
+   parent-child or child in a dependency. (#534450)
+ - Form rows are now striped in alternating colors to make them more easily
+   distinguishable. (#534458, #604272)
+ - TabView widgets now support removing, updating and adding tabs on both the
+   server and client side. DynamicTabs now support pushing content refreshes
+   from the server side. (#558711)
+ - TextInput will now, by default, return a value that excludes leading and
+   trailing whitespace. (#603295)
+ - LiveForms that have had any of their inputs modified, and have not been
+   submitted or reset, will now indicate this with an icon and short message
+   next to the submit button. (#604566)
+ - ChoiceInput now supports both grouping and arbitrary Python objects, with
+   the help of Enum, enhancing all ChoiceInput subclasses to support these
+   features and deprecating all Grouped and Object ChoiceInput subclasses.
+   (#536982, #557675, #557679).
+
+Bugfixes
+--------
+ - ModalDialogForm now only closes a ModalDialog on successful submission.
+   (#600364)
+ - Validators now disregard the values of inactive inputs, e.g. those hidden by
+   dependency handlers. (#603978)
+ - Numeric inputs will now check, on both the client and server side, that
+   their value is within the bounds of the integer types that Axiom / SQLite is
+   able to store. (#518606)
+ - LiveForm.setValid will no longer re-enable actions, that were disabled
+   because of submission, before submission has completed successfully.
+   (#604969)
+
+Other
+-----
+ - #604980
+
+
 Methanal 0.2.0 (2010-03-09)
 ===================================
 

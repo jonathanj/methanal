@@ -62,10 +62,59 @@ class IEnumeration(Interface):
     """
     An enumeration.
     """
+    doc = Attribute("""
+    A brief description of the enumeration's intent.
+    """)
+
     def asPairs():
         """
         Represent the enumeration as a sequence of pairs.
 
         @rtype: C{list} of 2-C{tuple}s
         @return: A sequence of C{(value, description)}
+        """
+
+
+    def get(value):
+        """
+        Get an enumeration item for a given enumeration value.
+
+        @raise L{methanal.errors.InvalidEnumItem}: If C{value} does not match
+            any known enumeration value.
+
+        @rtype: L{EnumItem}
+        """
+
+
+    def getDesc(value):
+        """
+        Get the description for a given enumeration value.
+        """
+
+
+    def getExtra(value, extraName, default=None):
+        """
+        Get the extra value for C{extraName} or use C{default}.
+        """
+
+
+    def find(**names):
+        """
+        Find the first L{EnumItem} with matching extra values.
+
+        @param **names: Extra values to match
+
+        @rtype:  L{EnumItem}
+        @return: The first matching L{EnumItem} or C{None} if there are no
+            matches
+        """
+
+
+    def findAll(**names):
+        """
+        Find all L{EnumItem}s with matching extra values.
+
+        @param **names: Extra values to match
+
+        @rtype:  C{iterable} of L{EnumItem}
         """

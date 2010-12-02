@@ -5,7 +5,7 @@ from twisted.trial import unittest
 
 from nevow import inevow
 
-from methanal import widgets
+from methanal import widgets, errors
 
 
 
@@ -24,12 +24,12 @@ class TabViewTests(unittest.TestCase):
 
     def test_create(self):
         """
-        Creating a L{TabView} widget initialises L{TabView._tabIDs} and
+        Creating a L{TabView} widget initialises L{TabView._tabsByID} and
         L{TabView.tabs} with the values originally specified.
         """
         self.assertEquals(
-            self.tabView._tabIDs,
-            set([u'id1', u'id2', u'id3']))
+            sorted(self.tabView._tabsByID.keys()),
+            [u'id1', u'id2', u'id3'])
         self.assertEquals(
             self.tabView.tabs,
             self.tabs)
@@ -38,7 +38,7 @@ class TabViewTests(unittest.TestCase):
     def test_createGroup(self):
         """
         Creating a L{methanal.widgets.TabView} widget initialises
-        L{methanal.widgets.TabView._tabIDs}, L{methanal.widgets.TabView.tabs}
+        L{methanal.widgets.TabView._tabsByID}, L{methanal.widgets.TabView.tabs}
         and L{methanal.widgets.TabView._tabGroups} with the values originally
         specified, tab groups are merged in and managed.
         """
@@ -49,70 +49,116 @@ class TabViewTests(unittest.TestCase):
             widgets.Tab(u'id5', u'Title 5', self.contentFactory)]
         tabView = widgets.TabView(tabs)
         self.assertEquals(
-            tabView._tabIDs,
-            set([u'id1', u'id2', u'id3', u'id4', u'id5']))
+            tabView.getTabIDs(),
+            [u'id1', u'id2', u'id3', u'id4', u'id5'])
         self.assertEquals(
             tabView._tabGroups,
             {u'group1': tabGroup})
 
 
-    def test_appendDuplicateTab(self):
+    def test_updateTabs(self):
         """
-        Appending a L{methanal.widgets.Tab} widget with an C{id} attribute that
-        matches one already being managed raises C{ValueError}.
-        """
-        self.assertRaises(ValueError,
-            self.tabView.appendTab, self.tabView.tabs[0])
-
-
-    def test_appendTabs(self):
-        """
-        Appending tabs on the server side manages them and invokes methods
+        Updating tabs on the server side manages them and invokes methods
         on the client side to insert them.
         """
         self.result = None
 
         def callRemote(methodName, *a):
-            self.result = methodName == '_appendTabsFromServer'
+            self.result = methodName == '_updateTabsFromServer'
 
         tab = widgets.Tab(u'id4', u'Title 4', self.contentFactory)
         self.patch(self.tabView, 'callRemote', callRemote)
-        self.tabView.appendTabs([tab])
+        self.tabView.updateTabs([tab])
         self.assertTrue(self.result)
-        self.assertIn(u'id4', self.tabView._tabIDs)
+        self.assertNotIdentical(self.tabView.getTab(u'id4'), None)
         self.assertIdentical(self.tabView.tabs[-1], tab)
 
-
-    def test_appendDuplicateGroup(self):
-        """
-        Appending a L{methanal.widgets.TabGroup} widget with an C{id} attribute
-        that matches one already being managed raises C{ValueError}.
-        """
-        tabGroup = widgets.TabGroup(u'group1', u'Group', tabs=[
-            widgets.Tab(u'id4', u'Title 4', self.contentFactory)])
-        self.tabView._manageGroup(tabGroup)
-        self.assertRaises(ValueError,
-            self.tabView.appendGroup, tabGroup)
+        replacementTab = widgets.Tab(u'id1', u'New title', self.contentFactory)
+        oldTab = self.tabView.getTab(u'id1')
+        self.tabView.updateTabs([replacementTab])
+        self.assertIdentical(self.tabView.getTab(u'id1'), replacementTab)
+        self.assertNotIn(oldTab, self.tabView.tabs)
 
 
-    def test_appendGroup(self):
+    def test_updateGroup(self):
         """
-        Appending a group on the server site manages it, and all the tabs it
+        Updating a group on the server site manages it, and all the tabs it
         contains, and invokes methods on the client side to insert them.
         """
         self.result = None
 
         def callRemote(methodName, *a):
-            self.result = methodName == '_appendTabsFromServer'
+            self.result = methodName == '_updateTabsFromServer'
 
         tab = widgets.Tab(u'id4', u'Title 4', self.contentFactory)
         group = widgets.TabGroup(u'group1', u'Group', tabs=[tab])
         self.patch(self.tabView, 'callRemote', callRemote)
-        self.tabView.appendGroup(group)
+        self.tabView.updateGroup(group)
         self.assertTrue(self.result)
-        self.assertIn(u'id4', self.tabView._tabIDs)
-        self.assertIn(u'group1', self.tabView._tabGroups)
+        self.assertNotIdentical(self.tabView.getTab(u'id4'), None)
+        self.assertNotIdentical(self.tabView.getGroup(u'group1'), None)
         self.assertIdentical(self.tabView.tabs[-1], tab)
+
+        # Update a group, and add a new tab.
+        newTab = widgets.Tab(u'id5', u'Title 5', self.contentFactory)
+        replacementGroup = widgets.TabGroup(
+            u'group1', u'New Group', tabs=[newTab])
+        self.tabView.updateGroup(replacementGroup)
+        self.assertIdentical(
+            self.tabView.getGroup(u'group1'), replacementGroup)
+        self.assertNotIdentical(self.tabView.getTab(u'id5'), None)
+        self.assertRaises(
+            errors.InvalidIdentifier, self.tabView.getTab, u'id4')
+        self.assertNotIn(tab, self.tabView.tabs)
+
+        # Remove a tab from a group.
+        self.tabView.removeTabs([newTab])
+        self.assertRaises(
+            errors.InvalidIdentifier, self.tabView.getTab, u'id5')
+        self.assertNotIn(newTab, self.tabView.getGroup(u'group1').tabs)
+
+
+    def test_removeTabs(self):
+        """
+        Removing tabs on the server side releases them and invokes methods on
+        the client side to remove them.
+        """
+        self.result = None
+
+        def callRemote(methodName, *a):
+            self.result = methodName == '_removeTabsFromServer'
+
+        self.patch(self.tabView, 'callRemote', callRemote)
+        tab = self.tabView.tabs[0]
+        self.tabView.removeTabs([tab])
+        self.assertTrue(self.result)
+        self.assertRaises(
+            errors.InvalidIdentifier, self.tabView.getTab, tab.id)
+
+
+    def test_invalidRemove(self):
+        """
+        Trying to remove an unmanaged tab results in C{ValueError} being
+        raised.
+        """
+        # Try a new tab.
+        self.assertRaises(ValueError,
+            self.tabView.removeTabs, [
+                widgets.Tab(u'id99', u'Title 1', self.contentFactory)])
+
+        # Try dupe an ID.
+        self.assertRaises(ValueError,
+            self.tabView.removeTabs, [
+                widgets.Tab(u'id1', u'Title 1', self.contentFactory)])
+
+
+    def test_repr(self):
+        """
+        L{methanal.widgets.TabView} has an accurate string representation.
+        """
+        self.assertEquals(
+            repr(self.tabView),
+            "<TabView topLevel=False tabs=%r>" % self.tabs)
 
 
 
@@ -140,6 +186,21 @@ class StaticTabTests(unittest.TestCase):
         self.assertEquals(tab.contentFactory(), content * 2)
 
 
+    def test_repr(self):
+        """
+        L{methanal.widgets.Tab} (and by extension L{methanal.widgets.StaticTab})
+        has an accurate string representation.
+        """
+        tab = widgets.StaticTab(
+            id=u'id',
+            title=u'Title',
+            content=u'A content.')
+        self.assertEquals(
+            repr(tab),
+            "<StaticTab id=u'id' title=u'Title' selected=False group=None>")
+
+
+
 
 class TabGroupTests(unittest.TestCase):
     """
@@ -152,7 +213,40 @@ class TabGroupTests(unittest.TestCase):
         tabs = [
             widgets.Tab(u'id1', u'Title 1', None),
             widgets.Tab(u'id2', u'Title 2', None)]
-        tabGroup = widgets.TabGroup(u'id', u'title', tabs=tabs)
+        tabGroup = widgets.TabGroup(u'id', u'Title', tabs=tabs)
         self.assertEquals(
             inevow.IAthenaTransportable(tabGroup).getInitialArguments(),
-            [u'id', u'title', [u'id1', u'id2']])
+            [u'id', u'Title', [u'id1', u'id2']])
+
+
+    def test_mergeGroups(self):
+        """
+        L{methanal.widgets.TabGroup.mergeGroups} will merge two
+        L{methanal.widgets.TabGroup}s together, preferring the metadata of the
+        second specified group.
+        """
+        tabs = [
+            widgets.Tab(u'id1', u'Title 1', None),
+            widgets.Tab(u'id2', u'Title 2', None)]
+        tabGroup1 = widgets.TabGroup(u'id', u'Title', tabs=tabs)
+        tabs = [
+            widgets.Tab(u'id3', u'Title 3', None)]
+        tabGroup2 = widgets.TabGroup(u'id', u'Hello', tabs=tabs)
+
+        newGroup = widgets.TabGroup.mergeGroups(tabGroup1, tabGroup2)
+        self.assertEquals(newGroup.id, u'id')
+        self.assertEquals(newGroup.title, u'Hello')
+        self.assertEquals(newGroup.tabs, tabGroup1.tabs + tabGroup2.tabs)
+
+
+    def test_repr(self):
+        """
+        L{methanal.widgets.TabGroup} has an accurate string representation.
+        """
+        tabs = [
+            widgets.Tab(u'id1', u'Title 1', None),
+            widgets.Tab(u'id2', u'Title 2', None)]
+        tabGroup = widgets.TabGroup(u'id', u'Title', tabs=tabs)
+        self.assertEquals(
+            repr(tabGroup),
+            "<TabGroup id=u'id' title=u'Title' tabs=%r>" % tabs)

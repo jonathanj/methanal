@@ -20,17 +20,42 @@ Methanal.View.LiveForm.subclass(
         Methanal.Tests.TestView.MockLiveForm.upcall(
             self, '__init__', node, viewOnly, controlNames);
 
-        var makeWidgetChildNode = Methanal.Tests.Util.makeWidgetChildNode;
-        makeWidgetChildNode(self, 'span', 'form-error');
-
-        var actions = Methanal.View.ActionContainer(
-            Nevow.Test.WidgetUtil.makeWidgetNode(), {'actionIDs': {}});
-        makeWidgetChildNode(actions, 'img', 'throbber');
-
-        self.addChildWidget(actions);
-        self.node.appendChild(actions.node);
-        document.body.appendChild(node);
+        Methanal.Tests.Util.setUpForm(self);
     });
+
+
+
+/**
+ * Create a control container.
+ *
+ * @type  widgetParent: C{Nevow.Athena.Widget}
+ * @param widgetParent: Container parent widget.
+ *
+ * @param containerType: Container type constructor.
+ *
+ * @type  children: C{Array} of C{Nevow.Athena.Widget}
+ * @param children: Controls to add as children of the container.
+ *
+ * @return: A control container of type C{containerType} with C{children} as
+ *     child controls.
+ */
+Methanal.Tests.TestView.createContainer = function createContainer(
+    widgetParent, containerType, children) {
+    var container = containerType(
+        Nevow.Test.WidgetUtil.makeWidgetNode());
+    Methanal.Tests.Util.makeWidgetChildNode(
+        container, 'span', 'error-text');
+
+    for (var i = 0; i < children.length; ++i) {
+        var child = children[i];
+        container.addChildWidget(child);
+        container.node.appendChild(child.node);
+    }
+
+    widgetParent.addChildWidget(container);
+
+    return container;
+};
 
 
 
@@ -43,10 +68,24 @@ Methanal.Tests.Util.TestCase.subclass(
      * Create a C{Methanal.View.LiveForm}.
      */
     function createForm(self, viewOnly) {
-        var controlNames = {};
+        var controlNames = [];
         form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
         Methanal.Util.nodeInserted(form);
         return form;
+    },
+
+
+    /**
+     * Create an input.
+     */
+    function createControl(self, args) {
+        var node = Nevow.Test.WidgetUtil.makeWidgetNode();
+        var control = Methanal.View.TextInput(node, args);
+        node.appendChild(document.createElement('input'));
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error');
+        Methanal.Tests.Util.makeWidgetChildNode(
+            control, 'span', 'displayValue');
+        return control;
     },
 
 
@@ -118,6 +157,98 @@ Methanal.Tests.Util.TestCase.subclass(
         form.callRemote = fail;
         form.submit();
         self.assertIdentical(success, false);
+    },
+
+
+    /**
+     * Visit all C{FormRow}s in C{widgetParent} and return an C{Array} of all
+     * active rows.
+     */
+    function gatherActiveRows(self, widgetParent, fn) {
+        var rows = [];
+        Methanal.View.visitRows(widgetParent, function (row) {
+            if (fn !== undefined) {
+                fn(row);
+            }
+            if (row.active) {
+                rows.push(row);
+            }
+        });
+        return rows;
+    },
+
+
+    /**
+     * L{Methanal.View.visitRows} recursively visits L{Methanal.View.FormRow}
+     * widgets and applies a function to every C{FormRow}.
+     */
+    function test_visitRows(self) {
+        function createRows(widgetParent, n) {
+            var rows = [];
+            for (var i = 0; i < n; ++i) {
+                var row = Methanal.Tests.TestView.createContainer(
+                    widgetParent, Methanal.View.FormRow, []);
+                rows.push(row);
+            }
+            return rows;
+        }
+
+        var form = self.createForm();
+        var rows = createRows(form, 3);
+        self.assertArraysEqual(self.gatherActiveRows(form), rows);
+
+        var group = Methanal.Tests.TestView.createContainer(
+            form, Methanal.View.InputContainer, []);
+        var innerRows = createRows(group, 3);
+        self.assertArraysEqual(self.gatherActiveRows(group), innerRows);
+
+        // The form contains all descendent FormRows.
+        self.assertArraysEqual(
+            self.gatherActiveRows(form),
+            rows.concat(innerRows));
+
+        function frob(row) {
+            row.frobbed = true;
+        }
+
+        form = self.createForm();
+        rows = createRows(form, 3);
+        rows[1].active = false;
+        var gathered = self.gatherActiveRows(form, frob);
+        // gatherActiveRows only gathers active rows.
+        self.assertArraysEqual(
+            gathered,
+            [rows[0], rows[2]]);
+
+        // gatherActiveRows applies fn to every row, regardless of its active state.
+        for (var i = 0; i < rows.length; ++i) {
+            self.assertIdentical(rows[i].frobbed, true);
+        }
+    },
+
+
+    /**
+     * L{Methanal.View.LiveForm.valueChanged} calls
+     * L{Methanal.View.LiveForm.formModified} to indicate that the form's
+     * modification state changed.
+     */
+    function test_formModified(self) {
+        var form = self.createForm();
+        var control = self.createControl({});
+        var row = Methanal.Tests.TestView.createContainer(
+            form, Methanal.View.FormRow, [control]);
+        form.addChildWidget(row);
+        form.node.appendChild(row.node);
+        Methanal.Util.nodeInserted(row);
+
+        var containsElementClass = Methanal.Util.containsElementClass;
+        self.assertIdentical(
+            containsElementClass(form.actions.node, 'form-modified'),
+            false);
+        control.onChange();
+        self.assertIdentical(
+            containsElementClass(form.actions.node, 'form-modified'),
+            true);
     });
 
 
@@ -143,15 +274,11 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create the control container.
      */
-    function createContainer(self, child) {
-        var row = Methanal.View.FormRow(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
-        Methanal.Tests.Util.makeWidgetChildNode(row, 'span', 'error-text')
-
-        row.addChildWidget(child);
-        row.node.appendChild(child.node);
-
-        return row;
+    function createContainer(self, widgetParent, child) {
+        return Methanal.Tests.TestView.createContainer(
+            widgetParent,
+            Methanal.View.FormRow,
+            [child]);
     },
 
 
@@ -169,16 +296,15 @@ Methanal.Tests.Util.TestCase.subclass(
     function testControls(self, controls, testingFunc) {
         var map = Methanal.Util.map;
 
-        var controlNames = {};
+        var controlNames = [];
         map(function (control) {
-            controlNames[control.name] = 1;
+            controlNames.push(control.name);
         }, controls);
 
         var form = Methanal.Tests.TestView.MockLiveForm(controlNames);
         var containers = [];
         map(function (control) {
-            var container = self.createContainer(control);
-            form.addChildWidget(container);
+            var container = self.createContainer(form, control);
             document.body.appendChild(container.node);
             containers.push(container);
         }, controls);
@@ -334,10 +460,9 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
                 control.append(1, 'd2');
                 control.setValue('1');
                 self.assertIdentical(control.inputNode.value, '1');
-                // XXX: This should work, but the mock DOM stuff doesn't coerce
-                // the values of select inputs.
-                //control.setValue(1);
-                //self.assertIdentical(control.inputNode.value, '1');
+                // Coerce values of select inputs and options.
+                control.setValue(1);
+                self.assertIdentical(control.inputNode.value, '1');
             });
     },
 
@@ -507,6 +632,9 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
 
                 control.setValue('hello');
                 self.assertIdentical(control.getValue(), 'hello');
+
+                control.setValue('  hello ');
+                self.assertIdentical(control.getValue(), '  hello ');
             });
     },
 
@@ -576,6 +704,24 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertIdentical(called, 1);
                 control.onKeyUp(control.inputNode);
                 self.assertIdentical(called, 2);
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.TextInput.getValue} strips whitespace when
+     * L{Methanal.View.TextInput.stripWhitespace} is C{true}.
+     */
+    function test_getValueStripped(self) {
+        self.testControl({value: null},
+            function (control) {
+                control.stripWhitespace = true;
+
+                control.setValue(' foo bar baz ');
+                self.assertIdentical(control.getValue(), 'foo bar baz');
+
+                control.setValue('foo');
+                self.assertIdentical(control.getValue(), 'foo');
             });
     });
 
@@ -871,6 +1017,47 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertInvalidInput(control, 'a');
                 self.assertInvalidInput(control, '1.2');
             });
+    },
+
+
+    /**
+     * L{Methanal.View.IntegerInput} validates that values fall within a certain
+     * exclusive range.
+     */
+    function test_bounds(self) {
+        self.testControl({value: null,
+                          lowerBound: -11,
+                          upperBound:   8,},
+            function (control) {
+                self.assertValidInput(control, '-10');
+                self.assertInvalidInput(control, '-11');
+                self.assertValidInput(control, '7');
+                self.assertInvalidInput(control, '8');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.IntegerInput} validates that values fall within a certain
+     * exclusive range, even for really big numbers that have precision
+     * problems in Javascript.
+     */
+    function test_bigBounds(self) {
+        // These turn into -9223372036854776000 and 9223372036854776000.
+        self.testControl({value: null,
+                          lowerBound: -9223372036854775809,
+                          upperBound:  9223372036854775808},
+            function (control) {
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '1');
+                self.assertInvalidInput(control, '-9223372036854775800');
+                self.assertInvalidInput(control, '-9223372036854775809');
+                self.assertInvalidInput(control, '-92233720368547758090');
+                self.assertInvalidInput(control,  '9223372036854775800');
+                self.assertInvalidInput(control,  '9223372036854775808');
+                self.assertInvalidInput(control,  '92233720368547758080');
+            });
     });
 
 
@@ -946,6 +1133,55 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertValidInput(control, '1.23');
                 self.assertInvalidInput(control, 'a');
                 self.assertInvalidInput(control, '1.234');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.DecimalInput} validates that values fall within a certain
+     * exclusive range.
+     */
+    function test_bounds(self) {
+        self.testControl({value: null,
+                          decimalPlaces: 2,
+                          lowerBound: -10.5,
+                          upperBound:   7.5,},
+            function (control) {
+                self.assertValidInput(control, '-10');
+                self.assertValidInput(control, '-10.4');
+                self.assertInvalidInput(control, '-11');
+                self.assertInvalidInput(control, '-10.6');
+                self.assertValidInput(control, '7');
+                self.assertValidInput(control, '7.4');
+                self.assertInvalidInput(control, '8');
+                self.assertInvalidInput(control, '7.6');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.DecimalInput} validates that values fall within a certain
+     * exclusive range, even for really big numbers that have precision
+     * problems in Javascript.
+     */
+    function test_bigBounds(self) {
+        // These turn into -9223372036854776000 and 9223372036854776000.
+        self.testControl({value: null,
+                          decimalPlaces: 2,
+                          lowerBound: -9223372036854775809.5,
+                          upperBound:  9223372036854775808.5},
+            function (control) {
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '1');
+                self.assertInvalidInput(control, '-9223372036854775800');
+                self.assertInvalidInput(control, '-9223372036854775809');
+                self.assertInvalidInput(control, '-9223372036854775808.5');
+                self.assertInvalidInput(control, '-92233720368547758090');
+                self.assertInvalidInput(control,  '9223372036854775800');
+                self.assertInvalidInput(control,  '9223372036854775808');
+                self.assertInvalidInput(control,  '9223372036854775807.5');
+                self.assertInvalidInput(control,  '92233720368547758080');
             });
     });
 
@@ -1166,17 +1402,14 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     /**
      * Specially designed to accept multiple children.
      */
-    function createContainer(self, children) {
-        var group = Methanal.View.InputContainer(
-            Nevow.Test.WidgetUtil.makeWidgetNode());
+    function createContainer(self, widgetParent, children) {
+        var containedChildren = Methanal.Util.map(function (child) {
+            return Methanal.Tests.TestView.TestFormGroup.upcall(
+                self, 'createContainer', widgetParent, child);
+        }, children);
 
-        for (var i = 0; i < children.length; ++i) {
-            var row = Methanal.Tests.TestView.TestFormGroup.upcall(
-                self, 'createContainer', children[i]);
-            group.addChildWidget(row);
-            group.node.appendChild(row.node);
-        }
-        return group;
+        return Methanal.Tests.TestView.createContainer(
+            widgetParent, Methanal.View.InputContainer, containedChildren);
     },
 
 
