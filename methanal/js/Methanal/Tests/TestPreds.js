@@ -325,15 +325,15 @@ Methanal.Tests.TestPreds.PredsTestCase.subclass(
 
 
     /**
-     * Value is not greater than (or, less than or equal to) C{n}.
+     * Value is at most (or, not greater than; or less than or equal to) C{n}.
      */
-    function test_notGreaterThan(self) {
-        var notGreaterThan = Methanal.Preds.notGreaterThan;
-        self.assertTrue(notGreaterThan(3), 2);
-        self.assertTrue(notGreaterThan(0), -1);
-        self.assertTrue(notGreaterThan(-1), -2);
-        self.assertTrue(notGreaterThan(3), 3);
-        self.assertFalse(notGreaterThan(0), 3);
+    function test_atMost(self) {
+        var atMost = Methanal.Preds.atMost;
+        self.assertTrue(atMost(3), 2);
+        self.assertTrue(atMost(0), -1);
+        self.assertTrue(atMost(-1), -2);
+        self.assertTrue(atMost(3), 3);
+        self.assertFalse(atMost(0), 3);
     },
 
 
@@ -352,16 +352,16 @@ Methanal.Tests.TestPreds.PredsTestCase.subclass(
 
 
     /**
-     * Value is not less than (or, greater than or equal to) C{n}.
+     * Value is at least (or, not less than; or greater than or equal to) C{n}.
      */
-    function test_notLessThan(self) {
-        var notLessThan = Methanal.Preds.notLessThan;
-        self.assertTrue(notLessThan(2), 3);
-        self.assertTrue(notLessThan(-1), 0);
-        self.assertTrue(notLessThan(-2), -1);
-        self.assertTrue(notLessThan(3), 3);
-        self.assertFalse(notLessThan(0), -1);
-        self.assertFalse(notLessThan(3), 1);
+    function test_atLeast(self) {
+        var atLeast = Methanal.Preds.atLeast;
+        self.assertTrue(atLeast(2), 3);
+        self.assertTrue(atLeast(-1), 0);
+        self.assertTrue(atLeast(-2), -1);
+        self.assertTrue(atLeast(3), 3);
+        self.assertFalse(atLeast(0), -1);
+        self.assertFalse(atLeast(3), 1);
     },
 
 

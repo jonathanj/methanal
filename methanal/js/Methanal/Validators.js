@@ -145,12 +145,12 @@ Methanal.Validators.lessThan = function lessThan(n) {
 
 
 /**
- * Value is not greater than (or, less than or equal to) C{n}.
+ * Value is at most (or, not greater than; or less than or equal to) C{n}.
  */
-Methanal.Validators.notGreaterThan = function notGreaterThan(n) {
+Methanal.Validators.atMost = function atMost(n) {
     return Methanal.Validators.pred(
-        Methanal.Preds.notGreaterThan(n),
-        'Value must be less than or equal to ' + n.toString());
+        Methanal.Preds.atMost(n),
+        'Value must be at most ' + n.toString());
 };
 
 
@@ -167,12 +167,12 @@ Methanal.Validators.greaterThan = function greaterThan(n) {
 
 
 /**
- * Value is not less than (or, greater than or equal to) C{n}.
+ * Value is at least (or, not less than; or greater than or equal to) C{n}.
  */
-Methanal.Validators.notLessThan = function notLessThan(n) {
+Methanal.Validators.atLeast = function atLeast(n) {
     return Methanal.Validators.pred(
-        Methanal.Preds.notLessThan(n),
-        'Value must be greater than or equal to ' + n.toString());
+        Methanal.Preds.atLeast(n),
+        'Value must be at least ' + n.toString());
 };
 
 

@@ -239,12 +239,12 @@ Methanal.Preds.lessThan = partial(partial, lessThan);
 
 
 /**
- * Value is not greater than (or, less than or equal to) C{n}.
+ * Value is at most (or, not greater than; or less than or equal to) C{n}.
  */
-function notGreaterThan(n, value) {
+function atMost(n, value) {
     return value <= n;
 }
-Methanal.Preds.notGreaterThan = partial(partial, notGreaterThan);
+Methanal.Preds.atMost = partial(partial, atMost);
 
 
 
@@ -259,12 +259,12 @@ Methanal.Preds.greaterThan = partial(partial, greaterThan);
 
 
 /**
- * Value is not less than (or, greater than or equal to) C{n}.
+ * Value is at least (or, not less than; or greater than or equal to) C{n}.
  */
-function notLessThan(n, value) {
+function atLeast(n, value) {
     return value >= n;
 }
-Methanal.Preds.notLessThan = partial(partial, notLessThan);
+Methanal.Preds.atLeast = partial(partial, atLeast);
 
 
 

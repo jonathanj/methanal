@@ -174,15 +174,15 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
 
 
     /**
-     * Value is not greater than (or, less than or equal to) C{n}.
+     * Value is at most (or, not greater than; or less than or equal to) C{n}.
      */
-    function test_notGreaterThan(self) {
-        var notGreaterThan = Methanal.Validators.notGreaterThan;
-        self.assertValid(notGreaterThan(3), 2);
-        self.assertValid(notGreaterThan(0), -1);
-        self.assertValid(notGreaterThan(-1), -2);
-        self.assertValid(notGreaterThan(3), 3);
-        self.assertInvalid(notGreaterThan(0), 3);
+    function test_atMost(self) {
+        var atMost = Methanal.Validators.atMost;
+        self.assertValid(atMost(3), 2);
+        self.assertValid(atMost(0), -1);
+        self.assertValid(atMost(-1), -2);
+        self.assertValid(atMost(3), 3);
+        self.assertInvalid(atMost(0), 3);
     },
 
 
@@ -201,16 +201,16 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
 
 
     /**
-     * Value is not less than (or, greater than or equal to) C{n}.
+     * Value is at least (or, not less than; or greater than or equal to) C{n}.
      */
-    function test_notLessThan(self) {
-        var notLessThan = Methanal.Validators.notLessThan;
-        self.assertValid(notLessThan(2), 3);
-        self.assertValid(notLessThan(-1), 0);
-        self.assertValid(notLessThan(-2), -1);
-        self.assertValid(notLessThan(3), 3);
-        self.assertInvalid(notLessThan(0), -1);
-        self.assertInvalid(notLessThan(3), 1);
+    function test_atLeast(self) {
+        var atLeast = Methanal.Validators.atLeast;
+        self.assertValid(atLeast(2), 3);
+        self.assertValid(atLeast(-1), 0);
+        self.assertValid(atLeast(-2), -1);
+        self.assertValid(atLeast(3), 3);
+        self.assertInvalid(atLeast(0), -1);
+        self.assertInvalid(atLeast(3), 1);
     },
 
 
