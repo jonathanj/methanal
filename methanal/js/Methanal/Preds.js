@@ -148,10 +148,10 @@ var partial = Methanal.Util.partial;
 /**
  * Value is identical to C{is}.
  */
-function valueIs(is, value) {
-    return value === is;
-}
-Methanal.Preds.valueIs = partial(partial, valueIs);
+Methanal.Preds.valueIs = partial(partial,
+    function valueIs(is, value) {
+        return value === is;
+    });
 
 
 
@@ -176,30 +176,30 @@ Methanal.Preds.empty = function empty(value) {
 /**
  * Value has a length of exactly C{n}.
  */
-function lengthOf(n, value) {
-    return value != null && value.length === n;
-}
-Methanal.Preds.lengthOf = partial(partial, lengthOf);
+Methanal.Preds.lengthOf = partial(partial,
+    function lengthOf(n, value) {
+        return value != null && value.length === n;
+    });
 
 
 
 /**
  * Value has a length of at least C{n}.
  */
-function lengthAtLeast(n, value) {
-    return value != null && value.length >= n;
-}
-Methanal.Preds.lengthAtLeast = partial(partial, lengthAtLeast);
+Methanal.Preds.lengthAtLeast = partial(partial,
+    function lengthAtLeast(n, value) {
+        return value != null && value.length >= n;
+    });
 
 
 
 /**
  * Value has a length of at most C{n}.
  */
-function lengthAtMost(n, value) {
-    return value != null && value.length <= n;
-}
-Methanal.Preds.lengthAtMost = partial(partial, lengthAtMost);
+Methanal.Preds.lengthAtMost = partial(partial,
+    function lengthAtMost(n, value) {
+        return value != null && value.length <= n;
+    });
 
 
 
@@ -221,60 +221,60 @@ Methanal.Preds.notNull = function notNull(value) {
  * @type  b: C{number}
  * @param b: The upper-bound inclusive value of the range
  */
-function between(a, b, value) {
-    return value >= a && value <= b;
-}
-Methanal.Preds.between = partial(partial, between);
+Methanal.Preds.between = partial(partial,
+    function between(a, b, value) {
+        return value >= a && value <= b;
+    });
 
 
 
 /**
  * Value is less than C{n}.
  */
-function lessThan(n, value) {
-    return value < n;
-}
-Methanal.Preds.lessThan = partial(partial, lessThan);
+Methanal.Preds.lessThan = partial(partial,
+    function lessThan(n, value) {
+        return value < n;
+    });
 
 
 
 /**
  * Value is at most (or, not greater than; or less than or equal to) C{n}.
  */
-function atMost(n, value) {
-    return value <= n;
-}
-Methanal.Preds.atMost = partial(partial, atMost);
+Methanal.Preds.atMost = partial(partial,
+    function atMost(n, value) {
+        return value <= n;
+    });
 
 
 
 /**
  * Value is greater than C{n}.
  */
-function greaterThan(n, value) {
-    return value > n;
-}
-Methanal.Preds.greaterThan = partial(partial, greaterThan);
+Methanal.Preds.greaterThan = partial(partial,
+    function greaterThan(n, value) {
+        return value > n;
+    });
 
 
 
 /**
  * Value is at least (or, not less than; or greater than or equal to) C{n}.
  */
-function atLeast(n, value) {
-    return value >= n;
-}
-Methanal.Preds.atLeast = partial(partial, atLeast);
+Methanal.Preds.atLeast = partial(partial,
+    function atLeast(n, value) {
+        return value >= n;
+    });
 
 
 
 /**
  * Value is a multiple of C{n}.
  */
-function multipleOf(n, value) {
-    return value !== 0 && value % n === 0;
-}
-Methanal.Preds.multipleOf = partial(partial, multipleOf);
+Methanal.Preds.multipleOf = partial(partial,
+    function multipleOf(n, value) {
+        return value !== 0 && value % n === 0;
+    });
 
 
 
@@ -284,10 +284,10 @@ Methanal.Preds.multipleOf = partial(partial, multipleOf);
  * @type  values: C{Array}
  * @param values: Acceptable values
  */
-function oneOf(values, value) {
-    return Methanal.Util.arrayIndexOf(values, value) !== -1;
-}
-Methanal.Preds.oneOf = partial(partial, oneOf);
+Methanal.Preds.oneOf = partial(partial,
+    function oneOf(values, value) {
+        return Methanal.Util.arrayIndexOf(values, value) !== -1;
+    });
 
 
 
@@ -296,15 +296,15 @@ Methanal.Preds.oneOf = partial(partial, oneOf);
  *
  * @type subset: C{Array}
  */
-function arraySubset(subset, value) {
-    for (var i = 0; i < subset.length; ++i) {
-        if (Methanal.Util.arrayIndexOf(value, subset[i]) === -1) {
-            return false;
+Methanal.Preds.arraySubset = partial(partial,
+    function arraySubset(subset, value) {
+        for (var i = 0; i < subset.length; ++i) {
+            if (Methanal.Util.arrayIndexOf(value, subset[i]) === -1) {
+                return false;
+            }
         }
-    }
-    return true;
-}
-Methanal.Preds.arraySubset = partial(partial, arraySubset);
+        return true;
+    });
 
 
 
@@ -314,11 +314,11 @@ Methanal.Preds.arraySubset = partial(partial, arraySubset);
  *
  * @type expn: C{String}
  */
-function isChars(expn, value) {
-    var filterExpn = new RegExp('^(' + expn + ')+$');
-    return filterExpn.test(value);
-}
-Methanal.Preds.isChars = partial(partial, isChars);
+Methanal.Preds.isChars = partial(partial,
+    function isChars(expn, value) {
+        var filterExpn = new RegExp('^(' + expn + ')+$');
+        return filterExpn.test(value);
+    });
 
 
 
@@ -327,10 +327,10 @@ Methanal.Preds.isChars = partial(partial, isChars);
  *
  * @type expn: C{RegExp}
  */
-function regex(expn, value) {
-    return expn.test(value);
-}
-Methanal.Preds.regex = partial(partial, regex);
+Methanal.Preds.regex = partial(partial,
+    function regex(expn, value) {
+        return expn.test(value);
+    });
 
 
 
@@ -343,15 +343,15 @@ Methanal.Preds.regex = partial(partial, regex);
  *
  * @type value: C{Date} or C{Number}
  */
-function dateSince(timedelta, start, value) {
-    var t = start.offset(timedelta).asDate();
-    // Make some lives easier.
-    if (value && !(value instanceof Date)) {
-        value = new Date(value);
-    }
-    return timedelta.offset > 0 ? value < t : value > t;
-}
-Methanal.Preds.dateSince = partial(partial, dateSince);
+Methanal.Preds.dateSince = partial(partial,
+    function dateSince(timedelta, start, value) {
+        var t = start.offset(timedelta).asDate();
+        // Make some lives easier.
+        if (value && !(value instanceof Date)) {
+            value = new Date(value);
+        }
+        return timedelta.offset > 0 ? value < t : value > t;
+    });
 
 
 
