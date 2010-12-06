@@ -38,7 +38,7 @@ Methanal.Preds.combine = function combine(c, fs) {
  */
 Methanal.Preds.AND = function AND(values) {
     return Methanal.Util.reduce(
-        function _and(a, b) { return a && b; }, values);
+        function _and(a, b) { return !!(a && b); }, values);
 };
 
 
@@ -65,7 +65,7 @@ Methanal.Preds.intersection = Methanal.Util.partial(
  */
 Methanal.Preds.OR = function OR(values) {
     return Methanal.Util.reduce(
-        function _or(a, b) { return a || b; }, values);
+        function _or(a, b) { return !!(a || b); }, values);
 };
 
 
