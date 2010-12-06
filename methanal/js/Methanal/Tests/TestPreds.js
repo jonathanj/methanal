@@ -5,6 +5,24 @@
 
 
 
+/**
+ * Return C{true}.
+ */
+Methanal.Tests.TestPreds.T = function T() {
+    return true;
+};
+
+
+
+/**
+ * Return C{false}.
+ */
+Methanal.Tests.TestPreds.F = function F() {
+    return false;
+};
+
+
+
 Methanal.Tests.Util.TestCase.subclass(
     Methanal.Tests.TestPreds, 'PredsTestCase').methods(
     /**
@@ -24,24 +42,7 @@ Methanal.Tests.Util.TestCase.subclass(
         var args = Array.prototype.slice.call(arguments, 2);
         self.assertIdentical(pred.apply(null, args), false,
             'Predicate is true for ' + Methanal.Util.repr(pred));
-    },
-
-
-    /**
-     * Return C{true}.
-     */
-    function T(self) {
-        return true;
-    },
-
-
-    /**
-     * Return C{false}.
-     */
-    function F(self) {
-        return false;
     });
-
 
 
 
@@ -101,7 +102,7 @@ Methanal.Tests.TestPreds.PredsTestCase.subclass(
      */
     function test_intersection(self) {
         var intersection = Methanal.Preds.intersection;
-        var T = self.T, F = self.F;
+        var T = Methanal.Tests.TestPreds.T, F = Methanal.Tests.TestPreds.F;
         self.assertTrue(intersection([T]));
         self.assertTrue(intersection([T, T]));
         self.assertFalse(intersection([F]));
@@ -128,7 +129,7 @@ Methanal.Tests.TestPreds.PredsTestCase.subclass(
      */
     function test_union(self) {
         var union = Methanal.Preds.union;
-        var T = self.T, F = self.F;
+        var T = Methanal.Tests.TestPreds.T, F = Methanal.Tests.TestPreds.F;
         self.assertTrue(union([T]));
         self.assertTrue(union([T, T]));
         self.assertFalse(union([F]));
@@ -157,7 +158,7 @@ Methanal.Tests.TestPreds.PredsTestCase.subclass(
      */
     function test_symmetricDifference(self) {
         var symmetricDifference = Methanal.Preds.symmetricDifference;
-        var T = self.T, F = self.F;
+        var T = Methanal.Tests.TestPreds.T, F = Methanal.Tests.TestPreds.F;
         self.assertTrue(symmetricDifference([T]));
         self.assertFalse(symmetricDifference([T, T]));
         self.assertFalse(symmetricDifference([F]));
