@@ -5,6 +5,10 @@
 /**
  * Gather the results of functions and combine them.
  *
+ * For example::
+ *
+ *     combine(c, [f, g])(x, y) -> c([f(x, y), g(x, y)])
+ *
  * @type  c: C{Function} taking one C{Array} parameter
  * @param c: Combining function.
  *
