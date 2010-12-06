@@ -13,7 +13,7 @@ Methanal.Tests.Util.TestCase.subclass(
     function assertTrue(self, pred /*...*/) {
         var args = Array.prototype.slice.call(arguments, 2);
         self.assertIdentical(pred.apply(null, args), true,
-            'Not predicated for ' + Methanal.Util.repr(pred));
+            'Predicate is false for ' + Methanal.Util.repr(pred));
     },
 
 
@@ -23,7 +23,7 @@ Methanal.Tests.Util.TestCase.subclass(
     function assertFalse(self, pred /*...*/) {
         var args = Array.prototype.slice.call(arguments, 2);
         self.assertIdentical(pred.apply(null, args), false,
-            'Predicated for ' + Methanal.Util.repr(pred));
+            'Predicate is true for ' + Methanal.Util.repr(pred));
     },
 
 
