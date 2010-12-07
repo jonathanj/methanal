@@ -219,9 +219,10 @@ Methanal.Util.arrayIndexOf = function arrayIndexOf(a, v) {
 
 
 
-// XXX: DEPRECATED.
 Methanal.Util.detachWidget = function detachWidget(widget) {
-    Divmod.msg('Deprecated: Use Nevow.Athena.Widget instead');
+    Divmod.warn(
+        'detachWidget is deprecated, use Nevow.Athena.Widget.detach',
+        Divmod.DeprecationWarning);
     widget.detach();
 };
 
@@ -543,21 +544,40 @@ Divmod.Class.subclass(Methanal.Util, 'StringSet').methods(
  *                              'hours':   5,
  *                              'minutes': 37})
  *
- * @type  values: C{object} mapping C{String} to C{Number}
- * @param values: Mapping of time units to duration, valid units are: C{days},
- *     C{hours}, C{minutes}, C{seconds}, C{milliseconds}
+ * @type values: C{object} mapping C{String} to C{Number}
+ * @ivar values: Mapping of time units to duration, valid units are: C{days},
+ *     C{hours}, C{minutes}, C{seconds}, C{milliseconds}.
  *
- * @rtype:  C{Number}
- * @return: The amount of time L{values} represents, in milliseconds
+ * @type offset: C{Number}
+ * @ivar offset: Amount of time represented by L{values}, in milliseconds.
  */
-Methanal.Util.TimeDelta = function TimeDelta(values) {
-    var _offset = (values.days || 0) * 3600 * 24 * 1000;
-    _offset += (values.hours || 0) * 3600 * 1000;
-    _offset += (values.minutes || 0) * 60 * 1000;
-    _offset += (values.seconds || 0) * 1000;
-    _offset += (values.milliseconds || 0);
-    return _offset;
-};
+Divmod.Class.subclass(Methanal.Util, 'TimeDelta').methods(
+    function __init__(self, values) {
+        var offset = (values.days || 0) * 3600 * 24 * 1000;
+        offset += (values.hours || 0) * 3600 * 1000;
+        offset += (values.minutes || 0) * 60 * 1000;
+        offset += (values.seconds || 0) * 1000;
+        offset += (values.milliseconds || 0);
+        self.values = values;
+        self.offset = offset;
+    },
+
+
+    function asHumanly(self) {
+        var attrs = [
+            'days', 'hours', 'minutes', 'seconds', 'milliseconds'];
+        var values = [];
+        for (var i = 0; i < attrs.length; ++i) {
+            var attr = attrs[i];
+            var v = Math.abs(self.values[attr]);
+            if (v) {
+                values.push(
+                    v.toString() + ' ' +
+                    attr.substring(0, attr.length - (v > 1 ? 0 : 1)));
+            }
+        }
+        return values.join(', ') + (self.offset > 0 ? '' : ' ago');
+    });
 
 
 
@@ -582,7 +602,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
     function __init__(self) {
         var d = new Date();
         self._timezoneOffset = d.getTimezoneOffset() * 60 * 1000;
-        self._timestamp = d.getTime() - self._timezoneOffset;
+        self._timestamp = d.getTime();
         self._oneDay = false;
     },
 
@@ -591,7 +611,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * Local time C{Date} representation.
      */
     function asDate(self) {
-        return new Date(self._timestamp + self._timezoneOffset);
+        return new Date(self._timestamp);
     },
 
 
@@ -599,7 +619,7 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * UTC C{Date} representation.
      */
     function asUTCDate(self) {
-        return new Date(self._timestamp);
+        return new Date(self._timestamp - self._timezoneOffset);
     },
 
 
@@ -696,15 +716,15 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
     /**
      * Offset the current instance by some amount of time.
      *
-     * @type  delta: C{Number}
-     * @param delta: An amount of time to offset the current instance by, in
-     *      milliseconds
+     * @type  delta: L{Methanal.Util.TimeDelta} or C{Number}
+     * @param delta: An amount of time to offset the current instance by.
      *
      * @rtype: L{Methanal.Util.Time}
      * @return: A new instance representing the newly offset time
      */
-    function offset(self, delta) {
-        var t = Methanal.Util.Time.fromTimestamp(self.asTimestamp() + delta);
+    function offset(self, timedelta) {
+        var offset = timedelta.offset || timedelta;
+        var t = Methanal.Util.Time.fromTimestamp(self.asTimestamp() + offset);
         t._oneDay = self._oneDay;
         t._timezoneOffset = self._timezoneOffset;
         return t;
@@ -727,7 +747,7 @@ Methanal.Util.Time._monthNames = [
 Methanal.Util.Time.fromDate = function fromDate(dateObj) {
     var t = Methanal.Util.Time();
     t._timezoneOffset = dateObj.getTimezoneOffset() * 60 * 1000;
-    t._timestamp = dateObj.getTime() - t._timezoneOffset;
+    t._timestamp = dateObj.getTime();
     return t;
 };
 
@@ -1001,4 +1021,48 @@ Methanal.Util.trimRight = function trimRight(s) {
  */
 Methanal.Util.trim = function trim(s) {
     return Methanal.Util.trimLeft(Methanal.Util.trimRight(s));
+};
+
+
+
+/**
+ * Create a new function with partial application of the given arguments.
+ */
+Methanal.Util.partial = function partial(f /*...*/) {
+    var boundArgs = Array.prototype.slice.call(arguments, 1);
+    return function (/*...*/) {
+        var args = Array.prototype.slice.call(arguments);
+        return f.apply(null, boundArgs.concat(args));
+    }
+};
+
+
+
+/**
+ * Splits L{s} on L{delim}, optionally limiting the number of items split.
+ *
+ * @param maxsplit: Maximum number of splits to do, if provided. Additional
+ *     items are returned unsplit as the final array component.
+ *
+ * @rtype: C{Array}
+ */
+Methanal.Util.split = function split(s, delim, maxsplit/*optional*/) {
+    var parts = s.split(delim);
+    if (maxsplit !== undefined && parts.length > maxsplit) {
+        var newparts = parts.splice(0, maxsplit);
+        newparts.push(parts.join(delim));
+        parts = newparts;
+    }
+    return parts;
+};
+
+
+
+/**
+ * Copy properties from one object to another.
+ */
+Methanal.Util.copyProperties = function copyProperties(src, dst) {
+    for (var name in src) {
+        dst[name] = src[name];
+    }
 };

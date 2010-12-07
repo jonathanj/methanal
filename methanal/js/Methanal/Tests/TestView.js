@@ -972,7 +972,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 control.setValue('NOTAVALIDDATE');
                 self.assertIdentical(control.getValue(), undefined);
                 control.setValue('2009-01-01');
-                self.assertIdentical(control.getValue(), 1230768000000);
+                self.assertIdentical(control.getValue(), 1230760800000);
             });
     },
 

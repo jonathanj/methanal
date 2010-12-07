@@ -665,7 +665,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
      * @param args.rows: See L{_rows}
      */
     function __init__(self, node, args) {
-        Divmod.msg('QueryList is deprecated, use Methanal.Widgets.Table.')
+        Divmod.warn(
+            'QueryList is deprecated, use Methanal.Widgets.Table',
+            Divmod.DeprecationWarning);
         Methanal.Widgets.QueryList.upcall(self, '__init__', node);
 
         self._hasActions = self.actions && self.actions.length > 0;
@@ -854,8 +856,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
 
 
     function makeCellElement(self, columnID, rowData) {
-        Divmod.msg('WARNING: QueryList.makeCellElement is deprecated. ' +
-                   'Use QueryListcreateCellElement instead.');
+        Divmod.warn(
+            'QueryList.makeCellElement is deprecated, use ' +
+            'QueryList.createCellElement instead', Divmod.DeprecationWarning);
         return self.createCellElement(columnID, rowData);
     },
 
@@ -1649,7 +1652,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
 
     function appendTab(self, tab) {
-        Divmod.msg('DEPRECATED: Use Methanal.Widgets.TabView.updateTab');
+        Divmod.warn(
+            'TabView.appendTab is deprecated, use TabView.updateTab',
+            Divmod.DeprecationWarning);
         return self.updateTab(tab);
     },
 

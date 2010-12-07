@@ -184,8 +184,10 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      */
     function addHandler(self, fn, inputs, outputs) {
         if (fn === undefined) {
+            var repr = Methanal.Util.repr;
             throw Methanal.View.HandlerError(
-                'Specified handler function is not defined');
+                'Specified handler function is not defined (inputs: ' +
+                repr(inputs) + '; outputs: ' + repr(outputs));
         }
 
         var handler = Methanal.View._Handler(
@@ -879,9 +881,9 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         self.enableControlStriping = true;
         Methanal.View.LiveForm.upcall(self, '__init__', node);
         if (typeof args === 'boolean') {
-            Divmod.msg(
-                'DEPRECATED: Use an argument dictionary instead of the' +
-                '"viewOnly" boolean parameter');
+            Divmod.warn(
+                'Use an argument dictionary instead of the "viewOnly"' +
+                'boolean parameter', Divmod.DeprecationWarning);
             args = {'viewOnly': args};
         }
         self.viewOnly = args.viewOnly;
