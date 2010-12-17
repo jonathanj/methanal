@@ -2039,3 +2039,115 @@ Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DemandTab').methods(
         Methanal.Widgets.DemandTab.upcall(self, 'select');
         self.updateContent();
     });
+
+
+
+/**
+ * Collapsable container with static content.
+ *
+ * @type expanded: C{Boolean}
+ * @ivar expanded: Is the content visible?
+ */
+Methanal.Widgets.RemoteContentWidget.subclass(Methanal.Widgets,
+                                              'Expander').methods(
+    function __init__(self, node, expanded) {
+        Methanal.Widgets.Expander.upcall(self, '__init__', node);
+        self.expanded = expanded;
+    },
+
+
+    function nodeInserted(self) {
+        self.expanded = !self.expanded;
+        self.toggle();
+    },
+
+
+    /**
+     * Get the header widget.
+     *
+     * @rtype: C{Nevow.Athena.Widgit}
+     */
+    function getHeaderWidget(self) {
+        return Nevow.Athena.Widget.get(self.nodeById('header').lastChild);
+    },
+
+
+    /**
+     * Get the content widget.
+     *
+     * @rtype: C{Nevow.Athena.Widgit}
+     */
+    function getContentWidget(self) {
+        return Nevow.Athena.Widget.get(self.nodeById('content').lastChild);
+    },
+
+
+    /**
+     * Update the header widget from the server.
+     */
+    function updateHeader(self) {
+        self.fetchContent('header');
+    },
+
+
+    /**
+     * Update the content widget from the server.
+     */
+    function updateContent(self) {
+        self.fetchContent('content');
+    },
+
+
+    /**
+     * Show the expander's content.
+     */
+    function expand(self) {
+        Methanal.Util.addElementClass(self.node, 'expanded');
+        Methanal.Util.removeElementClass(self.nodeById('content'), 'hidden');
+        self.expanded = true;
+    },
+
+
+    /**
+     * Hide the expander's content.
+     */
+    function collapse(self) {
+        Methanal.Util.removeElementClass(self.node, 'expanded');
+        Methanal.Util.addElementClass(self.nodeById('content'), 'hidden');
+        self.expanded = false;
+    },
+
+
+    /**
+     * Toggle the visibility of the expander's content.
+     */
+    function toggle(self) {
+        if (self.expanded) {
+            self.collapse();
+        } else {
+            self.expand();
+        }
+    });
+
+
+
+/**
+ * Collapsable container with dynamically loaded content upon being expanded
+ * for the first time.
+ */
+Methanal.Widgets.Expander.subclass(Methanal.Widgets, 'DynamicExpander').methods(
+    function nodeInserted(self) {
+        self.updateContent();
+        Methanal.Widgets.DynamicExpander.upcall(self, 'nodeInserted');
+    });
+
+
+
+/**
+ * Collapsable container with dynamically loaded content upon being expanded.
+ */
+Methanal.Widgets.Expander.subclass(Methanal.Widgets, 'DemandExpander').methods(
+    function expand(self) {
+        Methanal.Widgets.DemandExpander.upcall(self, 'expand');
+        self.updateContent();
+    });

@@ -600,3 +600,45 @@ button.roll-up {
     padding: 5px 2px 5px 20px;
     display: inline-block;
 }
+
+/**
+ * Expander widget.
+ */
+
+.expander {
+    background: #e0e0e0;
+    border: 1px solid #ddd;
+    border-color: #f5f5f5 #ddd #bbb;
+    border-radius: 3px;
+}
+
+.expander-header-container {
+    cursor: pointer;
+}
+
+.expander-header {
+    background: #f0f0f0 url(/static/Methanal/images/expander-header-bg.png) repeat-x left bottom;
+    vertical-align: middle;
+    height: 18px;
+    padding: 0.5em;
+}
+
+.expander-header:hover {
+    color: #247dc2;
+}
+
+.expanded .expander-header-label {
+    background-image: url(/static/Methanal/images/collapse.png);
+}
+
+.expander-header-label {
+    background: url(/static/Methanal/images/expand.png) no-repeat;
+    line-height: 18px;
+    font-size: 140%;
+    padding-left: 25px;
+}
+
+.expander-content {
+    margin: 0.5em;
+    margin-top: 1em;
+}

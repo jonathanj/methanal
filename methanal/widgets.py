@@ -1070,3 +1070,118 @@ class DemandTab(Tab):
         """
         return self.callRemote(
             'setContentFromWidgetInfo', self.getContent(), 'content')
+
+
+
+class Expander(ThemedElement):
+    """
+    Collapsable container with static content.
+
+    The container's header and content can be updated by calling
+    L{updateRemoteHeaderContent} and L{updateRemoteContent} respectively.
+
+    @type headerFactory: C{callable} returning a C{nevow.athena.LiveElement}
+    @ivar headerFactory: Factory for the container header;
+        L{methanal.widgets.ExpanderHeader} is a simple header widget.
+
+    @type contentFactory: C{callable} returning a C{nevow.athena.LiveElement}
+    @ivar contentFactory: Factory for the container content.
+
+    @type expanded: C{bool}
+    @ivar expanded: Is the content visible?
+    """
+    fragmentName = 'methanal-expander'
+    jsClass = u'Methanal.Widgets.Expander'
+
+
+    def __init__(self, headerFactory, contentFactory, expanded=False, **kw):
+        super(Expander, self).__init__(**kw)
+        self.headerFactory = headerFactory
+        self.contentFactory = contentFactory
+        self.expanded = expanded
+
+
+    def getInitialArguments(self):
+        return [self.expanded]
+
+
+    @expose
+    def getContent(self, nodeID):
+        return {
+            'header':  self.getHeaderContent,
+            'content': self.getExpanderContent}[nodeID]()
+
+
+    def getHeaderContent(self):
+        content = self.headerFactory()
+        content.setFragmentParent(self)
+        return content
+
+
+    def getExpanderContent(self):
+        content = self.contentFactory()
+        content.setFragmentParent(self)
+        return content
+
+
+    def updateRemoteHeaderContent(self):
+        return self.callRemote(
+            'setContentFromWidgetInfo', self.getHeaderContent(), 'header')
+
+
+    def updateRemoteContent(self):
+        return self.callRemote(
+            'setContentFromWidgetInfo', self.getExpanderContent(), 'content')
+
+
+    @renderer
+    def headerContent(self, req, tag):
+        return tag[self.getHeaderContent()]
+
+
+    @renderer
+    def expanderContent(self, req, tag):
+        return tag[self.getExpanderContent()]
+
+
+
+class DynamicExpander(Expander):
+    """
+    Collapsable container with dynamically loaded content upon being expanded
+    for the first time.
+    """
+    jsClass = u'Methanal.Widgets.DynamicExpander'
+
+
+    @renderer
+    def expanderContent(self, req, tag):
+        return tag
+
+
+
+class DemandExpander(DynamicExpander):
+    """
+    Collapsable container with dynamically loaded content upon being expanded.
+    """
+    jsClass = u'Methanal.Widgets.DemandExpander'
+
+
+
+class ExpanderHeader(ThemedElement):
+    """
+    Simple header for L{methanal.widgets.Expander}.
+
+    @ivar label: Renderable header label.
+    """
+    fragmentName = 'methanal-expander-header'
+
+
+    def __init__(self, label, **kw):
+        super(ExpanderHeader, self).__init__(**kw)
+        self.label = label
+
+
+    @renderer
+    def content(self, req, tag):
+        tag.fillSlots('label', self.label)
+        return tag
