@@ -1001,7 +1001,7 @@ class Tab(ThemedElement):
 
 
     @expose
-    def getContent(self):
+    def getContent(self, nodeID=None):
         content = self.contentFactory()
         content.setFragmentParent(self)
         return content
@@ -1068,4 +1068,5 @@ class DemandTab(Tab):
         """
         Force the remote content to be updated.
         """
-        return self.callRemote('_setContentFromWidgetInfo', self.getContent())
+        return self.callRemote(
+            'setContentFromWidgetInfo', self.getContent(), 'content')

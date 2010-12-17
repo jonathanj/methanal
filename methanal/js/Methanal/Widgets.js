@@ -1319,6 +1319,94 @@ Methanal.View.LiveForm.subclass(Methanal.Widgets, 'ModalDialogForm').methods(
 
 
 /**
+ * Base class for widgets that rely on remote content.
+ */
+Nevow.Athena.Widget.subclass(Methanal.Widgets, 'RemoteContentWidget').methods(
+    function __init__(self, node) {
+        Methanal.Widgets.RemoteContentWidget.upcall(self, '__init__', node);
+        self._currentRemoteWidgets = {};
+        self._cancelFetch = function() {};
+        self._abortFetchs = {};
+    },
+
+
+    /**
+     * Fetch the remote content for a given node ID.
+     */
+    function getRemoteContent(self, nodeID) {
+        return self.callRemote('getContent', nodeID);
+    },
+
+
+    /**
+     * Set the content for a given node ID.
+     *
+     * @type content: DOM node
+     */
+    function setContent(self, nodeID, content) {
+        Methanal.Util.replaceNodeContent(self.nodeById(nodeID), [content]);
+    },
+
+
+    /**
+     * Set an Athena widget as the content.
+     */
+    function setContentFromWidgetInfo(self, widgetInfo, nodeID, abortFetch) {
+        var d = self.addChildWidgetFromWidgetInfo(widgetInfo);
+        d.addCallback(function (widget) {
+            if (abortFetch) {
+                return widget.detach();
+            } else {
+                var currentWidget = self._currentRemoteWidgets[nodeID];
+                if (currentWidget !== undefined) {
+                    currentWidget.detach();
+                }
+                self.setContent(nodeID, widget.node);
+                self._currentRemoteWidgets[nodeID] = widget;
+                Methanal.Util.nodeInserted(widget);
+            }
+            return null;
+        });
+        return d;
+    },
+
+
+    /**
+     * Show a placeholder in a content area.
+     */
+    function showPlaceholder(self, nodeID) {
+        var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+        var placeholder = D('div', {'class': 'placeholder'}, []);
+        self.setContent(nodeID, placeholder);
+    },
+
+
+    /**
+     * Fetch the latest content from the server.
+     *
+     * If a fetch is already in progress it's result is discarded and a new
+     * fetch takes place.
+     */
+    function fetchContent(self, nodeID) {
+        self.showPlaceholder(nodeID);
+        self._cancelFetch();
+
+        self._abortFetchs[nodeID] = false;
+        self._cancelFetch = function() {
+            self._abortFetchs[nodeID] = true;
+        };
+
+        var d = self.getRemoteContent(nodeID);
+        d.addCallback(function (widgetInfo) {
+            return self.setContentFromWidgetInfo(
+                widgetInfo, nodeID, self._abortFetchs[nodeID]);
+        });
+        return d;
+    });
+
+
+
+/**
  * An unknown tab identifier was specified.
  */
 Divmod.Error.subclass(Methanal.Widgets, 'UnknownTab');
@@ -1845,7 +1933,7 @@ Divmod.Class.subclass(Methanal.Widgets, 'TabGroup').methods(
  * @type visible: C{Boolean}
  * @ivar visible: Is this container visible?
  */
-Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Tab').methods(
+Methanal.Widgets.RemoteContentWidget.subclass(Methanal.Widgets, 'Tab').methods(
     function __init__(self, node, args) {
         Methanal.Widgets.Tab.upcall(self, '__init__', node);
         self.id = args.id;
@@ -1853,8 +1941,6 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Tab').methods(
         self.selected = args.selected;
         self.group = args.group;
         self.visible = true;
-        self._cancelFetch = function() {};
-        self._currentWidget = undefined;
     },
 
 
@@ -1870,73 +1956,6 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Tab').methods(
      * @return: Class name to use, or C{undefined} if there is none.
      */
     function getLabelClassName(self) {
-    },
-
-
-    /**
-     * Set the tab content.
-     *
-     * @type content: DOM node
-     */
-    function _setContent(self, content) {
-        Methanal.Util.replaceNodeContent(self.nodeById('content'), [content]);
-    },
-
-
-    /**
-     * Show a placeholder in the tab content area.
-     */
-    function showPlaceholder(self) {
-        var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
-        var placeholder = D('div', {'class': 'placeholder'}, []);
-        self._setContent(placeholder);
-    },
-
-
-    /**
-     * Set an Athena widget as the tab content.
-     */
-    function _setContentFromWidgetInfo(self, widgetInfo, abortFetch) {
-        var d = self.addChildWidgetFromWidgetInfo(widgetInfo);
-        d.addCallback(function (widget) {
-            if (abortFetch) {
-                return widget.detach();
-            } else {
-                self._setContent(widget.node);
-                self._currentWidget = widget;
-                Methanal.Util.nodeInserted(widget);
-            }
-            return null;
-        });
-        return d;
-    },
-
-
-    /**
-     * Fetch the latest tab content from the server.
-     *
-     * If a fetch is already in progress it's result is discarded and a new
-     * fetch takes place.
-     */
-    function fetchContent(self) {
-        self.showPlaceholder();
-
-        if (self._currentWidget !== undefined) {
-            self._currentWidget.detach();
-            self._currentWidget = undefined;
-        }
-        self._cancelFetch();
-
-        var abortFetch = false;
-        self._cancelFetch = function() {
-            abortFetch = true;
-        };
-
-        var d = self.callRemote('getContent');
-        d.addCallback(function (widgetInfo) {
-            return self._setContentFromWidgetInfo(widgetInfo, abortFetch);
-        });
-        return d;
     },
 
 
@@ -1989,7 +2008,7 @@ Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'StaticTab');
 Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DynamicTab').methods(
     function nodeInserted(self) {
         Methanal.Widgets.DemandTab.upcall(self, 'nodeInserted');
-        self.fetchContent();
+        self.fetchContent('content');
     });
 
 
@@ -2010,5 +2029,5 @@ Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DemandTab').methods(
 
     function select(self) {
         Methanal.Widgets.DemandTab.upcall(self, 'select');
-        self.fetchContent();
+        self.fetchContent('content');
     });
