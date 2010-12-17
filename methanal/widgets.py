@@ -484,65 +484,6 @@ class SimpleFilterList(FilterList):
 
 
 
-class Rollup(ThemedElement):
-    jsClass = u'Methanal.Widgets.Rollup'
-
-    def __init__(self, fragmentParent=None, label=None):
-        super(Rollup, self).__init__(fragmentParent=fragmentParent)
-        self.label = label or u''
-        self._rollupFactory = None
-
-
-    def _getRollupFactory(self):
-        if self._rollupFactory is None:
-            self._rollupFactory = self.getDocFactory('methanal-rollup')
-        return self._rollupFactory
-
-
-    def makeRollup(self, summary, content):
-        rollupFactory = self._getRollupFactory()
-        rollupContent = invisible[
-            rollupFactory.load(preprocessors=LiveElement.preprocessors)]
-        rollupContent.fillSlots('label', self.label)
-        rollupContent.fillSlots('summary', summary)
-        rollupContent.fillSlots('content', content)
-        return rollupContent
-
-
-    @renderer
-    def rollup(self, req, tag):
-        summary = tag.onePattern('summary')
-        content = tag.onePattern('content')
-        tag[self.makeRollup(summary, content)]
-        return self.liveElement(req, tag)
-
-
-
-class SimpleRollup(Rollup):
-    fragmentName = 'methanal-simple-rollup'
-
-    def __init__(self, content=None, **kw):
-        super(SimpleRollup, self).__init__(**kw)
-        self.content = content
-
-
-    def getInitialArguments(self):
-        params = self.getParams()
-        return [params]
-
-
-    def getParams(self):
-        return {}
-
-
-    @renderer
-    def rollup(self, req, tag):
-        summary = tag.onePattern('summary')
-        tag[self.makeRollup(summary, self.content)]
-        return self.liveElement(req, tag)
-
-
-
 class Lookup(FormInput):
     fragmentName = 'methanal-lookup'
     jsClass = u'Methanal.Widgets.Lookup'
