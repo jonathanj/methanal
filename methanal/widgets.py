@@ -17,8 +17,7 @@ from twisted.python.deprecate import deprecated
 from axiom.item import SQLAttribute
 
 from nevow.inevow import IAthenaTransportable
-from nevow.tags import invisible
-from nevow.athena import expose, LiveElement
+from nevow.athena import expose
 from nevow.page import renderer
 
 from xmantissa.ixmantissa import IWebTranslator, IColumn as mantissaIColumn
