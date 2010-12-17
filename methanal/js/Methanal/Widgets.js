@@ -1950,6 +1950,14 @@ Methanal.Widgets.RemoteContentWidget.subclass(Methanal.Widgets, 'Tab').methods(
 
 
     /**
+     * Update the content widget from the server.
+     */
+    function updateContent(self) {
+        self.fetchContent('content');
+    },
+
+
+    /**
      * Get the class name to use for this tab's label.
      *
      * @rtype: C{String}
@@ -2008,7 +2016,7 @@ Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'StaticTab');
 Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DynamicTab').methods(
     function nodeInserted(self) {
         Methanal.Widgets.DemandTab.upcall(self, 'nodeInserted');
-        self.fetchContent('content');
+        self.updateContent();
     });
 
 
@@ -2029,5 +2037,5 @@ Methanal.Widgets.Tab.subclass(Methanal.Widgets, 'DemandTab').methods(
 
     function select(self) {
         Methanal.Widgets.DemandTab.upcall(self, 'select');
-        self.fetchContent('content');
+        self.updateContent();
     });
