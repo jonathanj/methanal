@@ -27,19 +27,6 @@ Methanal.Validators.pred = function (p, message) {
 
 
 /**
- * Logical AND combiner, with short-circuiting, for validator results.
- */
-Methanal.Validators.AND = function AND(values) {
-    for (var i = 0; i < values.length; ++i) {
-        if (values[i] !== undefined) {
-            return values[i];
-        }
-    }
-};
-
-
-
-/**
  * Logical intersection of combined validator results.
  *
  * @type  fs: C{Array} of C{Function}s
@@ -49,8 +36,16 @@ Methanal.Validators.AND = function AND(values) {
  * @return: Function that can be called, with varargs, to perform the
  *     intersection.
  */
-Methanal.Validators.intersection = Methanal.Util.partial(
-    Methanal.Preds.combine, Methanal.Validators.AND);
+Methanal.Validators.intersection = function intersection(fs) {
+    return function _intersect(/*...*/) {
+        for (var i = 0; i < fs.length; ++i) {
+            var res = fs[i].apply(null, arguments);
+            if (res !== undefined) {
+                return res;
+            }
+        }
+    };
+};
 
 
 
