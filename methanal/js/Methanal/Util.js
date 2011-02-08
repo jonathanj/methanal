@@ -1066,3 +1066,28 @@ Methanal.Util.copyProperties = function copyProperties(src, dst) {
         dst[name] = src[name];
     }
 };
+
+
+
+/**
+ * Pipeline the result of one function to the input of another, beginning with
+ * the innermost function.
+ *
+ * In other words::
+ *
+ *     compose(f, g, h)(x) -> f(g(h(x)))
+ */
+Methanal.Util.compose = function compose(/*...*/) {
+    var fs = arguments;
+    if (fs.length < 1) {
+        throw new Error('At least one argument required');
+    }
+
+    return function(/*...*/) {
+        var res = fs[fs.length - 1].apply(null, arguments);
+        for (var i = fs.length - 2; i >= 0; --i) {
+            res = fs[i](res);
+        }
+        return res;
+    };
+};
