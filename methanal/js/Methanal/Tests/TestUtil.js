@@ -439,6 +439,40 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertArraysEqual(
             split('foo bar  baz', ' ', 3),
             split('foo bar  baz', ' '));
+    },
+
+
+    /**
+     * Pipeline the result of one function, to the input of another, beginning
+     * with the innermost function.
+     */
+    function test_compose(self) {
+        function addFive(n) {
+            return n + 5;
+        }
+
+        function timesTen(n) {
+            return n * 10;
+        }
+
+        var compose = Methanal.Util.compose;
+        self.assertIdentical(
+            compose(addFive)(3),
+            8);
+
+        self.assertIdentical(
+            compose(addFive, timesTen)(3),
+            35);
+
+        self.assertIdentical(
+            compose(timesTen, addFive)(3),
+            80);
+
+        self.assertIdentical(
+            compose(timesTen, addFive, timesTen)(4),
+            450);
+
+        self.assertThrows(Error, compose);
     });
 
 
