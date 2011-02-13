@@ -67,15 +67,20 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create a C{Methanal.View.LiveForm}.
      */
-    function createForm(self, viewOnly, controls/*=undefined*/) {
+    function createForm(self, viewOnly, controls/*=undefined*/,
+                        postFormInsertion/*=undefined*/) {
         controls = controls || [];
         var controlNames = [];
         for (var i = 0; i < controls.length; ++i) {
             controlNames.push(controls[i].name);
         }
+
         var form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
         Methanal.Tests.Util.setUpForm(form);
         Methanal.Util.nodeInserted(form);
+        if (postFormInsertion) {
+            postFormInsertion(form);
+        }
         for (var i = 0; i < controls.length; ++i) {
             var control = controls[i];
             form.addChildWidget(control);
@@ -254,6 +259,28 @@ Methanal.Tests.Util.TestCase.subclass(
         control.onChange();
         self.assertIdentical(
             containsElementClass(form.actions.node, 'form-modified'),
+            true);
+    },
+
+
+    /**
+     * Callback fired once when the form has fully and finally loaded.
+     */
+    function test_formLoaded(self) {
+        var success = false;
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control], function (form) {
+            self.assertIdentical(
+                success,
+                false);
+
+            form.formLoaded = function () {
+                success = true;
+            };
+        });
+
+        self.assertIdentical(
+            success,
             true);
     });
 

@@ -532,6 +532,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         self._stripeControls();
         // Thaw freeze from formInit.
         self.thaw();
+        self.formLoaded();
+    },
+
+
+    /**
+     * Callback fired once when the form has fully and finally loaded.
+     */
+    function formLoaded(self) {
     },
 
 
