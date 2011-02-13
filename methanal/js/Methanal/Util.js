@@ -1091,3 +1091,18 @@ Methanal.Util.compose = function compose(/*...*/) {
         return res;
     };
 };
+
+
+
+/**
+ * Create a callable that will call the original callable with a sequence from
+ * varargs.
+ *
+ * For example::
+ *     unapply(f)(1, 2, 3) -> f([1, 2, 3])
+ */
+Methanal.Util.unapply = function unapply(f) {
+    return function (/*...*/) {
+        return f(Array.prototype.slice.call(arguments));
+    }
+};
