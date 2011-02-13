@@ -1296,6 +1296,7 @@ Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     function __init__(self, node, controlNames) {
         Methanal.View.SimpleForm.upcall(
             self, '__init__', node, true, controlNames);
+        self.hideModificationIndicator = true;
     },
 
 
@@ -1315,7 +1316,7 @@ Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     },
 
 
-    function setInvalid(self) {
+    function setInvalid(self, invalidControls) {
         self.widgetParent.setError('');
     });
 
