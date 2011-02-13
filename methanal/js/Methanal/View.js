@@ -512,14 +512,23 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
+     * Internal method for determining whether to set C{fullyLoaded} and
+     * finalise form loading.
+     */
+    function _isFullyLoaded(self) {
+        return self.actions && self.controlsLoaded && !self.fullyLoaded;
+    },
+
+
+    /**
      * Perform final form initialisation tasks.
      *
      * Once all controls in L{controlNames} have reported in and L{setActions}
      * has been called, form loading completes by refreshing validators and
-     * dependencies, controls cannot report in loading is complete.
+     * dependencies, controls cannot report in once loading is complete.
      */
     function _finishLoading(self) {
-        if (!self.actions || !self.controlsLoaded || self.fullyLoaded) {
+        if (!self._isFullyLoaded()) {
             return;
         }
         self.fullyLoaded = true;
@@ -1293,6 +1302,11 @@ Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     function nodeInserted(self) {
         // Explicitly override LiveForm's "nodeInserted" method, most of the
         // nodes it attempts to find will not exist in a simple form.
+    },
+
+
+    function _isFullyLoaded(self) {
+        return self.controlsLoaded && !self.fullyLoaded;
     },
 
 
