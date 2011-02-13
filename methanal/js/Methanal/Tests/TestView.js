@@ -519,6 +519,22 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
 
 
     /**
+     * Remove all options of this input.
+     */
+    function test_clear(self) {
+        self.testControl({value: ''},
+            function (control) {
+                control.append('v1', 'd1');
+                self.assertIdentical(control.inputNode.options.length, 1);
+                self.assertOption(control.inputNode.options[0], 'v1', 'd1');
+
+                control.clear();
+                self.assertIdentical(control.inputNode.options.length, 0);
+            });
+    },
+
+
+    /**
      * L{Methanal.View.SelectInput.insert} still works even when faced with
      * a broken implementation like Internet Explorer's.
      */

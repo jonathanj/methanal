@@ -2114,6 +2114,17 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
     },
 
 
+    /**
+     * Clear the input's options.
+     */
+    function clear(self) {
+        while (self.inputNode.options.length) {
+            self.inputNode.remove(0);
+        }
+        self._placeholderInserted = false;
+    },
+
+
     function getInputNode(self) {
         return self.node.getElementsByTagName('select')[0];
     },

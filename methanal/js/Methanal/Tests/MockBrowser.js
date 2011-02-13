@@ -34,14 +34,16 @@ Divmod.MockBrowser.Element.subclass(
  *
  * Assigning to the C{'value'} attribute tries to follow the behaviour of HTML5
  * (which is generally the behaviour that Firefox (as of 3.6.7) follows too)::
- *     The value IDL attribute, on getting, must return the value of the first option
- *     element in the list of options in tree order that has its selectedness set to
- *     true, if any. If there isn't one, then it must return the empty string.
+ *     The value IDL attribute, on getting, must return the value of the first
+ *     option element in the list of options in tree order that has its
+ *     selectedness set to true, if any. If there isn't one, then it must
+ *     return the empty string.
  *
- *     On setting, the value attribute must set the selectedness of all the option
- *     elements in the list of options to false, and then first the option element in
- *     the list of options, in tree order, whose value is equal to the given new
- *     value, if any, must have its selectedness set to true.
+ *     On setting, the value attribute must set the selectedness of all the
+ *     option elements in the list of options to false, and then first the
+ *     option element in the list of options, in tree order, whose value is
+ *     equal to the given new value, if any, must have its selectedness set to
+ *     true.
  */
 Methanal.Tests.MockBrowser.Element.subclass(
     Methanal.Tests.MockBrowser, 'MockHTMLSelectElement').methods(
@@ -87,6 +89,15 @@ Methanal.Tests.MockBrowser.Element.subclass(
             self.options.splice(index, 0, element);
         }
         element.index = index;
+    },
+
+
+    /**
+     * Remove an element from the collection of OPTION elements for this
+     * SELECT. Does nothing if no element has the given index.
+     */
+    function remove(self, index) {
+        self.options.splice(index, 1);
     });
 
 
@@ -172,8 +183,8 @@ Methanal.Tests.MockBrowser.Element.subclass(
             self, '__init__', tagName);
         self.rows = [];
     },
-    
-    
+
+
     /**
      * Insert a new empty row in the table. The new row is inserted immediately
      * before and in the same section as the current indexth row in the table.
@@ -212,7 +223,7 @@ Methanal.Tests.MockBrowser.Element.subclass(
     function deleteTHead(self) {
         self.tHead = null;
     },
-    
+
 
     /**
      * Create a table header row or return an existing one.
