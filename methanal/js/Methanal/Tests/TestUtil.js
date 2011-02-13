@@ -473,6 +473,19 @@ Methanal.Tests.Util.TestCase.subclass(
             450);
 
         self.assertThrows(Error, compose);
+    },
+
+
+    /**
+     * Create a callable that will call the original callable with a sequence
+     * from varargs.
+     */
+    function test_unapply(self) {
+        var f = Methanal.Util.partial(
+            Methanal.Util.reduce, function (a, b) { return a + b; });
+        self.assertIdentical(
+            Methanal.Util.unapply(f)(1, 2, 3),
+            6);
     });
 
 
