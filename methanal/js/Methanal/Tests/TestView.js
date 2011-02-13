@@ -67,10 +67,20 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create a C{Methanal.View.LiveForm}.
      */
-    function createForm(self, viewOnly) {
+    function createForm(self, viewOnly, controls/*=undefined*/) {
+        controls = controls || [];
         var controlNames = [];
-        form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
+        for (var i = 0; i < controls.length; ++i) {
+            controlNames.push(controls[i].name);
+        }
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
+        Methanal.Tests.Util.setUpForm(form);
         Methanal.Util.nodeInserted(form);
+        for (var i = 0; i < controls.length; ++i) {
+            var control = controls[i];
+            form.addChildWidget(control);
+            form.loadedUp(control);
+        }
         return form;
     },
 
@@ -95,7 +105,8 @@ Methanal.Tests.Util.TestCase.subclass(
      * an exception.
      */
     function test_freezeThaw(self) {
-        var form = self.createForm();
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control]);
         form.freeze();
         self.assertIdentical(form._frozen, 1);
         form.freeze();
@@ -129,7 +140,8 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_submission(self) {
         var success;
-        var form = self.createForm();
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control]);
 
         function succeed(methodName, data) {
             self.assertIdentical(form.actions._disabled, true);
@@ -233,14 +245,8 @@ Methanal.Tests.Util.TestCase.subclass(
      * modification state changed.
      */
     function test_formModified(self) {
-        var form = self.createForm();
-        var control = self.createControl({});
-        var row = Methanal.Tests.TestView.createContainer(
-            form, Methanal.View.FormRow, [control]);
-        form.addChildWidget(row);
-        form.node.appendChild(row.node);
-        Methanal.Util.nodeInserted(row);
-
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control]);
         var containsElementClass = Methanal.Util.containsElementClass;
         self.assertIdentical(
             containsElementClass(form.actions.node, 'form-modified'),

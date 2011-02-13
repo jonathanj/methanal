@@ -391,6 +391,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         self.controlsLoaded = false;
         self.fullyLoaded = false;
+        self.freeze();
     },
 
 
@@ -529,6 +530,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         }
         self.refresh();
         self._stripeControls();
+        // Thaw freeze from formInit.
+        self.thaw();
     },
 
 
