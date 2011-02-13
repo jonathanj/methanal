@@ -70,14 +70,15 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
      * Any input, but at least one, value must pass the predicate C{func}.
      */
     function test_any(self) {
-        var x = Methanal.Validators.any(Methanal.Preds.hasLength);
-        self.assertValid(x, '1');
-        self.assertValid(x, '1', '2');
-        self.assertValid(x, null, '2');
-        self.assertValid(x, '1', null);
-        self.assertValid(x, '1', '', '3');
-        self.assertInvalid(x, '', null);
-        self.assertInvalid(x, '', null, '');
+        var any = Methanal.Validators.any(
+            function identity(x) { return x });
+        self.assertValid(any, true);
+        self.assertValid(any, true, true);
+        self.assertValid(any, false, true);
+        self.assertValid(any, true, false);
+        self.assertValid(any, true, false, true);
+        self.assertInvalid(any, false);
+        self.assertInvalid(any, false, false);
     },
 
 
@@ -85,12 +86,13 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
      * All input values must pass the predicate C{func}.
      */
     function test_all(self) {
-        var x = Methanal.Validators.all(Methanal.Preds.hasLength);
-        self.assertValid(x, '1');
-        self.assertValid(x, '1', '2');
-        self.assertInvalid(x, null, '2');
-        self.assertInvalid(x, '1', null);
-        self.assertInvalid(x, '1', null, '3');
+        var all = Methanal.Validators.all(
+            function identity(x) { return x });
+        self.assertValid(all, true);
+        self.assertValid(all, true, true);
+        self.assertInvalid(all, false, true);
+        self.assertInvalid(all, false, true);
+        self.assertInvalid(all, false, true, false);
     },
 
 
