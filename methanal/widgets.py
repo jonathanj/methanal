@@ -572,6 +572,23 @@ class Lookup(FormInput):
         self.populate = populate
         if values is None:
             values = []
+
+        self.alterModel()
+        self.alterForm(values)
+
+
+    def alterModel(self):
+        """
+        Alter the lookup form model.
+        """
+        self.form.model.params['__result__'] = Value(
+            name=u'__result__', doc=u'Result')
+
+
+    def alterForm(self, values):
+        """
+        Alter the lookup form.
+        """
         SelectInput(parent=self.form, name='__result__', values=values)
 
 
