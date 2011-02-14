@@ -1386,6 +1386,11 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
         Methanal.Widgets.LookupForm.upcall(
             self, 'valueChanged', control);
 
+        // Avoid doing anything useful if we're frozen.
+        if (self._frozen > 0) {
+            return;
+        }
+
         // Trigger Lookup.onChange so the parent form refreshes validators.
         self.widgetParent.onChange(control.node);
 
