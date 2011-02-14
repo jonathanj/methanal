@@ -1310,9 +1310,15 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
 
         self.freeze();
         for (var key in data.values) {
-            var control = self.getControl(key);
-            control.setValue(data.values[key]);
-            control.onChange(control.node);
+            try {
+                var control = self.getControl(key);
+                control.setValue(data.values[key]);
+                control.onChange(control.node);
+            } catch (e) {
+                if (!(e instanceof Methanal.View.MissingControlError)) {
+                    throw e;
+                }
+            }
         }
         self.setResults([data]);
         self.thaw();
