@@ -50,6 +50,34 @@ Methanal.Validators.intersection = function intersection(fs) {
 
 
 /**
+ * Any input, but at least one, value must pass the predicate C{func}.
+ */
+Methanal.Validators.any = function any(func) {
+    return Methanal.Validators.pred(
+        Methanal.Util.compose(
+            Methanal.Preds.OR,
+            Methanal.Util.unapply(
+                partial(Methanal.Util.map, func))),
+        'At least one valid value is required');
+};
+
+
+
+/**
+ * All input values must pass the predicate C{func}.
+ */
+Methanal.Validators.all = function all(func) {
+    return Methanal.Validators.pred(
+        Methanal.Util.compose(
+            Methanal.Preds.AND,
+            Methanal.Util.unapply(
+                partial(Methanal.Util.map, func))),
+        'All values are required');
+};
+
+
+
+/**
  * Create a validator that is only executed if C{pred} is C{true}.
  */
 Methanal.Validators.ifThen = function ifThen(pred, validator) {

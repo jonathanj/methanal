@@ -67,6 +67,36 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
 
 
     /**
+     * Any input, but at least one, value must pass the predicate C{func}.
+     */
+    function test_any(self) {
+        var any = Methanal.Validators.any(
+            function identity(x) { return x });
+        self.assertValid(any, true);
+        self.assertValid(any, true, true);
+        self.assertValid(any, false, true);
+        self.assertValid(any, true, false);
+        self.assertValid(any, true, false, true);
+        self.assertInvalid(any, false);
+        self.assertInvalid(any, false, false);
+    },
+
+
+    /**
+     * All input values must pass the predicate C{func}.
+     */
+    function test_all(self) {
+        var all = Methanal.Validators.all(
+            function identity(x) { return x });
+        self.assertValid(all, true);
+        self.assertValid(all, true, true);
+        self.assertInvalid(all, false, true);
+        self.assertInvalid(all, false, true);
+        self.assertInvalid(all, false, true, false);
+    },
+
+
+    /**
      * Create a validator that is only executed if C{pred} is C{true}.
      */
     function test_ifThen(self) {
