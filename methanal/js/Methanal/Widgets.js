@@ -1231,6 +1231,12 @@ Divmod.Class.subclass(Methanal.Widgets, 'LookupResult').methods(
  * When the value of any input (excluding the result selector) is changed, a
  * remote call is made (passing the values of all the inputs) and the result
  * selector populated from the result of that call.
+ *
+ * @type storeResults: C{Boolean}
+ * @ivar storeResults: Store result values? Defaults to C{false}.
+ *
+ * @type results: C{object} mapping C{String} to values.
+ * @ivar results: Stored results mapping result identifiers to results.
  */
 Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
     function __init__(self, node, controlNames) {
@@ -1240,6 +1246,9 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
         var V = Methanal.Validators;
         self.addValidators([
             [['__result__'], [V.notNull]]]);
+
+        self.results = {};
+        self.storeResults = false;
     },
 
 
@@ -1272,9 +1281,13 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
     /**
      * Set the value of the result control.
      */
-    function setResultValue(self, value) {
+    function setResultValue(self, data) {
         var results = self.getResultControl();
-        results.setValue(value);
+        var id = null;
+        if (data) {
+            id = data.id;
+        }
+        results.setValue(id);
         results.onChange(results.node);
     },
 
@@ -1312,17 +1325,21 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
     function setResults(self, values) {
         var resultControl = self.getResultControl();
         resultControl.clear();
+        self.results = {};
 
         for (var i = 0; i < values.length; ++i) {
             var result = values[i];
             resultControl.append(result.id, result.toString());
+            if (self.storeResults) {
+                self.results[result.id] = result;
+            }
         }
 
-        var value = null;
+        var data = null;
         if (values.length > 0) {
-            value = values[0].id;
+            data = values[0];
         }
-        self.setResultValue(value);
+        self.setResultValue(data);
     },
 
 
