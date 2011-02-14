@@ -75,8 +75,9 @@
     font-weight: bold;
 }
 
+.methanal-lookup-form .methanal-caption,
 .methanal-multi-input .methanal-caption {
-    min-width: 8em;
+    min-width: 10em;
     margin: 0;
 }
 
