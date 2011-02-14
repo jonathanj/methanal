@@ -1375,6 +1375,13 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
     },
 
 
+    /**
+     * Callback fired when the result input has changed.
+     */
+    function resultChanged(self, control) {
+    },
+
+
     function valueChanged(self, control) {
         Methanal.Widgets.LookupForm.upcall(
             self, 'valueChanged', control);
@@ -1385,6 +1392,7 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
         // Don't trigger when the result input is changed or when there are
         // validation errors.
         if (control.name === '__result__') {
+            self.resultChanged(control);
             return;
         }
 
