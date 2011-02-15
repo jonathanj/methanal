@@ -1178,6 +1178,24 @@ Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
     },
 
 
+    /**
+     * Set the values of the result input.
+     *
+     * @type  values: C{Array} of L{LookupResult}
+     * @param values: Result values, or C{null}.
+     *
+     * @type selectedValue: L{LookupResult}
+     * @param selectedValue: Selected result values; use C{undefined} to select
+     *     the first value in C{values} (or C{null} if there are none).
+     *     Defaults to C{undefined}.
+     */
+    function setResults(self, values, selectedValue/*=undefined*/) {
+        self._waitForForm.addCallback(function () {
+            self._lookupForm.setResults(values, selectedValue);
+        });
+    },
+
+
     function setValue(self, data) {
         self._waitForForm.addCallback(function () {
             self._lookupForm.populateForm(data, true);
