@@ -1319,7 +1319,7 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
     /**
      * Populate the form inputs.
      */
-    function populateForm(self, data) {
+    function populateForm(self, data, setResults/*=false*/) {
         if (data === null) {
             return;
         }
@@ -1336,15 +1336,25 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
                 }
             }
         }
-        self.setResults([data]);
+        if (setResults) {
+            self.setResults([data]);
+        }
         self.thaw();
     },
 
 
     /**
-     * Set the result values.
+     * Set the values of the result input.
+     *
+     * @type  values: C{Array} of L{LookupResult}
+     * @param values: Result values, or C{null}.
+     *
+     * @type selectedValue: L{LookupResult}
+     * @param selectedValue: Selected result values; use C{undefined} to select
+     *     the first value in C{values} (or C{null} if there are none).
+     *     Defaults to C{undefined}.
      */
-    function setResults(self, values) {
+    function setResults(self, values, selectedValue/*=undefined*/) {
         var resultControl = self.getResultControl();
         resultControl.clear();
         self.results = {};
@@ -1357,9 +1367,13 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
             }
         }
 
-        var data = null;
-        if (values.length > 0) {
-            data = values[0];
+        var data = selectedValue || null;
+        if (selectedValue === undefined) {
+            if (values.length > 0) {
+                data = values[0];
+            }
+        } else {
+            self.populateForm(selectedValue);
         }
         self.setResultValue(data);
     },
