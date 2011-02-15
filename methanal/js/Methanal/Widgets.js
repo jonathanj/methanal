@@ -1167,23 +1167,21 @@ Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
     function __init__(self, node, args) {
         Methanal.Widgets.Lookup.upcall(self, '__init__', node, args);
         self._lookupForm = null;
-        self._data = null;
+        self._waitForForm = Divmod.Defer.Deferred();
     },
 
 
     function formLoaded(self, form) {
         self._lookupForm = form;
-        self.setValue(self._data);
+        self._waitForForm.callback(null);
+        self._waitForForm = Divmod.Defer.succeed(null);
     },
 
 
     function setValue(self, data) {
-        if (self._lookupForm) {
-            self._data = null;
-            self._lookupForm.populateForm(data);
-        } else {
-            self._data = data;
-        }
+        self._waitForForm.addCallback(function () {
+            self._lookupForm.populateForm(data, true);
+        });
     },
 
 
