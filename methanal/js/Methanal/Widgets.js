@@ -1347,7 +1347,7 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
      * Set the values of the result input.
      *
      * @type  values: C{Array} of L{LookupResult}
-     * @param values: Result values, or C{null}.
+     * @param values: Result values.
      *
      * @type selectedValue: L{LookupResult}
      * @param selectedValue: Selected result values; use C{undefined} to select
