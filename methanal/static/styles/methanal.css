@@ -467,6 +467,13 @@ button.roll-up {
     font-weight: normal;
 }
 
+.modal-dialog-close {
+    background: url(/static/Methanal/images/icons/close.png) no-repeat center center;
+    float: right;
+    width: 16px;
+    height: 16px;
+}
+
 .placeholder {
     height: 32px;
     background: url(/static/Methanal/images/long-throbber.gif) no-repeat center center;
