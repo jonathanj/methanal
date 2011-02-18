@@ -218,7 +218,7 @@ Methanal.Tests.Util.TestCase.subclass(
 
     /**
      * L{Methanal.Util.strToFloat} converts a float value, represented
-     * as a C{String}, to a C{Float}.
+     * as a C{String}, to a floating point C{Number}.
      */
     function test_strToFloat(self) {
         var CASES = [

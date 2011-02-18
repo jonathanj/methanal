@@ -167,7 +167,7 @@ Methanal.Util.strToInt = function strToInt(s) {
 
 
 /**
- * Convert a string to a float.
+ * Convert a string to a floating point C{Number}.
  *
  * @type s: C{String}
  *
