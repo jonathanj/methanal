@@ -2319,9 +2319,9 @@ Methanal.View.TextInput.subclass(Methanal.View, 'NumericInput').methods(
             return;
         } else if (value === undefined || isNaN(value)) {
             return 'Numerical value only';
-        } else if (value !== undefined && value <= self.lowerBound) {
+        } else if (value <= self.lowerBound) {
             return 'Value too small; must be greater than ' + self.lowerBound;
-        } else if (value !== undefined && value >= self.upperBound) {
+        } else if (value >= self.upperBound) {
             return 'Value too large; must be less than ' + self.upperBound;
         }
     });
