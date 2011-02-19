@@ -375,7 +375,7 @@ class FilterList(ThemedElement):
     jsClass = u'Methanal.Widgets.FilterList'
     fragmentName = 'methanal-filter-list'
 
-    def __init__(self, form, resultWidget, title, **kw):
+    def __init__(self, form, resultWidget, title=None, **kw):
         """
         Initialise the filter widget.
 
@@ -395,8 +395,9 @@ class FilterList(ThemedElement):
         """
         super(FilterList, self).__init__(**kw)
         self.form = form
-        self.form.setFragmentParent(self)
         self.resultWidget = resultWidget
+        if title is None:
+            title = self.form.doc
         self.title = title
 
         self.originalCallback = self.form.model.callback
@@ -421,12 +422,8 @@ class FilterList(ThemedElement):
 
 
     @renderer
-    def formTitle(self, req, tag):
-        return tag[self.title]
-
-
-    @renderer
     def filterForm(self, req, tag):
+        self.form.setFragmentParent(self)
         return tag[self.form]
 
 
