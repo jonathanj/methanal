@@ -234,12 +234,16 @@ class LiveForm(SimpleForm):
         invoked
 
     @type actions: L{ActionContainer}
+
+    @type doc: C{unicode}
+    @ivar doc: Form title, or C{None} for no title.
     """
     fragmentName = 'methanal-liveform'
     jsClass = u'Methanal.View.LiveForm'
 
 
-    def __init__(self, store, model, viewOnly=False, actions=None, **kw):
+    def __init__(self, store, model, viewOnly=False, actions=None, doc=None,
+                 **kw):
         super(LiveForm, self).__init__(store=store, model=model, **kw)
         if self.model.doc is None:
             viewOnly = True
@@ -249,6 +253,7 @@ class LiveForm(SimpleForm):
             actions = ActionContainer(
                 actions=[SubmitAction(name=self.model.doc)])
         self.actions = actions
+        self.doc = doc
 
 
     def getInitialArguments(self):
@@ -258,6 +263,13 @@ class LiveForm(SimpleForm):
 
     def getArgs(self):
         return {u'viewOnly': self.viewOnly}
+
+
+    @renderer
+    def formCaption(self, req, tag):
+        if self.doc:
+            return tag[self.doc]
+        return []
 
 
     @renderer
