@@ -279,11 +279,12 @@ class Model(object):
 
 
 _paramTypes = {
-    attributes.integer:   Value,
-    attributes.text:      Value,
-    attributes.boolean:   Value,
-    attributes.textlist:  List,
-    attributes.timestamp: Value}
+    attributes.integer:        Value,
+    attributes.ieee754_double: Value,
+    attributes.text:           Value,
+    attributes.boolean:        Value,
+    attributes.textlist:       List,
+    attributes.timestamp:      Value}
 
 def paramFromAttribute(store, attr, value, name=None):
     doc = attr.doc or None

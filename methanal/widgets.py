@@ -211,6 +211,7 @@ class ColumnTransportable(record('column')):
     columnTypes = {
         'text': u'Methanal.Widgets.TextColumn',
         'integer': u'Methanal.Widgets.IntegerColumn',
+        'ieee754_double': u'Methanal.Widgets.FloatColumn',
         'boolean': u'Methanal.Widgets.BooleanColumn',
         'timestamp': u'Methanal.Widgets.TimestampColumn'}
 

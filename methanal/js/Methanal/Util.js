@@ -133,23 +133,51 @@ Methanal.Util.replaceNodeText = function replaceNodeText(node, text) {
 
 
 /**
+ * Return C{true} iff the given string represents a base-10 numerical value.
+ */
+Methanal.Util.isNumericalString = function isNumericalString(s) {
+    if (typeof s !== 'string') {
+        return false;
+    } else if (s.indexOf('x') !== -1) {
+        return false;
+    } else if (isNaN(s)) {
+        return false;
+    }
+    return true;
+};
+
+
+
+/**
  * Convert a string to a base-10 integer.
  *
  * Not quite as simple to do properly as one might think.
  *
  * @type s: C{String}
  *
- * @rtype: C{Integer}
+ * @rtype: C{Number} or C{undefined}
  */
 Methanal.Util.strToInt = function strToInt(s) {
-    if (typeof s !== 'string') {
-        return undefined;
-    } else if (s.indexOf('x') !== -1) {
-        return undefined;
-    } else if (isNaN(s)) {
+    if (!Methanal.Util.isNumericalString(s)) {
         return undefined;
     }
     return parseInt(s, 10);
+};
+
+
+
+/**
+ * Convert a string to a floating point C{Number}.
+ *
+ * @type s: C{String}
+ *
+ * @rtype: C{Number} or C{undefined}
+ */
+Methanal.Util.strToFloat = function strToFloat(s) {
+    if (!Methanal.Util.isNumericalString(s)) {
+        return undefined;
+    }
+    return parseFloat(s);
 };
 
 

@@ -9,7 +9,7 @@ from twisted.python.components import registerAdapter
 from twisted.python.versions import Version
 from twisted.python.deprecate import deprecated
 
-from axiom.attributes import text, integer, timestamp, boolean
+from axiom.attributes import text, integer, timestamp, boolean, ieee754_double
 
 from nevow.page import renderer
 from nevow.athena import expose
@@ -649,6 +649,8 @@ class NumericInput(TextInput):
     MINIMUM = -9223372036854775808
     MAXIMUM =  9223372036854775807
 
+    NO_BOUNDS = object()
+
 
     def __init__(self, minimumValue=None, maximumValue=None, **kw):
         super(NumericInput, self).__init__(**kw)
@@ -662,9 +664,12 @@ class NumericInput(TextInput):
 
 
     def getArgs(self):
-        return {
-            u'lowerBound': self.minimumValue - 1,
-            u'upperBound': self.maximumValue + 1}
+        args = {}
+        if self.minimumValue is not self.NO_BOUNDS:
+            args[u'lowerBound'] = self.minimumValue - 1
+        if self.maximumValue is not self.NO_BOUNDS:
+            args[u'upperBound'] = self.maximumValue + 1
+        return args
 
 
     def checkValue(self, value):
@@ -674,12 +679,13 @@ class NumericInput(TextInput):
         """
         if value is None:
             return
-        if value > self.maximumValue:
+        maximumValue, minimumValue = self.maximumValue, self.minimumValue
+        if maximumValue is not self.NO_BOUNDS and value > maximumValue:
             raise ValueError('%s is larger than %s' % (
-                value, self.maximumValue))
-        elif value < self.minimumValue:
+                value, maximumValue))
+        elif minimumValue is not self.NO_BOUNDS and value < minimumValue:
             raise ValueError('%s is smaller than %s' % (
-                value, self.minimumValue))
+                value, minimumValue))
 
 
     def convertValue(self, value):
@@ -705,6 +711,33 @@ class IntegerInput(NumericInput):
         if value is None:
             return u''
         return int(value)
+
+
+
+class FloatInput(NumericInput):
+    """
+    Float input.
+    """
+    jsClass = u'Methanal.View.FloatInput'
+
+
+    def __init__(self, minimumValue=NumericInput.NO_BOUNDS,
+                 maximumValue=NumericInput.NO_BOUNDS, **kw):
+        super(FloatInput, self).__init__(
+            minimumValue=minimumValue, maximumValue=maximumValue, **kw)
+
+
+    def convertValue(self, value):
+        if value is not None:
+            value = float(value)
+        return value
+
+
+    def getValue(self):
+        value = self.param.value
+        if value is None:
+            return u''
+        return float(value)
 
 
 
@@ -1320,10 +1353,11 @@ class AutoItemView(ItemView):
 
 
 _inputTypes = {
-    boolean:    lambda env: CheckboxInput,
-    text:       lambda env: TextInput,
-    integer:    lambda env: IntegerInput,
-    timestamp:  lambda env:
+    boolean:        lambda env: CheckboxInput,
+    text:           lambda env: TextInput,
+    integer:        lambda env: IntegerInput,
+    ieee754_double: lambda env: FloatInput,
+    timestamp:      lambda env:
         lambda **kw: DateInput(timezone=env['timezone'], **kw)}
 
 def inputTypeFromAttribute(attr, **env):
