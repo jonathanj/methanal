@@ -2,7 +2,5 @@
     <h2 nevow:render="formTitle" />
     <div nevow:render="filterForm" />
 
-    <div class="search-results" id="results" style="display: none;">
-        <hr />
-    </div>
+    <nevow:invisible nevow:render="filterForm" />
 </div>

@@ -257,15 +257,9 @@ optgroup option {
     padding: 5px;
 }
 
-.methanal-filter-list h2,
-.methanal-filter-list h3 {
-    padding: 0;
-    margin: 0.5em 0;
-}
-
-.methanal-filter-list hr {
-    border: none;
-    border-top: 1px solid #aaa;
+.methanal-filter-list .filter-results {
+    background: url(/static/Methanal/images/liveform-bg-bottom-top.png) repeat-x top left;
+    padding: 1em;
 }
 
 img.roll-up-error {
