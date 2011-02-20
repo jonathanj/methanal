@@ -15,6 +15,14 @@
     float: left;
 }
 
+.methanal-liveform h1,
+.methanal-form-group h2 {
+    color: #555;
+    font-weight: normal;
+    text-shadow: 0 1px 0 #fff;
+    margin: 0 0 0.5em 0;
+}
+
 .methanal-form-group .methanal-control-even {
     background-color: #d3d3ea;
 }
