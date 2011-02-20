@@ -1212,16 +1212,16 @@ Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
 /**
  * A L{Methanal.Widgets.Lookup} result value.
  *
- * @type id: C{unicode}
+ * @type id: C{String}
  * @ivar id: Unique result identifier.
  *
- * @type values: C{dict} mapping C{unicode} to values.
+ * @type values: C{object} mapping C{String} to values.
  * @ivar values: Result values, these will be reverse populated to the
  *     L{LookupForm} when initialising the control.
  *
- * @type name: C{unicode}
- * @ivar name: Human readable result name, or C{None} to use a represenation
- *     of L{values}, Defaults to C{None}.
+ * @type name: C{String}
+ * @ivar name: Human readable result name, or C{null} to use a represenation
+ *     of L{values}, Defaults to C{null}.
  */
 Divmod.Class.subclass(Methanal.Widgets, 'LookupResult').methods(
     function __init__(self, id, values, name/*=null*/) {
