@@ -26,8 +26,8 @@ from xmantissa.webtheme import ThemedElement
 
 from methanal.imethanal import IColumn
 from methanal.util import getArgsDict
-from methanal.view import (liveFormFromAttributes, containerFromAttributes,
-    ObjectSelectInput, SimpleForm, FormInput, LiveForm, SubmitAction,
+from methanal.view import (
+    liveFormFromAttributes, SimpleForm, FormInput, LiveForm, SubmitAction,
     ActionButton, ActionContainer, SelectInput)
 from methanal.model import Value
 from methanal.errors import InvalidIdentifier
