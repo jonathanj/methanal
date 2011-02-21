@@ -67,10 +67,25 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create a C{Methanal.View.LiveForm}.
      */
-    function createForm(self, viewOnly) {
+    function createForm(self, viewOnly, controls/*=undefined*/,
+                        postFormInsertion/*=undefined*/) {
+        controls = controls || [];
         var controlNames = [];
-        form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
+        for (var i = 0; i < controls.length; ++i) {
+            controlNames.push(controls[i].name);
+        }
+
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
+        Methanal.Tests.Util.setUpForm(form);
         Methanal.Util.nodeInserted(form);
+        if (postFormInsertion) {
+            postFormInsertion(form);
+        }
+        for (var i = 0; i < controls.length; ++i) {
+            var control = controls[i];
+            form.addChildWidget(control);
+            form.loadedUp(control);
+        }
         return form;
     },
 
@@ -95,7 +110,8 @@ Methanal.Tests.Util.TestCase.subclass(
      * an exception.
      */
     function test_freezeThaw(self) {
-        var form = self.createForm();
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control]);
         form.freeze();
         self.assertIdentical(form._frozen, 1);
         form.freeze();
@@ -129,7 +145,8 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_submission(self) {
         var success;
-        var form = self.createForm();
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control]);
 
         function succeed(methodName, data) {
             self.assertIdentical(form.actions._disabled, true);
@@ -233,14 +250,8 @@ Methanal.Tests.Util.TestCase.subclass(
      * modification state changed.
      */
     function test_formModified(self) {
-        var form = self.createForm();
-        var control = self.createControl({});
-        var row = Methanal.Tests.TestView.createContainer(
-            form, Methanal.View.FormRow, [control]);
-        form.addChildWidget(row);
-        form.node.appendChild(row.node);
-        Methanal.Util.nodeInserted(row);
-
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control]);
         var containsElementClass = Methanal.Util.containsElementClass;
         self.assertIdentical(
             containsElementClass(form.actions.node, 'form-modified'),
@@ -248,6 +259,28 @@ Methanal.Tests.Util.TestCase.subclass(
         control.onChange();
         self.assertIdentical(
             containsElementClass(form.actions.node, 'form-modified'),
+            true);
+    },
+
+
+    /**
+     * Callback fired once when the form has fully and finally loaded.
+     */
+    function test_formLoaded(self) {
+        var success = false;
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control], function (form) {
+            self.assertIdentical(
+                success,
+                false);
+
+            form.formLoaded = function () {
+                success = true;
+            };
+        });
+
+        self.assertIdentical(
+            success,
             true);
     });
 
@@ -514,6 +547,22 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
         self.testControl({value: ''},
             function (control) {
                 self._testAppendInsert(control);
+            });
+    },
+
+
+    /**
+     * Remove all options of this input.
+     */
+    function test_clear(self) {
+        self.testControl({value: ''},
+            function (control) {
+                control.append('v1', 'd1');
+                self.assertIdentical(control.inputNode.options.length, 1);
+                self.assertOption(control.inputNode.options[0], 'v1', 'd1');
+
+                control.clear();
+                self.assertIdentical(control.inputNode.options.length, 0);
             });
     },
 
@@ -972,7 +1021,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 control.setValue('NOTAVALIDDATE');
                 self.assertIdentical(control.getValue(), undefined);
                 control.setValue('2009-01-01');
-                self.assertIdentical(control.getValue(), 1230768000000);
+                self.assertIdentical(control.getValue(), 1230760800000);
             });
     },
 
@@ -1002,6 +1051,34 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     Methanal.Tests.TestView, 'TestIntegerInput').methods(
     function setUp(self) {
         self.controlType = Methanal.View.IntegerInput;
+    },
+
+
+    /**
+     * L{Methanal.View.IntegerInput.getValue} returns an integer value if the
+     * input node's value is a valid number, C{null} if it is blank and
+     * C{undefined} if the value is invalid.
+     */
+    function test_getValue(self) {
+        var CASES = [
+            [null,  null],
+            ['',    null],
+            ['abc', undefined],
+            ['0.5', undefined],
+            ['1a',  undefined],
+            ['0',   0],
+            ['-1',  -1],
+            ['42',  42]];
+
+        self.testControl({value: null},
+            function (control) {
+                Methanal.Tests.Util.assertCases(
+                    self,
+                    function (value) {
+                        control.setValue(value);
+                        return control.getValue();
+                    }, CASES);
+            });
     },
 
 
@@ -1056,6 +1133,115 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
                 self.assertInvalidInput(control, '-92233720368547758090');
                 self.assertInvalidInput(control,  '9223372036854775800');
                 self.assertInvalidInput(control,  '9223372036854775808');
+                self.assertInvalidInput(control,  '92233720368547758080');
+            });
+    });
+
+
+
+/**
+ * Tests for L{Methanal.View.FloatInput}.
+ */
+Methanal.Tests.TestView.BaseTestTextInput.subclass(
+    Methanal.Tests.TestView, 'TestFloatInput').methods(
+    function setUp(self) {
+        self.controlType = Methanal.View.FloatInput;
+    },
+
+
+    /**
+     * L{Methanal.View.FloatInput.getValue} returns an float value if the
+     * input node's value is a valid number, C{null} if it is blank and
+     * C{undefined} if the value is invalid.
+     */
+    function test_getValue(self) {
+        var CASES = [
+            [null,  null],
+            ['',    null],
+            ['abc', undefined],
+            ['0.5', 0.5],
+            ['.5',  0.5],
+            ['-.5', -0.5],
+            ['1a',  undefined],
+            ['0',   0],
+            ['-1',  -1],
+            ['42',  42],
+            ['1.2', 1.2]];
+
+        self.testControl({value: null},
+            function (control) {
+                Methanal.Tests.Util.assertCases(
+                    self,
+                    function (value) {
+                        control.setValue(value);
+                        return control.getValue();
+                    }, CASES);
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.FloatInput} only accepts input that is a valid float.
+     */
+    function test_inputValidation(self) {
+        self.testControl({value: null},
+            function (control) {
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '1');
+                self.assertValidInput(control, '1.1');
+                self.assertValidInput(control, '+1.0');
+                self.assertValidInput(control, '1.');
+                self.assertValidInput(control, '-1.0');
+                self.assertValidInput(control, '.1');
+                self.assertValidInput(control, '+.1');
+                self.assertValidInput(control, '-.1');
+                self.assertValidInput(control, '.0');
+                self.assertInvalidInput(control, 'a');
+                self.assertInvalidInput(control, '1.2.1');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.FloatInput} validates that values fall within a certain
+     * exclusive range.
+     */
+    function test_bounds(self) {
+        self.testControl({value: null,
+                          lowerBound: -11,
+                          upperBound:   8,},
+            function (control) {
+                self.assertValidInput(control, '-10.99');
+                self.assertInvalidInput(control, '-11.0');
+                self.assertValidInput(control, '7.99');
+                self.assertInvalidInput(control, '8.0');
+            });
+    },
+
+
+    /**
+     * L{Methanal.View.FloatInput} validates that values fall within a certain
+     * exclusive range, even for really big numbers that have precision
+     * problems in Javascript.
+     */
+    function test_bigBounds(self) {
+        // These turn into -9223372036854776000 and 9223372036854776000.
+        self.testControl({value: null,
+                          decimalPlaces: 2,
+                          lowerBound: -9223372036854775809.5,
+                          upperBound:  9223372036854775808.5},
+            function (control) {
+                self.assertValidInput(control, null);
+                self.assertValidInput(control, '');
+                self.assertValidInput(control, '1');
+                self.assertInvalidInput(control, '-9223372036854775800');
+                self.assertInvalidInput(control, '-9223372036854775809');
+                self.assertInvalidInput(control, '-9223372036854775808.5');
+                self.assertInvalidInput(control, '-92233720368547758090');
+                self.assertInvalidInput(control,  '9223372036854775800');
+                self.assertInvalidInput(control,  '9223372036854775808');
+                self.assertInvalidInput(control,  '9223372036854775807.5');
                 self.assertInvalidInput(control,  '92233720368547758080');
             });
     });

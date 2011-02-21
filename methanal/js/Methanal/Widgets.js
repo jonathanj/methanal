@@ -187,6 +187,13 @@ Methanal.Widgets.Column.subclass(Methanal.Widgets, 'IntegerColumn');
 
 
 /**
+ * Column representing float values.
+ */
+Methanal.Widgets.Column.subclass(Methanal.Widgets, 'FloatColumn');
+
+
+
+/**
  * Column representing boolean values.
  */
 Methanal.Widgets.Column.subclass(Methanal.Widgets, 'BooleanColumn');
@@ -665,7 +672,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
      * @param args.rows: See L{_rows}
      */
     function __init__(self, node, args) {
-        Divmod.msg('QueryList is deprecated, use Methanal.Widgets.Table.')
+        Divmod.warn(
+            'QueryList is deprecated, use Methanal.Widgets.Table',
+            Divmod.DeprecationWarning);
         Methanal.Widgets.QueryList.upcall(self, '__init__', node);
 
         self._hasActions = self.actions && self.actions.length > 0;
@@ -854,8 +863,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
 
 
     function makeCellElement(self, columnID, rowData) {
-        Divmod.msg('WARNING: QueryList.makeCellElement is deprecated. ' +
-                   'Use QueryListcreateCellElement instead.');
+        Divmod.warn(
+            'QueryList.makeCellElement is deprecated, use ' +
+            'QueryList.createCellElement instead', Divmod.DeprecationWarning);
         return self.createCellElement(columnID, rowData);
     },
 
@@ -1039,22 +1049,22 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'FilterList').methods(
      * @param widgetInfo: Athena widget information to create a new child widget
      *     from
      *
+     * @param widgetParent: Parent widget to attach the results widget to.
+     *
      * @rtype:  C{Deferred}
      * @return: Deferred that fires when the result widget has been set
      */
-    function setResultWidget(self, widgetInfo) {
-        var resultsNode = self.nodeById('results');
-
-        var d = self.widgetParent.addChildWidgetFromWidgetInfo(widgetInfo);
+    function setResultWidget(self, widgetInfo, widgetParent) {
+        var d = widgetParent.addChildWidgetFromWidgetInfo(widgetInfo);
         d.addCallback(function (widget) {
             if (self._currentResultWidget !== null) {
                 self._currentResultWidget.detach();
-                resultsNode.removeChild(self._currentResultWidget.node);
-            } else {
-                resultsNode.style.display = 'block';
+                self._currentResultWidget.node.parentNode.removeChild(
+                    self._currentResultWidget.node);
             }
 
-            resultsNode.appendChild(widget.node);
+            Methanal.Util.addElementClass(widget.node, 'filter-results');
+            widgetParent.node.appendChild(widget.node);
             Methanal.Util.nodeInserted(widget);
             self._currentResultWidget = widget;
         });
@@ -1073,83 +1083,375 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'FilterList').methods(
  */
 Methanal.View.LiveForm.subclass(Methanal.Widgets, 'FilterListForm').methods(
     function submitSuccess(self, widgetInfo) {
-        return self.widgetParent.setResultWidget(widgetInfo);
+        return self.widgetParent.setResultWidget(widgetInfo, self);
     });
 
 
 
-Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup');
-
-
-
 /**
- * Form for L{Methanal.Widgets.SimpleLookup}.
+ * A collapsable container widget.
  *
- * When a value of any input (excluding the result selector) is changed,
- * a remote call is made (passing the values of all the inputs) and the result
- * selector populated from the result of that call.
+ * @type _params: C{object} mapping C{String} to values
+ * @ivar _params: Mapping of names to values, used specifically for
+ *     L{Methanal.Widgets.Rollup.update}
+ *
+ * @type expanded: C{boolean}
+ * @ivar expanded: Flag indicating whether the container is expanded or not
+ *
+ * @type throbber: L{Methanal.Util.Throbber}
+ * @ivar throbber: Throbber controller
  */
-Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'SimpleLookupForm').methods(
-    function __init__(self, node, controlNames) {
-        Methanal.Widgets.SimpleLookupForm.upcall(
-            self, '__init__', node, controlNames);
+Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Rollup').methods(
+    /**
+     * Create the rollup widget.
+     *
+     * @type params: C{object} mapping C{String} to values
+     * @ivar params: Mapping of names to values, used specifically for
+     *     L{Methanal.Widgets.Rollup.update}
+     */
+    function __init__(self, node, params) {
+        Methanal.Widgets.Rollup.upcall(self, '__init__', node);
+        self.expanded = false;
+        self._params = params;
+    },
 
-        var V = Methanal.Validators;
-        self.addValidators([
-            [['__results'], [V.notNull]]]);
+
+    function nodeInserted(self) {
+        self._contentNode = self.nodeById('content');
+        self._buttonNode = self.nodeById('roll-button');
+        self._totalNode = self.nodeById('summary-total');
+        self._summaryDescNode = self.nodeById('summary-description');
+        self.throbber = Methanal.Util.Throbber(self)
+
+        self.update(self._params);
     },
 
 
     /**
-     * Set the result values.
-     *
-     * @type  values: C{Array} of C{[String, object]}
-     * @param values: Sequence of C{[value, description]} results
+     * Toggle the rollup's expanded state.
      */
-    function setOptions(self, values) {
-        var resultsWidget = self.getControl('__results');
-        var resultsNode = resultsWidget.inputNode;
-        while (resultsNode.options.length) {
-            resultsNode.remove(0);
+    function toggleExpand(self) {
+        self.expanded = !self.expanded;
+
+        self._contentNode.style.display = self.expanded ? 'block' : 'none';
+
+        var buttonNode = self._buttonNode;
+        if (self.expanded) {
+            Methanal.Util.addElementClass(buttonNode, 'roll-up');
+            Methanal.Util.removeElementClass(buttonNode, 'roll-down');
+        } else {
+            Methanal.Util.removeElementClass(buttonNode, 'roll-up');
+            Methanal.Util.addElementClass(buttonNode, 'roll-down');
+        }
+        return false;
+    },
+
+
+    /**
+     * Update the rollup view.
+     *
+     * The base implementation updates the node, with ID "summary-description",
+     * with the value from the key "summary".
+     *
+     * @type params: C{object} mapping C{String} to values
+     * @ivar params: Mapping of names to values, used specifically for
+     *     L{Methanal.Widgets.Rollup.update}
+     */
+    function update(self, params) {
+        var summary = params['summary'];
+        summary = summary === undefined ? '' : summary;
+        Methanal.Util.replaceNodeText(self._summaryDescNode, summary);
+    });
+
+
+
+/**
+ * Complex input for arriving at a single result, given a set of criteria.
+ *
+ * @type _lookupForm: L{Methanal.Widgets.LookupForm}
+ */
+Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
+    function __init__(self, node, args) {
+        Methanal.Widgets.Lookup.upcall(self, '__init__', node, args);
+        self._lookupForm = null;
+        self._waitForForm = Divmod.Defer.Deferred();
+    },
+
+
+    function formLoaded(self, form) {
+        self._lookupForm = form;
+        self._waitForForm.callback(null);
+        self._waitForForm = Divmod.Defer.succeed(null);
+    },
+
+
+    /**
+     * Set the values of the result input.
+     *
+     * @type  values: C{Array} of L{LookupResult}
+     * @param values: Result values, or C{null}.
+     *
+     * @type selectedValue: L{LookupResult}
+     * @param selectedValue: Selected result values; use C{undefined} to select
+     *     the first value in C{values} (or C{null} if there are none).
+     *     Defaults to C{undefined}.
+     */
+    function setResults(self, values, selectedValue/*=undefined*/) {
+        self._waitForForm.addCallback(function () {
+            self._lookupForm.setResults(values, selectedValue);
+        });
+    },
+
+
+    function setValue(self, data) {
+        self._waitForForm.addCallback(function () {
+            self._lookupForm.populateForm(data, true);
+        });
+    },
+
+
+    function getValue(self) {
+        return self._lookupForm.getResultValue();
+    });
+
+
+
+/**
+ * A L{Methanal.Widgets.Lookup} result value.
+ *
+ * @type id: C{String}
+ * @ivar id: Unique result identifier.
+ *
+ * @type values: C{object} mapping C{String} to values.
+ * @ivar values: Result values, these will be reverse populated to the
+ *     L{LookupForm} when initialising the control.
+ *
+ * @type name: C{String}
+ * @ivar name: Human readable result name, or C{null} to use a represenation
+ *     of L{values}, Defaults to C{null}.
+ */
+Divmod.Class.subclass(Methanal.Widgets, 'LookupResult').methods(
+    function __init__(self, id, values, name/*=null*/) {
+        self.id = id
+        self.values = values;
+        self.name = name;
+    },
+
+
+    function toString(self) {
+        var name = self.name;
+        if (name == null) {
+            name = Methanal.Util.repr(self.values);
+        }
+        return name;
+    });
+
+
+
+/**
+ * Form for L{Methanal.Widgets.Lookup}.
+ *
+ * When the value of any input (excluding the result selector) is changed, a
+ * remote call is made (passing the values of all the inputs) and the result
+ * selector populated from the result of that call.
+ *
+ * @type storeResults: C{Boolean}
+ * @ivar storeResults: Store result values? Defaults to C{false}.
+ *
+ * @type results: C{object} mapping C{String} to values.
+ * @ivar results: Stored results mapping result identifiers to results.
+ */
+Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
+    function __init__(self, node, controlNames) {
+        Methanal.Widgets.LookupForm.upcall(
+            self, '__init__', node, controlNames);
+
+        var V = Methanal.Validators;
+        self.addValidators([
+            [['__result__'], [V.notNull]]]);
+
+        self.results = {};
+        self.storeResults = false;
+    },
+
+
+    function formLoaded(self) {
+        var resultControl = self.getResultControl();
+        Methanal.Util.addElementClass(
+            resultControl.widgetParent.node,
+            'lookup-result');
+        // XXX: None of this is great.
+        var D = Methanal.Util.DOMBuilder(resultControl.node.ownerDocument);
+        var throbberNode = D('img', {
+            'src': '/static/Methanal/images/main-throbber.gif',
+            'style': 'display: none;'});
+        resultControl.node.parentNode.insertBefore(
+            throbberNode, resultControl.node);
+        self.throbber = Methanal.Util.Throbber(
+            undefined, 'inline', throbberNode);
+        self.widgetParent.formLoaded(self);
+    },
+
+
+    /**
+     * Get the value of the result control.
+     */
+    function getResultValue(self) {
+        return self.getControlValue('__result__');
+    },
+
+
+    /**
+     * Set the value of the result control.
+     */
+    function setResultValue(self, data) {
+        var results = self.getResultControl();
+        var id = null;
+        if (data) {
+            id = data.id;
+        }
+        results.setValue(id);
+        results.onChange(results.node);
+    },
+
+
+    /**
+     * Get the result control.
+     */
+    function getResultControl(self) {
+        return self.getControl('__result__');
+    },
+
+
+    /**
+     * Populate the form inputs.
+     */
+    function populateForm(self, data, setResults/*=false*/) {
+        if (data === null) {
+            return;
         }
 
-        var doc = self.node.ownerDocument;
+        self.freeze();
+        for (var key in data.values) {
+            try {
+                var control = self.getControl(key);
+                control.setValue(data.values[key]);
+                control.onChange(control.node);
+            } catch (e) {
+                if (!(e instanceof Methanal.View.MissingControlError)) {
+                    throw e;
+                }
+            }
+        }
+        if (setResults) {
+            self.setResults([data]);
+        }
+        self.thaw();
+    },
+
+
+    /**
+     * Set the values of the result input.
+     *
+     * @type  values: C{Array} of L{LookupResult}
+     * @param values: Result values.
+     *
+     * @type selectedValue: L{LookupResult}
+     * @param selectedValue: Selected result values; use C{undefined} to select
+     *     the first value in C{values} (or C{null} if there are none).
+     *     Defaults to C{undefined}.
+     */
+    function setResults(self, values, selectedValue/*=undefined*/) {
+        var resultControl = self.getResultControl();
+        resultControl.clear();
+        self.results = {};
+
         for (var i = 0; i < values.length; ++i) {
-            var optionNode = doc.createElement('option');
-            optionNode.value = values[i][0];
-            optionNode.appendChild(doc.createTextNode(values[i][1]));
-            resultsNode.appendChild(optionNode);
+            var result = values[i];
+            resultControl.append(result.id, result.toString());
+            if (self.storeResults) {
+                self.results[result.id] = result;
+            }
         }
 
-        var value = null;
-        if (resultsNodes.options.length > 0) {
-            value = resultsNode[0];
+        var data = selectedValue || null;
+        if (selectedValue === undefined) {
+            if (values.length > 0) {
+                data = values[0];
+            }
+        } else {
+            self.populateForm(selectedValue);
         }
-        resultsWidget.setValue(value);
-        resultsWidget.onChange();
+        self.setResultValue(data);
+    },
+
+
+    /**
+     * Enter the searching state, replacing the result control with a throbber
+     * and setting the form value to C{null}.
+     */
+    function enterSearchingState(self) {
+        var results = self.getResultControl();
+        Methanal.Util.addElementClass(
+            self.getResultControl().node,
+            'hidden');
+        self.throbber.start();
+        self.setResultValue(null);
+    },
+
+
+    /**
+     * Exit the searching state, replacing the throbber with the result
+     * control.
+     */
+    function exitSearchingState(self) {
+        Methanal.Util.removeElementClass(
+            self.getResultControl().node,
+            'hidden');
+        self.throbber.stop();
+    },
+
+
+    /**
+     * Callback fired when the result input has changed.
+     */
+    function resultChanged(self, control) {
     },
 
 
     function valueChanged(self, control) {
-        Methanal.Widgets.SimpleLookupForm.upcall(self, 'valueChanged', control);
+        Methanal.Widgets.LookupForm.upcall(
+            self, 'valueChanged', control);
 
-        // Don't trigger when the result input is changed.
-        if (control.name === '__results') {
+        // Avoid doing anything useful if we're frozen.
+        if (self._frozen > 0) {
+            return;
+        }
+
+        // Trigger Lookup.onChange so the parent form refreshes validators.
+        self.widgetParent.onChange(control.node);
+
+        // Don't trigger when the result input is changed or when there are
+        // validation errors.
+        if (control.name === '__result__') {
+            self.resultChanged(control);
             return;
         }
 
         // Gather form values from all the filter attributes.
-        var values = {};
+        var data = {};
         for (var controlName in self.controls) {
-            var control = self.getControl(controlName);
-            values[controlName] = control.getValue();
+            data[controlName] = self.getControlValue(controlName);
         }
 
-        // Pass the gathered values to the remote side, and populate the result
+        self.enterSearchingState();
+
+        // Pass the gathered values to the remote side and populate the result
         // input from the return value of that call.
-        var d = self.widgetParent.callRemote('populate', values);
+        var d = self.widgetParent.callRemote('lookup', data);
         d.addCallback(function (values) {
-            self.setOptions(values);
+            self.setResults(values);
+            self.exitSearchingState();
         });
     });
 
@@ -1660,7 +1962,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
 
 
     function appendTab(self, tab) {
-        Divmod.msg('DEPRECATED: Use Methanal.Widgets.TabView.updateTab');
+        Divmod.warn(
+            'TabView.appendTab is deprecated, use TabView.updateTab',
+            Divmod.DeprecationWarning);
         return self.updateTab(tab);
     },
 

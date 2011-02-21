@@ -25,9 +25,9 @@ from xmantissa.webtheme import ThemedElement
 
 from methanal.imethanal import IColumn
 from methanal.util import getArgsDict
-from methanal.view import (liveFormFromAttributes, containerFromAttributes,
-    ObjectSelectInput, SimpleForm, FormInput, LiveForm, SubmitAction,
-    ActionButton, ActionContainer)
+from methanal.view import (
+    liveFormFromAttributes, SimpleForm, FormInput, LiveForm, SubmitAction,
+    ActionButton, ActionContainer, SelectInput)
 from methanal.model import Value
 from methanal.errors import InvalidIdentifier
 
@@ -210,6 +210,7 @@ class ColumnTransportable(record('column')):
     columnTypes = {
         'text': u'Methanal.Widgets.TextColumn',
         'integer': u'Methanal.Widgets.IntegerColumn',
+        'ieee754_double': u'Methanal.Widgets.FloatColumn',
         'boolean': u'Methanal.Widgets.BooleanColumn',
         'timestamp': u'Methanal.Widgets.TimestampColumn'}
 
@@ -373,7 +374,7 @@ class FilterList(ThemedElement):
     jsClass = u'Methanal.Widgets.FilterList'
     fragmentName = 'methanal-filter-list'
 
-    def __init__(self, form, resultWidget, title, **kw):
+    def __init__(self, form, resultWidget, title=None, **kw):
         """
         Initialise the filter widget.
 
@@ -393,8 +394,9 @@ class FilterList(ThemedElement):
         """
         super(FilterList, self).__init__(**kw)
         self.form = form
-        self.form.setFragmentParent(self)
         self.resultWidget = resultWidget
+        if title is None:
+            title = self.form.doc
         self.title = title
 
         self.originalCallback = self.form.model.callback
@@ -419,13 +421,9 @@ class FilterList(ThemedElement):
 
 
     @renderer
-    def formTitle(self, req, tag):
-        return tag[self.title]
-
-
-    @renderer
     def filterForm(self, req, tag):
-        return tag[self.form]
+        self.form.setFragmentParent(self)
+        return self.form
 
 
 
@@ -484,51 +482,105 @@ class SimpleFilterList(FilterList):
 
 
 class Lookup(FormInput):
+    """
+    Complex input for arriving at a single result, given a set of criteria.
+
+    @type form: L{LookupForm}
+    @ivar form: Form containing the inputs for capturing lookup data, the
+        result input will be automatically added to the form.
+
+    @type populate: C{callable} taking C{dict} returning an C{iterable} of
+        L{LookupResultTransportable}
+    @ivar populate: Callback called with a mapping of form input names to
+        criteria, returning L{LookupResultTransportable} instances.
+    """
     fragmentName = 'methanal-lookup'
     jsClass = u'Methanal.Widgets.Lookup'
 
-    def __init__(self, form, populator, describer, objects=None, **kw):
-        if objects is None:
-            objects = []
 
+    def __init__(self, form, populate, values=None, **kw):
+        """
+        Lookup input.
+
+        @param values: Initial values for results input, see
+            L{SelectInput.values} for more information.
+        """
         super(Lookup, self).__init__(**kw)
-
         self.form = form
-        self.form.setFragmentParent(self)
-        self.populator = populator
-        self.describer = describer
-        self.objects = objects
+        self.populate = populate
+        if values is None:
+            values = []
+
+        self.alterModel()
+        self.alterForm(values)
+
+
+    def alterModel(self):
+        """
+        Alter the lookup form model.
+        """
+        self.form.model.params['__result__'] = Value(
+            name=u'__result__', doc=u'Result')
+
+
+    def alterForm(self, values):
+        """
+        Alter the lookup form.
+        """
+        SelectInput(parent=self.form, name='__result__', values=values)
 
 
     @expose
-    def populate(self, *a):
-        self.objects = list(self.populator(*a))
-        return list(enumerate(self.describer(o) for o in self.objects))
+    def lookup(self, data):
+        """
+        Call L{populate} with the lookup criteria and return the results.
+        """
+        return list(self.populate(data))
 
 
     @renderer
-    def filterForm(self, req, tag):
+    def criteriaForm(self, req, tag):
+        self.form.setFragmentParent(self)
         return tag[self.form]
 
 
 
-class SimpleLookup(Lookup):
-    def __init__(self, store, filterAttrs, timezone=None, **kw):
-        fact = lambda model: SimpleForm(store=store, model=model)
-        form = containerFromAttributes(containerFactory=fact,
-                                       store=store,
-                                       attributes=filterAttrs,
-                                       callback=None,
-                                       doc=None,
-                                       timezone=timezone)
-        form.jsClass = u'Methanal.Widgets.SimpleLookupForm'
+class LookupResultTransportable(object):
+    """
+    An C{IAthenaTransportable} implementation base class for L{Lookup} results.
 
-        super(SimpleLookup, self).__init__(form=form, **kw)
+    @type id: C{unicode}
+    @ivar id: Unique result identifier.
 
-        form.model.params['__results'] = Value(name='__results', doc=u'Result')
+    @type values: C{dict} mapping C{unicode} to values.
+    @ivar values: Result values, these will be reverse populated to the
+        L{LookupForm} when initialising the control.
 
-        values = [(o, self.describer(o)) for o in self.objects]
-        ObjectSelectInput(parent=form, name='__results', values=values)
+    @type name: C{unicode}
+    @ivar name: Human readable result name, or C{None} to use a represenation
+        of L{values}, Defaults to C{None}.
+    """
+    implements(IAthenaTransportable)
+
+    jsClass = u'Methanal.Widgets.LookupResult'
+
+
+    def __init__(self, id, values, name=None):
+        self.id = id
+        self.values = values
+        self.name = name
+
+
+    def getInitialArguments(self):
+        return [self.id, self.values, self.name]
+
+
+
+class LookupForm(SimpleForm):
+    """
+    L{SimpleForm} intended to be used as the C{form} parameter to L{Lookup}.
+    """
+    jsClass = u'Methanal.Widgets.LookupForm'
 
 
 

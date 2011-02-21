@@ -63,6 +63,7 @@ Methanal.Tests.Util.setUpForm = function setUpForm(form) {
     form.node.appendChild(actions.node);
     form.setActions(actions);
     document.body.appendChild(form.node);
+    Methanal.Util.nodeInserted(actions);
 };
 
 
@@ -111,3 +112,21 @@ Methanal.Tests.Util.defineSetter = function defineSetter(obj, prop, set) {
     }
     throw new Error('Setter properties not supported!');
 }
+
+
+/**
+ * Assert that an C{Array} of input and expected pairs (C{[input,
+ * expectedOutput]}) match when the input is processed by C{fn}.
+ */
+Methanal.Tests.Util.assertCases = function assertCases(testcase, fn, cases) {
+    for (var i = 0; i < cases.length; ++i) {
+        var input = cases[i][0];
+        var expected = cases[i][1];
+        var actual = fn(input);
+        var repr = Methanal.Util.repr;
+        testcase.assert(
+            expected === actual,
+            'input = ' + repr(input) + ' :: expected = ' + repr(expected) +
+            ' :: actual = ' + repr(actual));
+    }
+};

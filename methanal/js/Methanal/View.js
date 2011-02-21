@@ -184,8 +184,10 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
      */
     function addHandler(self, fn, inputs, outputs) {
         if (fn === undefined) {
+            var repr = Methanal.Util.repr;
             throw Methanal.View.HandlerError(
-                'Specified handler function is not defined');
+                'Specified handler function is not defined (inputs: ' +
+                repr(inputs) + '; outputs: ' + repr(outputs));
         }
 
         var handler = Methanal.View._Handler(
@@ -389,6 +391,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         self.controlsLoaded = false;
         self.fullyLoaded = false;
+        self.freeze();
     },
 
 
@@ -509,14 +512,23 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
+     * Internal method for determining whether to set C{fullyLoaded} and
+     * finalise form loading.
+     */
+    function _isFullyLoaded(self) {
+        return self.actions && self.controlsLoaded && !self.fullyLoaded;
+    },
+
+
+    /**
      * Perform final form initialisation tasks.
      *
      * Once all controls in L{controlNames} have reported in and L{setActions}
      * has been called, form loading completes by refreshing validators and
-     * dependencies, controls cannot report in loading is complete.
+     * dependencies, controls cannot report in once loading is complete.
      */
     function _finishLoading(self) {
-        if (!self.actions || !self.controlsLoaded || self.fullyLoaded) {
+        if (!self._isFullyLoaded()) {
             return;
         }
         self.fullyLoaded = true;
@@ -527,6 +539,16 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         }
         self.refresh();
         self._stripeControls();
+        // Thaw freeze from formInit.
+        self.thaw();
+        self.formLoaded();
+    },
+
+
+    /**
+     * Callback fired once when the form has fully and finally loaded.
+     */
+    function formLoaded(self) {
     },
 
 
@@ -879,9 +901,9 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         self.enableControlStriping = true;
         Methanal.View.LiveForm.upcall(self, '__init__', node);
         if (typeof args === 'boolean') {
-            Divmod.msg(
-                'DEPRECATED: Use an argument dictionary instead of the' +
-                '"viewOnly" boolean parameter');
+            Divmod.warn(
+                'Use an argument dictionary instead of the "viewOnly"' +
+                'boolean parameter', Divmod.DeprecationWarning);
             args = {'viewOnly': args};
         }
         self.viewOnly = args.viewOnly;
@@ -1274,6 +1296,7 @@ Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     function __init__(self, node, controlNames) {
         Methanal.View.SimpleForm.upcall(
             self, '__init__', node, true, controlNames);
+        self.hideModificationIndicator = true;
     },
 
 
@@ -1283,12 +1306,17 @@ Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     },
 
 
+    function _isFullyLoaded(self) {
+        return self.controlsLoaded && !self.fullyLoaded;
+    },
+
+
     function setValid(self) {
         self.widgetParent.clearError();
     },
 
 
-    function setInvalid(self) {
+    function setInvalid(self, invalidControls) {
         self.widgetParent.setError('');
     });
 
@@ -2112,6 +2140,17 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
     },
 
 
+    /**
+     * Clear the input's options.
+     */
+    function clear(self) {
+        while (self.inputNode.options.length) {
+            self.inputNode.remove(0);
+        }
+        self._placeholderInserted = false;
+    },
+
+
     function getInputNode(self) {
         return self.node.getElementsByTagName('select')[0];
     },
@@ -2355,6 +2394,26 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'IntegerInput').methods(
         var value = Methanal.View.IntegerInput.upcall(self, 'getValue');
         if (value) {
             value = Methanal.Util.strToInt(value);
+        }
+        return value;
+    });
+
+
+
+/**
+ * Float input.
+ */
+Methanal.View.NumericInput.subclass(Methanal.View, 'FloatInput').methods(
+    function __init__(self, node, args) {
+        Methanal.View.FloatInput.upcall(self, '__init__', node, args);
+        self._validInput = /^[-+]?\d*\.?\d*$/;
+    },
+
+
+    function getValue(self) {
+        var value = Methanal.View.FloatInput.upcall(self, 'getValue');
+        if (value) {
+            value = Methanal.Util.strToFloat(value);
         }
         return value;
     });

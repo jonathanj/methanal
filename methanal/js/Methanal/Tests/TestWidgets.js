@@ -276,6 +276,25 @@ Methanal.Tests.TestWidgets.SimpleColumnTest.subclass(
 
 
 /**
+ * Tests for L{Methanal.Widgets.FloatColumn}.
+ */
+Methanal.Tests.TestWidgets.SimpleColumnTest.subclass(
+    Methanal.Tests.TestWidgets, 'TestFloatColumn').methods(
+    function setUp(self) {
+        self.columnType = Methanal.Widgets.FloatColumn;
+        self.columnValues = {
+            'a': {value: 42.0,
+                  link: null,
+                  nodeValue: '42'},
+            'b': {value: 1.23,
+                  link: 'quux',
+                  nodeValue: '1.23'}};
+        Methanal.Tests.TestWidgets.TestFloatColumn.upcall(self, 'setUp');
+    });
+
+
+
+/**
  * Tests for L{Methanal.Widgets.BooleanColumn}.
  */
 Methanal.Tests.TestWidgets.SimpleColumnTest.subclass(

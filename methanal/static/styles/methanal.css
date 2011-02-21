@@ -15,6 +15,14 @@
     float: left;
 }
 
+.methanal-liveform h1,
+.methanal-form-group h2 {
+    color: #555;
+    font-weight: normal;
+    text-shadow: 0 1px 0 #fff;
+    margin: 0 0 0.5em 0;
+}
+
 .methanal-form-group .methanal-control-even {
     background-color: #d3d3ea;
 }
@@ -62,15 +70,22 @@
     min-width: 5em;
 }
 
-.methanal-multi-input {
+.methanal-multi-input,
+.methanal-lookup-form {
     float: left;
     background: white;
     padding: 3px 5px;
     border: 1px outset black;
 }
 
+.methanal-lookup-form .lookup-result .methanal-caption {
+    font-style: italic;
+    font-weight: bold;
+}
+
+.methanal-lookup-form .methanal-caption,
 .methanal-multi-input .methanal-caption {
-    min-width: 8em;
+    min-width: 10em;
     margin: 0;
 }
 
@@ -249,15 +264,9 @@ optgroup option {
     padding: 5px;
 }
 
-.methanal-filter-list h2,
-.methanal-filter-list h3 {
-    padding: 0;
-    margin: 0.5em 0;
-}
-
-.methanal-filter-list hr {
-    border: none;
-    border-top: 1px solid #aaa;
+.methanal-filter-list .filter-results {
+    background: url(/static/Methanal/images/liveform-bg-bottom-top.png) repeat-x top left;
+    padding: 1em;
 }
 
 .methanal-lookup-form {
@@ -372,6 +381,13 @@ optgroup option {
     font-weight: normal;
 }
 
+.modal-dialog-close {
+    background: url(/static/Methanal/images/icons/close.png) no-repeat center center;
+    float: right;
+    width: 16px;
+    height: 16px;
+}
+
 .placeholder {
     height: 32px;
     background: url(/static/Methanal/images/long-throbber.gif) no-repeat center center;
@@ -476,6 +492,14 @@ optgroup option {
 
 .methanal-choice-group h4 {
     margin: 0 0 0.25em 0;
+}
+
+.methanal-lookup-form .methanal-control-even {
+    background-color: #f5f5f5;
+}
+
+.methanal-lookup-form .lookup-result {
+    background: #e0f1ff;
 }
 
 .dependancy-parent {
