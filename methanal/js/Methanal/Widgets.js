@@ -1049,22 +1049,22 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'FilterList').methods(
      * @param widgetInfo: Athena widget information to create a new child widget
      *     from
      *
+     * @param widgetParent: Parent widget to attach the results widget to.
+     *
      * @rtype:  C{Deferred}
      * @return: Deferred that fires when the result widget has been set
      */
-    function setResultWidget(self, widgetInfo) {
-        var resultsNode = self.nodeById('results');
-
-        var d = self.widgetParent.addChildWidgetFromWidgetInfo(widgetInfo);
+    function setResultWidget(self, widgetInfo, widgetParent) {
+        var d = widgetParent.addChildWidgetFromWidgetInfo(widgetInfo);
         d.addCallback(function (widget) {
             if (self._currentResultWidget !== null) {
                 self._currentResultWidget.detach();
-                resultsNode.removeChild(self._currentResultWidget.node);
-            } else {
-                resultsNode.style.display = 'block';
+                self._currentResultWidget.node.parentNode.removeChild(
+                    self._currentResultWidget.node);
             }
 
-            resultsNode.appendChild(widget.node);
+            Methanal.Util.addElementClass(widget.node, 'filter-results');
+            widgetParent.node.appendChild(widget.node);
             Methanal.Util.nodeInserted(widget);
             self._currentResultWidget = widget;
         });
@@ -1083,7 +1083,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'FilterList').methods(
  */
 Methanal.View.LiveForm.subclass(Methanal.Widgets, 'FilterListForm').methods(
     function submitSuccess(self, widgetInfo) {
-        return self.widgetParent.setResultWidget(widgetInfo);
+        return self.widgetParent.setResultWidget(widgetInfo, self);
     });
 
 
