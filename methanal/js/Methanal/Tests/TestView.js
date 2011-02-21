@@ -67,10 +67,25 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create a C{Methanal.View.LiveForm}.
      */
-    function createForm(self, viewOnly) {
+    function createForm(self, viewOnly, controls/*=undefined*/,
+                        postFormInsertion/*=undefined*/) {
+        controls = controls || [];
         var controlNames = [];
-        form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
+        for (var i = 0; i < controls.length; ++i) {
+            controlNames.push(controls[i].name);
+        }
+
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
+        Methanal.Tests.Util.setUpForm(form);
         Methanal.Util.nodeInserted(form);
+        if (postFormInsertion) {
+            postFormInsertion(form);
+        }
+        for (var i = 0; i < controls.length; ++i) {
+            var control = controls[i];
+            form.addChildWidget(control);
+            form.loadedUp(control);
+        }
         return form;
     },
 
@@ -95,7 +110,8 @@ Methanal.Tests.Util.TestCase.subclass(
      * an exception.
      */
     function test_freezeThaw(self) {
-        var form = self.createForm();
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control]);
         form.freeze();
         self.assertIdentical(form._frozen, 1);
         form.freeze();
@@ -129,7 +145,8 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_submission(self) {
         var success;
-        var form = self.createForm();
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control]);
 
         function succeed(methodName, data) {
             self.assertIdentical(form.actions._disabled, true);
@@ -233,14 +250,8 @@ Methanal.Tests.Util.TestCase.subclass(
      * modification state changed.
      */
     function test_formModified(self) {
-        var form = self.createForm();
-        var control = self.createControl({});
-        var row = Methanal.Tests.TestView.createContainer(
-            form, Methanal.View.FormRow, [control]);
-        form.addChildWidget(row);
-        form.node.appendChild(row.node);
-        Methanal.Util.nodeInserted(row);
-
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control]);
         var containsElementClass = Methanal.Util.containsElementClass;
         self.assertIdentical(
             containsElementClass(form.actions.node, 'form-modified'),
@@ -248,6 +259,28 @@ Methanal.Tests.Util.TestCase.subclass(
         control.onChange();
         self.assertIdentical(
             containsElementClass(form.actions.node, 'form-modified'),
+            true);
+    },
+
+
+    /**
+     * Callback fired once when the form has fully and finally loaded.
+     */
+    function test_formLoaded(self) {
+        var success = false;
+        var control = self.createControl({'name': 'a'});
+        var form = self.createForm(false, [control], function (form) {
+            self.assertIdentical(
+                success,
+                false);
+
+            form.formLoaded = function () {
+                success = true;
+            };
+        });
+
+        self.assertIdentical(
+            success,
             true);
     });
 
@@ -514,6 +547,22 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
         self.testControl({value: ''},
             function (control) {
                 self._testAppendInsert(control);
+            });
+    },
+
+
+    /**
+     * Remove all options of this input.
+     */
+    function test_clear(self) {
+        self.testControl({value: ''},
+            function (control) {
+                control.append('v1', 'd1');
+                self.assertIdentical(control.inputNode.options.length, 1);
+                self.assertOption(control.inputNode.options[0], 'v1', 'd1');
+
+                control.clear();
+                self.assertIdentical(control.inputNode.options.length, 0);
             });
     },
 

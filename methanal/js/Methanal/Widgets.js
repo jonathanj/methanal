@@ -1165,78 +1165,293 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Rollup').methods(
 
 
 
-Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup');
-
-
-
 /**
- * Form for L{Methanal.Widgets.SimpleLookup}.
+ * Complex input for arriving at a single result, given a set of criteria.
  *
- * When a value of any input (excluding the result selector) is changed,
- * a remote call is made (passing the values of all the inputs) and the result
- * selector populated from the result of that call.
+ * @type _lookupForm: L{Methanal.Widgets.LookupForm}
  */
-Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'SimpleLookupForm').methods(
-    function __init__(self, node, controlNames) {
-        Methanal.Widgets.SimpleLookupForm.upcall(
-            self, '__init__', node, controlNames);
+Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
+    function __init__(self, node, args) {
+        Methanal.Widgets.Lookup.upcall(self, '__init__', node, args);
+        self._lookupForm = null;
+        self._waitForForm = Divmod.Defer.Deferred();
+    },
 
-        var V = Methanal.Validators;
-        self.addValidators([
-            [['__results'], [V.notNull]]]);
+
+    function formLoaded(self, form) {
+        self._lookupForm = form;
+        self._waitForForm.callback(null);
+        self._waitForForm = Divmod.Defer.succeed(null);
     },
 
 
     /**
-     * Set the result values.
+     * Set the values of the result input.
      *
-     * @type  values: C{Array} of C{[String, object]}
-     * @param values: Sequence of C{[value, description]} results
+     * @type  values: C{Array} of L{LookupResult}
+     * @param values: Result values, or C{null}.
+     *
+     * @type selectedValue: L{LookupResult}
+     * @param selectedValue: Selected result values; use C{undefined} to select
+     *     the first value in C{values} (or C{null} if there are none).
+     *     Defaults to C{undefined}.
      */
-    function setOptions(self, values) {
-        var resultsWidget = self.getControl('__results');
-        var resultsNode = resultsWidget.inputNode;
-        while (resultsNode.options.length) {
-            resultsNode.remove(0);
+    function setResults(self, values, selectedValue/*=undefined*/) {
+        self._waitForForm.addCallback(function () {
+            self._lookupForm.setResults(values, selectedValue);
+        });
+    },
+
+
+    function setValue(self, data) {
+        self._waitForForm.addCallback(function () {
+            self._lookupForm.populateForm(data, true);
+        });
+    },
+
+
+    function getValue(self) {
+        return self._lookupForm.getResultValue();
+    });
+
+
+
+/**
+ * A L{Methanal.Widgets.Lookup} result value.
+ *
+ * @type id: C{String}
+ * @ivar id: Unique result identifier.
+ *
+ * @type values: C{object} mapping C{String} to values.
+ * @ivar values: Result values, these will be reverse populated to the
+ *     L{LookupForm} when initialising the control.
+ *
+ * @type name: C{String}
+ * @ivar name: Human readable result name, or C{null} to use a represenation
+ *     of L{values}, Defaults to C{null}.
+ */
+Divmod.Class.subclass(Methanal.Widgets, 'LookupResult').methods(
+    function __init__(self, id, values, name/*=null*/) {
+        self.id = id
+        self.values = values;
+        self.name = name;
+    },
+
+
+    function toString(self) {
+        var name = self.name;
+        if (name == null) {
+            name = Methanal.Util.repr(self.values);
+        }
+        return name;
+    });
+
+
+
+/**
+ * Form for L{Methanal.Widgets.Lookup}.
+ *
+ * When the value of any input (excluding the result selector) is changed, a
+ * remote call is made (passing the values of all the inputs) and the result
+ * selector populated from the result of that call.
+ *
+ * @type storeResults: C{Boolean}
+ * @ivar storeResults: Store result values? Defaults to C{false}.
+ *
+ * @type results: C{object} mapping C{String} to values.
+ * @ivar results: Stored results mapping result identifiers to results.
+ */
+Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
+    function __init__(self, node, controlNames) {
+        Methanal.Widgets.LookupForm.upcall(
+            self, '__init__', node, controlNames);
+
+        var V = Methanal.Validators;
+        self.addValidators([
+            [['__result__'], [V.notNull]]]);
+
+        self.results = {};
+        self.storeResults = false;
+    },
+
+
+    function formLoaded(self) {
+        var resultControl = self.getResultControl();
+        Methanal.Util.addElementClass(
+            resultControl.widgetParent.node,
+            'lookup-result');
+        // XXX: None of this is great.
+        var D = Methanal.Util.DOMBuilder(resultControl.node.ownerDocument);
+        var throbberNode = D('img', {
+            'src': '/static/Methanal/images/main-throbber.gif',
+            'style': 'display: none;'});
+        resultControl.node.parentNode.insertBefore(
+            throbberNode, resultControl.node);
+        self.throbber = Methanal.Util.Throbber(
+            undefined, 'inline', throbberNode);
+        self.widgetParent.formLoaded(self);
+    },
+
+
+    /**
+     * Get the value of the result control.
+     */
+    function getResultValue(self) {
+        return self.getControlValue('__result__');
+    },
+
+
+    /**
+     * Set the value of the result control.
+     */
+    function setResultValue(self, data) {
+        var results = self.getResultControl();
+        var id = null;
+        if (data) {
+            id = data.id;
+        }
+        results.setValue(id);
+        results.onChange(results.node);
+    },
+
+
+    /**
+     * Get the result control.
+     */
+    function getResultControl(self) {
+        return self.getControl('__result__');
+    },
+
+
+    /**
+     * Populate the form inputs.
+     */
+    function populateForm(self, data, setResults/*=false*/) {
+        if (data === null) {
+            return;
         }
 
-        var doc = self.node.ownerDocument;
+        self.freeze();
+        for (var key in data.values) {
+            try {
+                var control = self.getControl(key);
+                control.setValue(data.values[key]);
+                control.onChange(control.node);
+            } catch (e) {
+                if (!(e instanceof Methanal.View.MissingControlError)) {
+                    throw e;
+                }
+            }
+        }
+        if (setResults) {
+            self.setResults([data]);
+        }
+        self.thaw();
+    },
+
+
+    /**
+     * Set the values of the result input.
+     *
+     * @type  values: C{Array} of L{LookupResult}
+     * @param values: Result values.
+     *
+     * @type selectedValue: L{LookupResult}
+     * @param selectedValue: Selected result values; use C{undefined} to select
+     *     the first value in C{values} (or C{null} if there are none).
+     *     Defaults to C{undefined}.
+     */
+    function setResults(self, values, selectedValue/*=undefined*/) {
+        var resultControl = self.getResultControl();
+        resultControl.clear();
+        self.results = {};
+
         for (var i = 0; i < values.length; ++i) {
-            var optionNode = doc.createElement('option');
-            optionNode.value = values[i][0];
-            optionNode.appendChild(doc.createTextNode(values[i][1]));
-            resultsNode.appendChild(optionNode);
+            var result = values[i];
+            resultControl.append(result.id, result.toString());
+            if (self.storeResults) {
+                self.results[result.id] = result;
+            }
         }
 
-        var value = null;
-        if (resultsNodes.options.length > 0) {
-            value = resultsNode[0];
+        var data = selectedValue || null;
+        if (selectedValue === undefined) {
+            if (values.length > 0) {
+                data = values[0];
+            }
+        } else {
+            self.populateForm(selectedValue);
         }
-        resultsWidget.setValue(value);
-        resultsWidget.onChange();
+        self.setResultValue(data);
+    },
+
+
+    /**
+     * Enter the searching state, replacing the result control with a throbber
+     * and setting the form value to C{null}.
+     */
+    function enterSearchingState(self) {
+        var results = self.getResultControl();
+        Methanal.Util.addElementClass(
+            self.getResultControl().node,
+            'hidden');
+        self.throbber.start();
+        self.setResultValue(null);
+    },
+
+
+    /**
+     * Exit the searching state, replacing the throbber with the result
+     * control.
+     */
+    function exitSearchingState(self) {
+        Methanal.Util.removeElementClass(
+            self.getResultControl().node,
+            'hidden');
+        self.throbber.stop();
+    },
+
+
+    /**
+     * Callback fired when the result input has changed.
+     */
+    function resultChanged(self, control) {
     },
 
 
     function valueChanged(self, control) {
-        Methanal.Widgets.SimpleLookupForm.upcall(self, 'valueChanged', control);
+        Methanal.Widgets.LookupForm.upcall(
+            self, 'valueChanged', control);
 
-        // Don't trigger when the result input is changed.
-        if (control.name === '__results') {
+        // Avoid doing anything useful if we're frozen.
+        if (self._frozen > 0) {
+            return;
+        }
+
+        // Trigger Lookup.onChange so the parent form refreshes validators.
+        self.widgetParent.onChange(control.node);
+
+        // Don't trigger when the result input is changed or when there are
+        // validation errors.
+        if (control.name === '__result__') {
+            self.resultChanged(control);
             return;
         }
 
         // Gather form values from all the filter attributes.
-        var values = {};
+        var data = {};
         for (var controlName in self.controls) {
-            var control = self.getControl(controlName);
-            values[controlName] = control.getValue();
+            data[controlName] = self.getControlValue(controlName);
         }
 
-        // Pass the gathered values to the remote side, and populate the result
+        self.enterSearchingState();
+
+        // Pass the gathered values to the remote side and populate the result
         // input from the return value of that call.
-        var d = self.widgetParent.callRemote('populate', values);
+        var d = self.widgetParent.callRemote('lookup', data);
         d.addCallback(function (values) {
-            self.setOptions(values);
+            self.setResults(values);
+            self.exitSearchingState();
         });
     });
 

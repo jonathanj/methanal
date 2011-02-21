@@ -391,6 +391,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
         self.controlsLoaded = false;
         self.fullyLoaded = false;
+        self.freeze();
     },
 
 
@@ -511,14 +512,23 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
 
     /**
+     * Internal method for determining whether to set C{fullyLoaded} and
+     * finalise form loading.
+     */
+    function _isFullyLoaded(self) {
+        return self.actions && self.controlsLoaded && !self.fullyLoaded;
+    },
+
+
+    /**
      * Perform final form initialisation tasks.
      *
      * Once all controls in L{controlNames} have reported in and L{setActions}
      * has been called, form loading completes by refreshing validators and
-     * dependencies, controls cannot report in loading is complete.
+     * dependencies, controls cannot report in once loading is complete.
      */
     function _finishLoading(self) {
-        if (!self.actions || !self.controlsLoaded || self.fullyLoaded) {
+        if (!self._isFullyLoaded()) {
             return;
         }
         self.fullyLoaded = true;
@@ -529,6 +539,16 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         }
         self.refresh();
         self._stripeControls();
+        // Thaw freeze from formInit.
+        self.thaw();
+        self.formLoaded();
+    },
+
+
+    /**
+     * Callback fired once when the form has fully and finally loaded.
+     */
+    function formLoaded(self) {
     },
 
 
@@ -1276,6 +1296,7 @@ Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     function __init__(self, node, controlNames) {
         Methanal.View.SimpleForm.upcall(
             self, '__init__', node, true, controlNames);
+        self.hideModificationIndicator = true;
     },
 
 
@@ -1285,12 +1306,17 @@ Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     },
 
 
+    function _isFullyLoaded(self) {
+        return self.controlsLoaded && !self.fullyLoaded;
+    },
+
+
     function setValid(self) {
         self.widgetParent.clearError();
     },
 
 
-    function setInvalid(self) {
+    function setInvalid(self, invalidControls) {
         self.widgetParent.setError('');
     });
 
@@ -2111,6 +2137,17 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
      */
     function append(self, value, desc) {
         return self.insert(value, desc, null);
+    },
+
+
+    /**
+     * Clear the input's options.
+     */
+    function clear(self) {
+        while (self.inputNode.options.length) {
+            self.inputNode.remove(0);
+        }
+        self._placeholderInserted = false;
     },
 
 

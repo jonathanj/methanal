@@ -63,6 +63,7 @@ Methanal.Tests.Util.setUpForm = function setUpForm(form) {
     form.node.appendChild(actions.node);
     form.setActions(actions);
     document.body.appendChild(form.node);
+    Methanal.Util.nodeInserted(actions);
 };
 
 
