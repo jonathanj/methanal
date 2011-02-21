@@ -424,7 +424,7 @@ class FilterList(ThemedElement):
     @renderer
     def filterForm(self, req, tag):
         self.form.setFragmentParent(self)
-        return tag[self.form]
+        return self.form
 
 
 
