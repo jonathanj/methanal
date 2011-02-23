@@ -17,8 +17,7 @@ from twisted.python.deprecate import deprecated
 from axiom.item import SQLAttribute
 
 from nevow.inevow import IAthenaTransportable
-from nevow.tags import invisible
-from nevow.athena import expose, LiveElement
+from nevow.athena import expose
 from nevow.page import renderer
 
 from xmantissa.ixmantissa import IWebTranslator, IColumn as mantissaIColumn
@@ -479,65 +478,6 @@ class SimpleFilterList(FilterList):
         super(SimpleFilterList, self).__init__(form=form,
                                                resultWidget=resultWidget,
                                                **kw)
-
-
-
-class Rollup(ThemedElement):
-    jsClass = u'Methanal.Widgets.Rollup'
-
-    def __init__(self, fragmentParent=None, label=None):
-        super(Rollup, self).__init__(fragmentParent=fragmentParent)
-        self.label = label or u''
-        self._rollupFactory = None
-
-
-    def _getRollupFactory(self):
-        if self._rollupFactory is None:
-            self._rollupFactory = self.getDocFactory('methanal-rollup')
-        return self._rollupFactory
-
-
-    def makeRollup(self, summary, content):
-        rollupFactory = self._getRollupFactory()
-        rollupContent = invisible[
-            rollupFactory.load(preprocessors=LiveElement.preprocessors)]
-        rollupContent.fillSlots('label', self.label)
-        rollupContent.fillSlots('summary', summary)
-        rollupContent.fillSlots('content', content)
-        return rollupContent
-
-
-    @renderer
-    def rollup(self, req, tag):
-        summary = tag.onePattern('summary')
-        content = tag.onePattern('content')
-        tag[self.makeRollup(summary, content)]
-        return self.liveElement(req, tag)
-
-
-
-class SimpleRollup(Rollup):
-    fragmentName = 'methanal-simple-rollup'
-
-    def __init__(self, content=None, **kw):
-        super(SimpleRollup, self).__init__(**kw)
-        self.content = content
-
-
-    def getInitialArguments(self):
-        params = self.getParams()
-        return [params]
-
-
-    def getParams(self):
-        return {}
-
-
-    @renderer
-    def rollup(self, req, tag):
-        summary = tag.onePattern('summary')
-        tag[self.makeRollup(summary, self.content)]
-        return self.liveElement(req, tag)
 
 
 
@@ -1053,7 +993,7 @@ class Tab(ThemedElement):
 
 
     @expose
-    def getContent(self):
+    def getContent(self, nodeID=None):
         content = self.contentFactory()
         content.setFragmentParent(self)
         return content
@@ -1120,4 +1060,120 @@ class DemandTab(Tab):
         """
         Force the remote content to be updated.
         """
-        return self.callRemote('_setContentFromWidgetInfo', self.getContent())
+        return self.callRemote(
+            'setContentFromWidgetInfo', self.getContent(), 'content')
+
+
+
+class Expander(ThemedElement):
+    """
+    Collapsable container with static content.
+
+    The container's header and content can be updated by calling
+    L{updateRemoteHeaderContent} and L{updateRemoteContent} respectively.
+
+    @type headerFactory: C{callable} returning a C{nevow.athena.LiveElement}
+    @ivar headerFactory: Factory for the container header;
+        L{methanal.widgets.ExpanderHeader} is a simple header widget.
+
+    @type contentFactory: C{callable} returning a C{nevow.athena.LiveElement}
+    @ivar contentFactory: Factory for the container content.
+
+    @type expanded: C{bool}
+    @ivar expanded: Is the content visible?
+    """
+    fragmentName = 'methanal-expander'
+    jsClass = u'Methanal.Widgets.Expander'
+
+
+    def __init__(self, headerFactory, contentFactory, expanded=False, **kw):
+        super(Expander, self).__init__(**kw)
+        self.headerFactory = headerFactory
+        self.contentFactory = contentFactory
+        self.expanded = expanded
+
+
+    def getInitialArguments(self):
+        return [self.expanded]
+
+
+    @expose
+    def getContent(self, nodeID):
+        return {
+            'header':  self.getHeaderContent,
+            'content': self.getExpanderContent}[nodeID]()
+
+
+    def getHeaderContent(self):
+        content = self.headerFactory()
+        content.setFragmentParent(self)
+        return content
+
+
+    def getExpanderContent(self):
+        content = self.contentFactory()
+        content.setFragmentParent(self)
+        return content
+
+
+    def updateRemoteHeaderContent(self):
+        return self.callRemote(
+            'setContentFromWidgetInfo', self.getHeaderContent(), 'header')
+
+
+    def updateRemoteContent(self):
+        return self.callRemote(
+            'setContentFromWidgetInfo', self.getExpanderContent(), 'content')
+
+
+    @renderer
+    def headerContent(self, req, tag):
+        return tag[self.getHeaderContent()]
+
+
+    @renderer
+    def expanderContent(self, req, tag):
+        return tag[self.getExpanderContent()]
+
+
+
+class DynamicExpander(Expander):
+    """
+    Collapsable container with dynamically loaded content upon being expanded
+    for the first time.
+    """
+    jsClass = u'Methanal.Widgets.DynamicExpander'
+
+
+    @renderer
+    def expanderContent(self, req, tag):
+        return tag
+
+
+
+class DemandExpander(DynamicExpander):
+    """
+    Collapsable container with dynamically loaded content upon being expanded.
+    """
+    jsClass = u'Methanal.Widgets.DemandExpander'
+
+
+
+class ExpanderHeader(ThemedElement):
+    """
+    Simple header for L{methanal.widgets.Expander}.
+
+    @ivar label: Renderable header label.
+    """
+    fragmentName = 'methanal-expander-header'
+
+
+    def __init__(self, label, **kw):
+        super(ExpanderHeader, self).__init__(**kw)
+        self.label = label
+
+
+    @renderer
+    def content(self, req, tag):
+        tag.fillSlots('label', self.label)
+        return tag

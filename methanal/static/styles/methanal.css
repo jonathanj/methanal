@@ -269,99 +269,11 @@ optgroup option {
     padding: 1em;
 }
 
-img.roll-up-error {
+.methanal-lookup-form {
     float: left;
-    padding: 0.5ex;
-    padding-right: 0;
-}
-
-.roll-up-error {
-    color: #bb2e2e;
-}
-
-.roll-up-bar button {
-    background: white no-repeat center center;
-    float: left;
-    height: 26px;
-    width: 26px;
-    border: none;
-    padding: 0;
-}
-
-button.roll-down {
-    background: url(/static/Methanal/images/roll-down-icon.png) no-repeat;
-}
-
-button.roll-up {
-    background: url(/static/Methanal/images/roll-up-icon.png) no-repeat;
-}
-
-.roll-up-section {
-    clear: both;
-    background: url(/static/Methanal/images/roll-up-bg.png) no-repeat;
-    margin-right: -10px;
-}
-
-.roll-up-bar {
-    height: 4ex;
-    padding-left: 6px;
-    padding-top: 6px;
-}
-
-.unadded {
-    color: #bb7e7e;
-}
-
-.unadded button {
-    background: url(/static/Methanal/images/roll-add-icon.png) no-repeat;
-}
-
-.roll-up-content {
-    background: url(/static/Methanal/images/shadow-top.png) repeat-x;
-    border: 1px solid #ccc;
-    border-left-color: #ddd;
-    border-right: none;
-    padding: 10px;
-    margin-left: 3px;
-}
-
-.roll-up-label {
-    vertical-align: middle;
-    font-size: 150%;
-    float: left;
-    /* Hrm... bothersome. */
-    padding: 0.25ex 0.3em;
-    min-width: 10em;
-}
-
-.roll-up-summary {
-    float: left;
-    line-height: 5ex;
-    height: 100%;
-    padding-left: 1em;
-    font-size: 90%;
-    border-left: 1px solid #ccc;
-}
-
-.roll-up-total {
-    float: right;
-    line-height: 4ex;
-    height: 100%;
-    font-weight: bold;
-}
-
-.roll-up-controls {
-    float: right;
-    border-left: 1px solid #bbb;
-    margin-left: 5px;
-    padding: 0 5px;
-}
-
-.roll-up-controls button {
-    background: url(/static/Methanal/images/delete-icon.png) no-repeat;
-    border: none;
-    width: 24px;
-    height: 24px;
+    border: 1px outset #777;
+    background: white;
+    padding: 2px;
 }
 
 .friendly-representation {
@@ -616,4 +528,46 @@ button.roll-up {
     background: url(/static/Methanal/images/icons/warning.png) no-repeat 2px center;
     padding: 5px 2px 5px 20px;
     display: inline-block;
+}
+
+/**
+ * Expander widget.
+ */
+
+.expander {
+    background: #e0e0e0;
+    border: 1px solid #ddd;
+    border-color: #f5f5f5 #ddd #bbb;
+    border-radius: 3px;
+}
+
+.expander-header-container {
+    cursor: pointer;
+}
+
+.expander-header {
+    background: #f0f0f0 url(/static/Methanal/images/expander-header-bg.png) repeat-x left bottom;
+    vertical-align: middle;
+    height: 18px;
+    padding: 0.5em;
+}
+
+.expander-header:hover {
+    color: #247dc2;
+}
+
+.expanded .expander-header-label {
+    background-image: url(/static/Methanal/images/collapse.png);
+}
+
+.expander-header-label {
+    background: url(/static/Methanal/images/expand.png) no-repeat;
+    line-height: 18px;
+    font-size: 140%;
+    padding-left: 25px;
+}
+
+.expander-content {
+    margin: 0.5em;
+    margin-top: 1em;
 }
