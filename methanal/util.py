@@ -1,5 +1,9 @@
+from zope.interface import implements
+
 from twisted.python import log
 from twisted.python.failure import Failure
+
+from methanal.imethanal import ITextFormatter
 
 
 
@@ -144,3 +148,101 @@ def propertyMaker(func):
     @rtype: C{property} instance
     """
     return property(*func())
+
+
+
+class DecimalFormatter(object):
+    """
+    Format values as decimal values.
+
+    @type grouping: C{list} of C{int}
+    @ivar grouping: Digit group sizes from right to left. Use C{0} to indicate
+        that the previous group size should be used for the rest of the digit
+        groups; use C{-1} to indicate that no more grouping should occur.
+        Defaults to C{[3, 0]}.
+
+    @type thousandsSeparator: C{unicode}
+    @ivar thousandsSeparator: Separator between digit groups. Defaults to
+        C{','}.
+
+    @type decimalSeparator: C{unicode}
+    @ivar decimalSeparator: Decimal separator. Defaults to C{'.'}.
+    """
+    implements(ITextFormatter)
+
+
+    def __init__(self, grouping=[3, 0], thousandsSeparator=u',',
+                 decimalSeparator=u'.'):
+        self.grouping = grouping
+        self.thousandsSeparator = thousandsSeparator
+        self.decimalSeparator = decimalSeparator
+
+
+    def groupings(self):
+        """
+        Generator of interpreted grouping values.
+        """
+        lastCount = 0
+        for count in self.grouping:
+            if count == 0:
+                while True:
+                    yield lastCount
+            elif count == -1:
+                return
+            else:
+                yield count
+            lastCount = count
+
+
+    def format(self, value):
+        """
+        Format C{value} as a decimal value, grouping digits if required.
+
+        @rtype: C{unicode}
+        """
+        if not value:
+            return u''
+
+        parts = unicode(value).rsplit(self.decimalSeparator, 1)
+        value = list(parts[0])
+        i = len(value)
+        for grouping in self.groupings():
+            i -= grouping
+            if i < 1:
+                break
+            value.insert(i, self.thousandsSeparator)
+
+        parts[0] = u''.join(value)
+        return self.decimalSeparator.join(parts)
+
+
+
+class CurrencyFormatter(DecimalFormatter):
+    """
+    Format values as currency values.
+
+    @type symbol: C{unicode}
+    @ivar symbol: Currency symbol.
+
+    @type symbolSeparator: C{unicode}
+    @ivar symbolSeparator: Separator between then currency symbol and decimal
+        value, defaults to C{' '}.
+    """
+    implements(ITextFormatter)
+
+
+    def __init__(self, symbol, symbolSeparator=u' ', **kw):
+        super(CurrencyFormatter, self).__init__(**kw)
+        self.symbol = symbol
+        self.symbolSeparator = symbolSeparator
+
+
+    def format(self, value):
+        """
+        Format C{value} as a currency, prefixing the grouped decimal value with
+        the currency symbol and separator.
+
+        @rtype: C{unicode}
+        """
+        value = super(CurrencyFormatter, self).format(value)
+        return self.symbol + self.symbolSeparator + value

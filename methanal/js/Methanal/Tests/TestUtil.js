@@ -993,3 +993,137 @@ Divmod.UnitTest.TestCase.subclass(
         self.assertIdentical(dst['b'], 6);
         self.assertIdentical(dst['a'], 5);
     });
+
+
+
+/**
+ * Tests for L{Methanal.Util.DecimalFormatter}.
+ */
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestDecimalFormatter').methods(
+    /**
+     * Formatting a value with the default settings produces a decimal number
+     * grouped 3 digits at a time.
+     */
+    function test_formatDefaults(self) {
+        var f = Methanal.Util.DecimalFormatter();
+
+        self.assertIdentical(
+            f.format(''),
+            '');
+        self.assertIdentical(
+            f.format('1'),
+            '1');
+        self.assertIdentical(
+            f.format('123'),
+            '123');
+        self.assertIdentical(
+            f.format('1234'),
+            '1,234');
+        self.assertIdentical(
+            f.format('1234.56'),
+            '1,234.56');
+        self.assertIdentical(
+            f.format('123456'),
+            '123,456');
+        self.assertIdentical(
+            f.format('12345678'),
+            '12,345,678');
+        self.assertIdentical(
+            f.format('1234567.89'),
+            '1,234,567.89');
+    },
+
+
+    /**
+     * Formatting a value obeys the decimal grouping and separator
+     * specifications.
+     */
+    function test_formatCustom(self) {
+        var f = Methanal.Util.DecimalFormatter([3, 2, -1]);
+
+        self.assertIdentical(
+            f.format(''),
+            '')
+        self.assertIdentical(
+            f.format('1'),
+            '1');
+        self.assertIdentical(
+            f.format('123'),
+            '123');
+        self.assertIdentical(
+            f.format('1234'),
+            '1,234');
+        self.assertIdentical(
+            f.format('123456'),
+            '1,23,456');
+        self.assertIdentical(
+            f.format('123456789'),
+            '1234,56,789');
+
+        f = Methanal.Util.DecimalFormatter(
+            [3, 2, -1], '.', ',')
+        self.assertIdentical(
+            f.format('123456'),
+            '1.23.456')
+        self.assertIdentical(
+            f.format('123456789'),
+            '1234.56.789')
+        self.assertIdentical(
+            f.format('1234567,89'),
+            '12.34.567,89')
+    });
+
+
+
+/**
+ * Tests for L{Methanal.Util.CurrencyFormatter}.
+ */
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestCurrencyFormatter').methods(
+    /**
+     * Formatting a value with the default settings produces the currency
+     * symbol followed by one space and the decimal number grouped 3 digits at
+     * a time.
+     */
+    function test_formatDefaults(self) {
+        var f = Methanal.Util.CurrencyFormatter('X');
+
+        self.assertIdentical(
+            f.format('1'),
+            'X 1');
+        self.assertIdentical(
+            f.format('1234'),
+            'X 1,234');
+        self.assertIdentical(
+            f.format('1234.56'),
+            'X 1,234.56');
+        self.assertIdentical(
+            f.format('1234567'),
+            'X 1,234,567');
+    },
+
+
+    /**
+     * Formatting a value obeys the decimal grouping, separator and currency
+     * symbol separator specifications.
+     */
+    function test_formatCustom(self) {
+        var f = Methanal.Util.CurrencyFormatter('X', '', [3, 2, -1]);
+
+        self.assertIdentical(
+            f.format('1'),
+            'X1');
+        self.assertIdentical(
+            f.format('1234'),
+            'X1,234');
+        self.assertIdentical(
+            f.format('1234.56'),
+            'X1,234.56');
+        self.assertIdentical(
+            f.format('1234567'),
+            'X12,34,567');
+        self.assertIdentical(
+            f.format('1234567890'),
+            'X12345,67,890');
+    });

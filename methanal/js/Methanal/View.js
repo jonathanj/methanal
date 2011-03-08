@@ -2447,17 +2447,14 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
     },
 
 
-    function nodeInserted(self) {
-        Methanal.View.DecimalInput.upcall(self, 'nodeInserted');
-        self.enableDisplayValue();
+    function defaultFormatter(self) {
+        return Methanal.Util.DecimalFormatter();
     },
 
 
-    function makeDisplayValue(self, value) {
-        if (isNaN(value)) {
-            return '';
-        }
-        return Methanal.Util.formatDecimal(value.toFixed(self.decimalPlaces));
+    function nodeInserted(self) {
+        Methanal.View.DecimalInput.upcall(self, 'nodeInserted');
+        self.enableDisplayValue();
     },
 
 

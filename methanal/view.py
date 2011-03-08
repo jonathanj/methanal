@@ -1,5 +1,6 @@
 import itertools
 from warnings import warn
+from zope.interface import implements
 
 from decimal import Decimal
 
@@ -11,6 +12,7 @@ from twisted.python.deprecate import deprecated
 
 from axiom.attributes import text, integer, timestamp, boolean, ieee754_double
 
+from nevow.inevow import IAthenaTransportable
 from nevow.page import renderer
 from nevow.athena import expose
 
@@ -20,7 +22,7 @@ from xmantissa.webtheme import ThemedElement
 from methanal import errors
 from methanal.imethanal import IEnumeration
 from methanal.model import ItemModel, Model, paramFromAttribute
-from methanal.util import getArgsDict
+from methanal.util import getArgsDict, CurrencyFormatter, DecimalFormatter
 from methanal.enums import ListEnumeration
 
 
@@ -803,6 +805,49 @@ class PercentInput(DecimalInput):
     Decimal input, with values interpreted as percentages.
     """
     jsClass = u'Methanal.View.PercentInput'
+
+
+
+class DecimalFormatterTransportable(object):
+    """
+    L{IAthenaTransportable} adapter for L{methanal.util.DecimalFormatter}.
+    """
+    implements(IAthenaTransportable)
+    jsClass = u'Methanal.Util.DecimalFormatter'
+
+
+    def __init__(self, formatter):
+        self.formatter = formatter
+
+
+    def getInitialArguments(self):
+        f = self.formatter
+        return [f.grouping, f.thousandsSeparator, f.decimalSeparator]
+
+registerAdapter(DecimalFormatterTransportable, DecimalFormatter,
+                IAthenaTransportable)
+
+
+
+class CurrencyFormatterTransportable(object):
+    """
+    L{IAthenaTransportable} adapter for L{methanal.util.CurrencyFormatter}.
+    """
+    implements(IAthenaTransportable)
+    jsClass = u'Methanal.Util.CurrencyFormatter'
+
+
+    def __init__(self, formatter):
+        self.formatter = formatter
+
+
+    def getInitialArguments(self):
+        f = self.formatter
+        return [f.symbol, f.symbolSeparator, f.grouping, f.thousandsSeparator,
+                f.decimalSeparator]
+
+registerAdapter(CurrencyFormatterTransportable, CurrencyFormatter,
+                IAthenaTransportable)
 
 
 
