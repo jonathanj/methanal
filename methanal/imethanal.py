@@ -118,3 +118,16 @@ class IEnumeration(Interface):
 
         @rtype:  C{iterable} of L{EnumItem}
         """
+
+
+
+class ITextFormatter(Interface):
+    def format(value):
+        """
+        Provide a legible well-formatted representation of I{value}.
+
+        For example: L{DecimalFormatter} performs digit grouping,
+        L{CurrencyFormatter} applies a currency symbol and digit grouping.
+
+        @rtype: C{unicode}
+        """

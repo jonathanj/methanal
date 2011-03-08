@@ -1613,8 +1613,17 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
         Methanal.View.TextInput.upcall(self, '__init__', node, args);
         self.embeddedLabel = args.embeddedLabel;
         self.stripWhitespace = args.stripWhitespace;
+        if (!args.formatter) {
+            args.formatter = self.defaultFormatter();
+        }
+        self.formatter = args.formatter;
         self._tooltipNode = null;
         self._useDisplayValue = false;
+    },
+
+
+    function defaultFormatter(self) {
+        return null;
     },
 
 
@@ -1698,7 +1707,10 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * @rtype:  C{String}
      */
     function makeDisplayValue(self, value) {
-        throw new Error('Not implemented');
+        if (self.formatter) {
+            return self.formatter.format(value);
+        }
+        return '';
     },
 
 

@@ -535,20 +535,28 @@ class TextInput(FormInput):
     @type stripWhitespace: C{bool}
     @ivar stripWhitespace: Strip trailing and leading whitespace from user
         input?
+
+    @type formatter: C{ITextFormatter} adaptable to C{IAthenaTransportable}
+    @ivar formatter: Text formatter, transported to the client side, to
+        provide the friendly representation of the input; or C{None} for the
+        default formatter.
     """
     fragmentName = 'methanal-text-input'
     jsClass = u'Methanal.View.TextInput'
 
 
-    def __init__(self, embeddedLabel=False, stripWhitespace=True, **kw):
+    def __init__(self, embeddedLabel=False, stripWhitespace=True,
+                 formatter=None, **kw):
         super(TextInput, self).__init__(**kw)
         self.embeddedLabel = embeddedLabel
         self.stripWhitespace = stripWhitespace
+        self.formatter = formatter
 
 
     def getArgs(self):
         return {u'embeddedLabel':   self.embeddedLabel,
-                u'stripWhitespace': self.stripWhitespace}
+                u'stripWhitespace': self.stripWhitespace,
+                u'formatter':       self.formatter}
 
 
 

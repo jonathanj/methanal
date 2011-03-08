@@ -741,18 +741,20 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
             function (control) {
                 control.enableDisplayValue();
 
-                self.assertThrows(Error,
-                    function () { control.setValue('hello'); });
-
                 var called = 0;
-                control.makeDisplayValue = function () {
+                var displayValue = '';
+                control._originalMakeDisplayValue = control.makeDisplayValue;
+                control.makeDisplayValue = function (value) {
                     called++;
+                    displayValue = control._originalMakeDisplayValue(value);
                     return '';
                 };
-                control.setValue('anotherhello');
+                control.setValue('hello');
                 self.assertIdentical(called, 1);
+                self.assertIdentical(displayValue, '');
                 control.onKeyUp(control.inputNode);
                 self.assertIdentical(called, 2);
+                self.assertIdentical(displayValue, '');
             });
     },
 
