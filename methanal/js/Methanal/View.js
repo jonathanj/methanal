@@ -2435,8 +2435,8 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'FloatInput').methods(
 /**
  * Decimal number input.
  *
- * @type decimalPlaces: C{Integer}
- * @ivar decimalPlaces: Number of decimal places
+ * @type decimalPlaces: I{Integer}
+ * @ivar decimalPlaces: Number of decimal places.
  */
 Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
     function __init__(self, node, args) {

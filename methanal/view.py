@@ -764,18 +764,15 @@ class FloatInput(NumericInput):
 class DecimalInput(NumericInput):
     """
     Decimal input.
+
+    @type decimalPlaces: C{int}
+    @ivar decimalPlaces: The number of decimal places to allow, or C{None} to
+        use the model parameter's value.
     """
     jsClass = u'Methanal.View.DecimalInput'
 
 
     def __init__(self, decimalPlaces=None, **kw):
-        """
-        Initialise the input.
-
-        @type decimalPlaces: C{int}
-        @param decimalPlaces: The number of decimal places to allow, or C{None}
-            to use the model parameter's value
-        """
         super(DecimalInput, self).__init__(**kw)
         if decimalPlaces is None:
             decimalPlaces = self.param.decimalPlaces
