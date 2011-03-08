@@ -2278,8 +2278,13 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
     function __init__(self, node, args) {
-        Methanal.View.TextInput.upcall(self, '__init__', node, args);
         self.twentyFourHours = args.twentyFourHours;
+        Methanal.View.DateInput.upcall(self, '__init__', node, args);
+    },
+
+
+    function defaultFormatter(self) {
+        return Methanal.Util.DateFormatter(self.twentyFourHours);
     },
 
 
@@ -2303,29 +2308,6 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
     function nodeInserted(self) {
         Methanal.View.DateInput.upcall(self, 'nodeInserted');
         self.enableDisplayValue();
-    },
-
-
-    function makeDisplayValue(self, value) {
-        var msg = '';
-        try {
-            // XXX: There is probably a potential bug here: If "value" (a UTC
-            // timestamp) falls before the switch-over for daylight savings
-            // before the timezone offset has been corrected for, the timezone
-            // offset given here will be the wrong one.
-            var d = new Date(value);
-            var time = Methanal.Util.Time.fromTimestamp(
-                value, d.getTimezoneOffset()).oneDay();
-            if (time) {
-                msg = time.asHumanly(self.twentyFourHours);
-            }
-        } catch (e) {
-            if (!(e instanceof Methanal.Util.TimeParseError)) {
-                msg = e.toString();
-            }
-            msg = 'Unknown date';
-        }
-        return msg;
     },
 
 
@@ -2503,8 +2485,8 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
     },
 
 
-    function makeDisplayValue(self, value) {
-        return (value * 100).toFixed(self.decimalPlaces) + '%';
+    function defaultFormatter(self) {
+        return Methanal.Util.PercentageFormatter();
     },
 
 

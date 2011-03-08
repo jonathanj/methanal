@@ -997,6 +997,28 @@ Divmod.UnitTest.TestCase.subclass(
 
 
 /**
+ * Tests for L{Methanal.Util.DateFormatter}.
+ */
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestDateFormatter').methods(
+    /**
+     * Formatting a C{Date} produces a human readable version of the date.
+     */
+    function test_formatDefaults(self) {
+        var f = Methanal.Util.DateFormatter();
+
+        self.assertIdentical(
+            f.format(null),
+            '');
+
+        self.assertIdentical(
+            f.format(new Date(2009, 0, 1)),
+            'Thu, 1 Jan 2009');
+    });
+
+
+
+/**
  * Tests for L{Methanal.Util.DecimalFormatter}.
  */
 Methanal.Tests.Util.TestCase.subclass(
@@ -1072,6 +1094,50 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertIdentical(
             f.format('1234567,89'),
             '12.34.567,89')
+    });
+
+
+
+/**
+ * Tests for L{Methanal.Util.PercentageFormatter}.
+ */
+Methanal.Tests.Util.TestCase.subclass(
+    Methanal.Tests.TestUtil, 'TestPercentageFormatter').methods(
+    /**
+     * Formatting a value with the default settings produces a digit-grouped
+     * decimal followed by a percentage symbol C{'%'}.
+     */
+    function test_formatDefaults(self) {
+        var f = Methanal.Util.PercentageFormatter();
+
+        self.assertIdentical(
+            f.format(0.01),
+            '1%');
+        self.assertIdentical(
+            f.format(12.34),
+            '1,234%');
+        self.assertIdentical(
+            f.format(12.3456),
+            '1,234.56%');
+    },
+
+
+    /**
+     * Formatting a value obeys the decimal grouping and separator
+     * specifications.
+     */
+    function test_formatCustom(self) {
+        var f = Methanal.Util.PercentageFormatter([2, -1]);
+
+        self.assertIdentical(
+            f.format(0.01),
+            '1%');
+        self.assertIdentical(
+            f.format(12.34),
+            '12,34%');
+        self.assertIdentical(
+            f.format(123.4567),
+            '123,45.67%');
     });
 
 
