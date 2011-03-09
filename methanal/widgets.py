@@ -1118,12 +1118,12 @@ class Expander(ThemedElement):
 
     def updateRemoteHeaderContent(self):
         return self.callRemote(
-            'setContentFromWidgetInfo', self.getHeaderContent(), 'header')
+            'setContentFromWidgetInfo', self.getHeaderContent(), u'header')
 
 
     def updateRemoteContent(self):
         return self.callRemote(
-            'setContentFromWidgetInfo', self.getExpanderContent(), 'content')
+            'setContentFromWidgetInfo', self.getExpanderContent(), u'content')
 
 
     @renderer
