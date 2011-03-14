@@ -1276,12 +1276,12 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
         // XXX: None of this is great.
         var D = Methanal.Util.DOMBuilder(resultControl.node.ownerDocument);
         var throbberNode = D('img', {
-            'src': '/static/Methanal/images/main-throbber.gif',
-            'style': 'display: none;'});
+            'src': '/static/Methanal/images/main-throbber.gif'});
         resultControl.node.parentNode.insertBefore(
             throbberNode, resultControl.node);
         self.throbber = Methanal.Util.Throbber(
             undefined, 'inline', throbberNode);
+        self.throbber.stop();
         self.widgetParent.formLoaded(self);
     },
 
