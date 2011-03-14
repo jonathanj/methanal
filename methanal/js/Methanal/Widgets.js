@@ -1336,10 +1336,10 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
                 }
             }
         }
+        self.thaw();
         if (setResults) {
             self.setResults([data]);
         }
-        self.thaw();
     },
 
 
