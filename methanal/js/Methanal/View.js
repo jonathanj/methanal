@@ -882,10 +882,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
 /**
  * A form view.
  *
- * @type viewOnly: C{boolean}
+ * @type viewOnly: C{Boolean}
  * @ivar viewOnly: Should the submit button for this form be visible?
  *
- * @type hideModificationIndicator: C{boolean}
+ * @type hideModificationIndicator: C{Boolean}
  * @ivar hideModificationIndicator: Hide the modification indicator for this
  *     form? Defaults to C{false}.
  *
@@ -895,6 +895,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  * @type actions: L{Methanal.View.ActionContainer}
  * @ivar actions: Action container widget, this is only assigned once the action
  *     container widget's C{nodeInserted} method has been called
+ *
+ * @type modified: C{Boolean}
+ * @ivar modified: Have any inputs in this LiveForm been modified since
+ *     creation or the last successful submission?
+ *
+ * @type valid: C{Boolean}
+ * @ivar valid: Is this LiveForm currently in a valid state, i.e. no
+ *     validation errors are present? Defaults to C{true}.
  */
 Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function __init__(self, node, args, controlNames) {
@@ -904,7 +912,8 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             Divmod.warn(
                 'Use an argument dictionary instead of the "viewOnly"' +
                 'boolean parameter', Divmod.DeprecationWarning);
-            args = {'viewOnly': args};
+            args = {
+                'viewOnly': args};
         }
         self.viewOnly = args.viewOnly;
         self.hideModificationIndicator = args.hideModificationIndicator;
@@ -913,6 +922,8 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         }
         self.controlNames = Methanal.Util.arrayToMapping(controlNames);
         self._controlNamesOrdered = controlNames;
+        self.modified = false;
+        self.valid = true;
         self.formInit();
     },
 
@@ -1120,6 +1131,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
                 Methanal.Util.removeElementClass;
             fn(self.actions.node, 'form-modified');
         }
+        self.modified = modified;
     },
 
 
@@ -1133,6 +1145,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * Enable the form for submission.
      */
     function setValid(self) {
+        self.valid = true;
         self.actions.enable();
     },
 
@@ -1141,6 +1154,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * Disable form submission.
      */
     function setInvalid(self) {
+        self.valid = false;
         self.actions.disable();
     });
 

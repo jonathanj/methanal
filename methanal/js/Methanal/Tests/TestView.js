@@ -13,13 +13,11 @@
  */
 Methanal.View.LiveForm.subclass(
     Methanal.Tests.TestView, 'MockLiveForm').methods(
-    function __init__(self, controlNames, viewOnly) {
-        viewOnly = viewOnly || false;
-
+    function __init__(self, controlNames, args/*=undefined*/) {
+        args = args || {};
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         Methanal.Tests.TestView.MockLiveForm.upcall(
-            self, '__init__', node, viewOnly, controlNames);
-
+            self, '__init__', node, args, controlNames);
         Methanal.Tests.Util.setUpForm(self);
     });
 
@@ -67,7 +65,7 @@ Methanal.Tests.Util.TestCase.subclass(
     /**
      * Create a C{Methanal.View.LiveForm}.
      */
-    function createForm(self, viewOnly, controls/*=undefined*/,
+    function createForm(self, args, controls/*=undefined*/,
                         postFormInsertion/*=undefined*/) {
         controls = controls || [];
         var controlNames = [];
@@ -75,7 +73,7 @@ Methanal.Tests.Util.TestCase.subclass(
             controlNames.push(controls[i].name);
         }
 
-        var form = Methanal.Tests.TestView.MockLiveForm(controlNames, viewOnly);
+        var form = Methanal.Tests.TestView.MockLiveForm(controlNames, args);
         Methanal.Tests.Util.setUpForm(form);
         Methanal.Util.nodeInserted(form);
         if (postFormInsertion) {
@@ -111,7 +109,9 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_freezeThaw(self) {
         var control = self.createControl({'name': 'a'});
-        var form = self.createForm(false, [control]);
+        var args = {
+            'viewOnly': false};
+        var form = self.createForm(args, [control]);
         form.freeze();
         self.assertIdentical(form._frozen, 1);
         form.freeze();
@@ -130,10 +130,14 @@ Methanal.Tests.Util.TestCase.subclass(
      * Setting the form valid / invalid enables / disables the actions.
      */
     function test_validInvalid(self) {
-        var form = self.createForm();
+        var args = {
+            'viewOnly': false};
+        var form = self.createForm(args);
         form.setValid();
+        self.assertIdentical(form.valid, true);
         self.assertIdentical(form.actions._disabled, false);
         form.setInvalid();
+        self.assertIdentical(form.valid, false);
         self.assertIdentical(form.actions._disabled, true);
     },
 
@@ -146,7 +150,9 @@ Methanal.Tests.Util.TestCase.subclass(
     function test_submission(self) {
         var success;
         var control = self.createControl({'name': 'a'});
-        var form = self.createForm(false, [control]);
+        var args = {
+            'viewOnly': false};
+        var form = self.createForm(args, [control]);
 
         function succeed(methodName, data) {
             self.assertIdentical(form.actions._disabled, true);
@@ -158,22 +164,20 @@ Methanal.Tests.Util.TestCase.subclass(
             return Divmod.Defer.fail('too bad');
         };
 
-        form.submitSuccess = function (data) {
-            self.assertIdentical(form.actions._disabled, false);
-            success = true;
-        };
-        form.submitFailure = function (error) {
-            self.assertIdentical(form.actions._disabled, false);
-            success = false;
-        };
-
         form.callRemote = succeed;
+        form.formModified(true);
+        self.assertIdentical(form.modified, true);
         form.submit();
-        self.assertIdentical(success, true);
+        self.assertIdentical(form.modified, false);
+        self.assertIdentical(form.actions._disabled, false);
 
         form.callRemote = fail;
+        form.formModified(true);
+        self.assertIdentical(form.modified, true);
         form.submit();
-        self.assertIdentical(success, false);
+        // An unsuccessful submissino will not remove the modified indicator.
+        self.assertIdentical(form.modified, true);
+        self.assertIdentical(form.actions._disabled, false);
     },
 
 
@@ -251,15 +255,20 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_formModified(self) {
         var control = self.createControl({'name': 'a'});
-        var form = self.createForm(false, [control]);
+        var args = {
+            'viewOnly': false,
+            'submitted': true};
+        var form = self.createForm(args, [control]);
         var containsElementClass = Methanal.Util.containsElementClass;
         self.assertIdentical(
             containsElementClass(form.actions.node, 'form-modified'),
             false);
+        self.assertIdentical(form.modified, false)
         control.onChange();
         self.assertIdentical(
             containsElementClass(form.actions.node, 'form-modified'),
             true);
+        self.assertIdentical(form.modified, true)
     },
 
 
@@ -269,7 +278,10 @@ Methanal.Tests.Util.TestCase.subclass(
     function test_formLoaded(self) {
         var success = false;
         var control = self.createControl({'name': 'a'});
-        var form = self.createForm(false, [control], function (form) {
+        var args = {
+            'viewOnly': false,
+            'submitted': true};
+        var form = self.createForm(args, [control], function (form) {
             self.assertIdentical(
                 success,
                 false);
