@@ -326,14 +326,12 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      */
     function _validatorUpdate(self, name, values) {
         var control = self.getControl(name);
-        if (!self.viewOnly) {
-            if (control.active) {
-                for (var i = 0; i < values.length; ++i) {
-                    var value = values[i];
-                    if (value) {
-                        control.setError(value);
-                        return;
-                    }
+        if (!self.viewOnly && control.active) {
+            for (var i = 0; i < values.length; ++i) {
+                var value = values[i];
+                if (value) {
+                    control.setError(value);
+                    return;
                 }
             }
         }
