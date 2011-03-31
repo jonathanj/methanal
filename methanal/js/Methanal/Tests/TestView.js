@@ -254,12 +254,12 @@ Methanal.Tests.Util.TestCase.subclass(
         var form = self.createForm(false, [control]);
         var containsElementClass = Methanal.Util.containsElementClass;
         self.assertIdentical(
-            containsElementClass(form.actions.node, 'form-modified'),
-            false);
+            containsElementClass(form.nodeById('modifiedIndicator'), 'hidden'),
+            true);
         control.onChange();
         self.assertIdentical(
-            containsElementClass(form.actions.node, 'form-modified'),
-            true);
+            containsElementClass(form.nodeById('modifiedIndicator'), 'hidden'),
+            false);
     },
 
 
