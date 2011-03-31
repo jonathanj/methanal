@@ -30,16 +30,16 @@ class FormAction(ThemedElement):
     L{LiveForm} action.
 
     @type defaultName: C{unicode}
-    @cvar defaultName: Default name for the action
+    @cvar defaultName: Default name for the action.
 
     @type allowViewOnly: C{bool}
-    @cvar allowViewOnly: Allow this action to be present in a "view only" form
+    @cvar allowViewOnly: Allow this action to be enabled in a "view only" form.
 
     @type name: C{unicode}
-    @ivar name: Action name
+    @ivar name: Action name.
 
     @type id: C{unicode}
-    @ivar id: Action identifier
+    @ivar id: Action identifier.
     """
     defaultName = None
     allowViewOnly = False
@@ -139,11 +139,9 @@ class ActionContainer(ThemedElement):
 
     @renderer
     def formActions(self, req, tag):
-        form = self.fragmentParent
         for action in self.actions:
-            if not form.viewOnly or action.allowViewOnly:
-                action.setFragmentParent(self)
-                yield action
+            action.setFragmentParent(self)
+            yield action
 
 
 
@@ -231,7 +229,7 @@ class LiveForm(SimpleForm):
 
     @type viewOnly: C{bool}
     @ivar viewOnly: Flag indicating whether model values are written back when
-        invoked
+        invoked.
 
     @type actions: L{ActionContainer}
 
@@ -287,9 +285,9 @@ class LiveForm(SimpleForm):
         have been invoked.
 
         @type data: C{dict}
-        @param data: Form data
+        @param data: Form data.
 
-        @raise RuntimeError: If L{self.viewOnly} is C{True}
+        @raise RuntimeError: If L{self.viewOnly} is C{True}.
 
         @return: The result of the model's callback function.
         """
