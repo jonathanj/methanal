@@ -139,7 +139,6 @@ class ActionContainer(ThemedElement):
 
     @renderer
     def formActions(self, req, tag):
-        form = self.fragmentParent
         for action in self.actions:
             action.setFragmentParent(self)
             yield action
