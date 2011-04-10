@@ -175,7 +175,7 @@ Methanal.Tests.Util.TestCase.subclass(
         form.formModified(true);
         self.assertIdentical(form.modified, true);
         form.submit();
-        // An unsuccessful submissino will not remove the modified indicator.
+        // An unsuccessful submission will not remove the modified indicator.
         self.assertIdentical(form.modified, true);
         self.assertIdentical(form.actions._disabled, false);
     },
