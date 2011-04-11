@@ -260,9 +260,6 @@ Methanal.Tests.Util.TestCase.subclass(
             'submitted': true};
         var form = self.createForm(args, [control]);
         var containsElementClass = Methanal.Util.containsElementClass;
-        self.assertIdentical(
-            containsElementClass(form.actions.node, 'form-modified'),
-            false);
         self.assertIdentical(form.modified, false)
         control.onChange();
         self.assertIdentical(

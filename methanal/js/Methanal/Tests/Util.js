@@ -55,6 +55,10 @@ Methanal.Tests.Util.setUpForm = function setUpForm(form) {
     var makeWidgetChildNode = Methanal.Tests.Util.makeWidgetChildNode;
     makeWidgetChildNode(form, 'span', 'form-error');
 
+    Methanal.Util.addElementClass(
+        makeWidgetChildNode(form, 'span', 'modifiedIndicator'),
+        'hidden');
+
     var actions = Methanal.View.ActionContainer(
         Nevow.Test.WidgetUtil.makeWidgetNode(), {'actionIDs': {}});
     makeWidgetChildNode(actions, 'img', 'throbber');

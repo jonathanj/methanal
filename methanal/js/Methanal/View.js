@@ -321,10 +321,12 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * C{values} represents a sequence of error messages, the first one is set
      * on the named control, assuming the control is active. If C{values} is
      * empty, all previously set errors are cleared.
+     *
+     * Inputs in view-only forms are never set invalid.
      */
     function _validatorUpdate(self, name, values) {
         var control = self.getControl(name);
-        if (control.active) {
+        if (!self.viewOnly && control.active) {
             for (var i = 0; i < values.length; ++i) {
                 var value = values[i];
                 if (value) {
@@ -427,10 +429,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
 
     /**
      * Refresh the validity of the form, based on the states of form inputs and
-     * sub-forms.
+     * sub-forms. View-only forms do not have their validity refreshed.
      */
     function _refreshValidity(self) {
-        if (self._frozen > 0) {
+        if (self.viewOnly || self._frozen > 0) {
             return;
         }
 
@@ -526,6 +528,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * Once all controls in L{controlNames} have reported in and L{setActions}
      * has been called, form loading completes by refreshing validators and
      * dependencies, controls cannot report in once loading is complete.
+     *
+     * Form actions for view-only forms are disabled and an indicator displayed.
      */
     function _finishLoading(self) {
         if (!self._isFullyLoaded()) {
@@ -542,6 +546,11 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         // Thaw freeze from formInit.
         self.thaw();
         self.formLoaded();
+
+        if (self.viewOnly && self.actions) {
+            self.actions.disable();
+            self.actions.viewOnlyIndicator(true);
+        }
     },
 
 
@@ -753,7 +762,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormAction').methods(
      * Get the parent L{Methanal.View.LiveForm}.
      */
     function getForm(self) {
-        return self.widgetParent.widgetParent;
+        return self.widgetParent.getForm();
     },
 
 
@@ -858,12 +867,48 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
 
     /**
      * Enable all form actions.
+     *
+     * Actions for view-only forms cannot be enabled.
      */
     function enable(self) {
+        var form = self.getForm();
+        if (form && form.viewOnly) {
+            return;
+        }
         for (var i = 0; i < self.childWidgets.length; ++i) {
             self.childWidgets[i].enable();
         }
         self._disabled = false;
+    },
+
+
+    /**
+     * Get the parent L{Methanal.View.LiveForm}.
+     */
+    function getForm(self) {
+        return self.widgetParent;
+    },
+
+
+    /**
+     * Display or hide the modification indicator.
+     */
+    function modifiedIndicator(self, visible) {
+        var fn = visible ?
+            Methanal.Util.removeElementClass :
+            Methanal.Util.addElementClass;
+        fn(self.nodeById('modifiedIndicator'), 'hidden');
+    },
+
+
+    /**
+     * Display or hide the view-only indicator.
+     */
+    function viewOnlyIndicator(self, visible) {
+        var fn = visible ?
+            Methanal.Util.removeElementClass :
+            Methanal.Util.addElementClass;
+        fn(self.nodeById('viewOnlyIndicator'), 'hidden');
     },
 
 
@@ -882,8 +927,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
 /**
  * A form view.
  *
- * @type viewOnly: C{Boolean}
- * @ivar viewOnly: Should the submit button for this form be visible?
+ * @type viewOnly: C{boolean}
+ * @ivar viewOnly: Are form actions disabled for this form?
  *
  * @type hideModificationIndicator: C{Boolean}
  * @ivar hideModificationIndicator: Hide the modification indicator for this
@@ -1121,15 +1166,12 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * @param modified: Have inputs been modified from their original value?
      */
     function formModified(self, modified) {
-        if (!self.fullyLoaded) {
+        if (!self.fullyLoaded || self.viewOnly) {
             return;
         }
 
         if (!self.hideModificationIndicator) {
-            var fn = modified ?
-                Methanal.Util.addElementClass :
-                Methanal.Util.removeElementClass;
-            fn(self.actions.node, 'form-modified');
+            self.actions.modifiedIndicator(modified);
         }
         self.modified = modified;
     },
