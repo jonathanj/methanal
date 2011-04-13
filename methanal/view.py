@@ -43,14 +43,19 @@ class FormAction(ThemedElement):
     """
     defaultName = None
     allowViewOnly = False
+    identifier = None
 
 
-    def __init__(self, name=None, **kw):
+    def __init__(self, name=None, identifier=None, **kw):
         super(FormAction, self).__init__(**kw)
         if not name:
             name = self.defaultName
+        if identifier is None:
+            identifier = self.identifier
+            if identifier is None:
+                identifier = unicode(id(self))
         self.name = name
-        self.id = unicode(id(self))
+        self.id = identifier
 
 
     def getInitialArguments(self):
@@ -88,6 +93,7 @@ class SubmitAction(ActionButton):
     jsClass = u'Methanal.View.SubmitAction'
     defaultName = u'Submit'
     type = 'submit'
+    identifier = u'submit'
 
 
 
@@ -99,6 +105,7 @@ class ResetAction(ActionButton):
     allowViewOnly = True
     defaultName = u'Reset'
     type = 'reset'
+    identifier = u'reset'
 
 
 

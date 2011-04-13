@@ -5,6 +5,13 @@
 
 
 /**
+ * An unknown identifier was used.
+ */
+Divmod.Error.subclass(Methanal.View, 'UnknownIdentifier');
+
+
+
+/**
  * Build a mapping of input node values to DOM nodes.
  */
 Methanal.View.buildInputNodeMapping = function buildInputNodeMapping(node) {
@@ -829,12 +836,16 @@ Methanal.View.ActionButton.subclass(Methanal.View, 'ResetAction').methods(
  *
  * @type throbber: L{Methanal.Util.Throbber}
  * @ivar throbber: Action throbber
+ *
+ * @ivar _actionMapping: Mapping of L{FormAction} identifiers to
+ *     L{FormAction}s.
  */
 Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
     function __init__(self, node, args) {
         Methanal.View.ActionContainer.upcall(self, '__init__', node);
         self._disabled = false;
         self.actionIDs = args.actionIDs;
+        self._actionMapping = {};
     },
 
 
@@ -861,7 +872,20 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
      */
     function loadedUp(self, action) {
         delete self.actionIDs[action.actionID];
+        self._actionMapping[action.actionID] = action;
         self._finishLoading();
+    },
+
+
+    /**
+     * Get a L{Methanal.View.FormAction} by identifier.
+     */
+    function getAction(self, actionID) {
+        var action = self._actionMapping[actionID];
+        if (action === undefined) {
+            throw Methanal.View.UnknownIdentifier(actionID);
+        }
+        return action;
     },
 
 
