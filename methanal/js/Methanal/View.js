@@ -1054,17 +1054,17 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         self.actions.throbber.start();
 
         var d = self.callRemote('invoke', data);
-        d.addBoth(function (value) {
-            self.thaw();
-            self.actions.throbber.stop();
-            return value;
-        });
         d.addCallback(function (value) {
             self.formModified(false);
             return self.submitSuccess(value);
         });
         d.addErrback(function (value) {
             return self.submitFailure(value);
+        });
+        d.addBoth(function (value) {
+            self.thaw();
+            self.actions.throbber.stop();
+            return value;
         });
         return d;
     },
