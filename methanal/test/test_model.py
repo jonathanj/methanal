@@ -54,6 +54,18 @@ class MethanalTests(TestCase):
         self.assertEquals(result, dict(foo=4, bar=u'quux'))
 
 
+    def test_repr(self):
+        """
+        L{methanal.model.Value} has a useful human-readable representation.
+        """
+        self.assertEquals(
+            repr(Value(name='foo', value=u'bar')),
+            "<Value name='foo' value=u'bar' doc=u'foo'>")
+        self.assertEquals(
+            repr(Value(name='foo', value=u'bar', doc=u'Hello')),
+            "<Value name='foo' value=u'bar' doc=u'Hello'>")
+
+
 
 class ParameterTests(TestCase):
     def test_enumerationValidation(self):

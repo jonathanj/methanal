@@ -910,10 +910,18 @@ class ChoiceInput(FormInput):
 
 
     def _getOneValue(self, value):
+        """
+        Get up the enumeration item for a value or C{None} if no enumeration
+        item could be found.
+        """
         if value is None:
             return None
-        item = self.values.get(value)
-        return item.get('id', item.value)
+        try:
+            item = self.values.get(value)
+        except errors.InvalidEnumItem:
+            return None
+        else:
+            return item.get('id', item.value)
 
 
     def getValue(self):
@@ -941,7 +949,7 @@ class MultiChoiceInputMixin(object):
     def getValue(self):
         if self.param.value is None:
             return []
-        return map(self._getOneValue, self.param.value)
+        return filter(None, map(self._getOneValue, self.param.value))
 
 
 
