@@ -681,6 +681,21 @@ class ChoiceInputTests(ChoiceInputTestsMixin, FormInputTests):
         self.assertEquals(len(self.flushWarnings()), 2)
 
 
+    def test_invalidEnumValues(self):
+        """
+        Specifying invalid enumeration item values returns C{None} instead of
+        raising L{InvalidEnumItem}.
+        """
+        values = [
+            (u'foo', u'Foo'),
+            (u'bar', u'Bar')]
+        control = self.createControl(dict(values=values))
+        control.param.value = u'nopenotinhere'
+        self.assertEqual(
+            control.getValue(),
+            None)
+
+
 
 class SelectInputTests(ChoiceInputTests):
     """
@@ -953,8 +968,28 @@ class MultiValueChoiceInputTestsMixin(object):
         return gatherResults(ds)
 
 
+    def test_invalidEnumValues(self):
+        """
+        Invalid enumeration item values are stripped instead of raising
+        L{InvalidEnumItem}.
+        """
+        values = [
+            (u'foo', u'Foo'),
+            (u'bar', u'Bar')]
+        control = self.createControl(dict(values=values))
+        control.param.value = [u'nopenotinhere']
+        self.assertEqual(
+            control.getValue(),
+            [])
 
-class MultiSelectInputTests(ChoiceInputTests, MultiValueChoiceInputTestsMixin):
+        control.param.value = [u'nopenotinhere', u'foo']
+        self.assertEqual(
+            control.getValue(),
+            [u'foo'])
+
+
+
+class MultiSelectInputTests(MultiValueChoiceInputTestsMixin, ChoiceInputTests):
     controlType = view.MultiSelectInput
 
 
@@ -1129,8 +1164,8 @@ class CheckboxInputTests(FormInputTests):
 
 
 
-class MultiCheckboxInputTests(ChoiceInputTests,
-                              MultiValueChoiceInputTestsMixin):
+class MultiCheckboxInputTests(MultiValueChoiceInputTestsMixin,
+                              ChoiceInputTests):
     controlType = view.MultiCheckboxInput
 
 
