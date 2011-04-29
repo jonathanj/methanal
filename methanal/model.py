@@ -51,6 +51,14 @@ class Value(object):
         self.doc = doc
 
 
+    def __repr__(self):
+        return '<%s name=%r value=%r doc=%r>' % (
+            type(self).__name__,
+            self.name,
+            self.value,
+            self.doc)
+
+
     @classmethod
     def fromAttr(cls, attr, **kw):
         """
