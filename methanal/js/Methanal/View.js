@@ -1024,8 +1024,12 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             for (var j = 0; j < container.childWidgets.length; ++j) {
                 var widget = container.childWidgets[j];
                 if (widget.getInputNode) {
-                    widget.getInputNode().focus();
-                    return;
+                    var inputNode = widget.getInputNode();
+                    // Sometimes there is not yet an input node.
+                    if (inputNode !== undefined) {
+                        widget.getInputNode().focus();
+                        return;
+                    }
                 } else {
                     // Edge closer and closer to something useful.
                     widget.node.focus();
