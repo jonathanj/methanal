@@ -1014,8 +1014,16 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * Focus the first form input.
      */
     function focusFirstInput(self) {
-        // In case we couldn't find anything, this is as close as it'll get.
-        self.node.focus();
+        function safeFocus(node) {
+            try {
+                node.focus();
+            } catch (e) {
+                // Internet Explorer throws exceptions when it can't focus
+                // things.
+            }
+        }
+
+        safeFocus(self.node)
 
         // Loop over input containers.
         for (var i = 0; i < self.childWidgets.length; ++i) {
@@ -1027,12 +1035,12 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
                     var inputNode = widget.getInputNode();
                     // Sometimes there is not yet an input node.
                     if (inputNode !== undefined) {
-                        widget.getInputNode().focus();
+                        safeFocus(inputNode);
                         return;
                     }
                 } else {
                     // Edge closer and closer to something useful.
-                    widget.node.focus();
+                    safeFocus(widget.node);
                 }
             }
         }
