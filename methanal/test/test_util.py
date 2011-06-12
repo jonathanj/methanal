@@ -1,6 +1,9 @@
+from decimal import Decimal
+
 from twisted.trial.unittest import TestCase
 
-from methanal.util import collectMethods, getArgsDict, Porthole
+from methanal.util import (
+    collectMethods, getArgsDict, Porthole, CurrencyFormatter, DecimalFormatter)
 
 
 
@@ -184,3 +187,166 @@ class PortholeTests(TestCase):
         self.emitter.emitEvent(u'anEvent')
         self.assertEqual(self.observed, 2)
         self.assertEqual(len(self.emitter.observers), 4)
+
+
+
+class DecimalFormatterTests(TestCase):
+    """
+    Tests for L{methanal.util.DecimalFormatter}.
+    """
+    def test_formatDefaults(self):
+        """
+        Formatting a value with the default settings produces a decimal number
+        grouped 3 digits at a time.
+        """
+        f = DecimalFormatter()
+
+        self.assertEquals(
+            f.format(u''),
+            u'')
+        self.assertEquals(
+            f.format(u'1'),
+            u'1')
+        self.assertEquals(
+            f.format(u'123'),
+            u'123')
+        self.assertEquals(
+            f.format(u'1234'),
+            u'1,234')
+        self.assertEquals(
+            f.format(u'1234.56'),
+            u'1,234.56')
+        self.assertEquals(
+            f.format(u'123456'),
+            u'123,456')
+        self.assertEquals(
+            f.format(u'12345678'),
+            u'12,345,678')
+        self.assertEquals(
+            f.format(u'1234567.89'),
+            u'1,234,567.89')
+
+
+    def test_formatCustom(self):
+        """
+        Formatting a value obeys the decimal grouping and separator
+        specifications.
+        """
+        f = DecimalFormatter(grouping=[3, 2, -1])
+
+        self.assertEquals(
+            f.format(u''),
+            u'')
+        self.assertEquals(
+            f.format(u'1'),
+            u'1')
+        self.assertEquals(
+            f.format(u'123'),
+            u'123')
+        self.assertEquals(
+            f.format(u'1234'),
+            u'1,234')
+        self.assertEquals(
+            f.format(u'123456'),
+            u'1,23,456')
+        self.assertEquals(
+            f.format(u'123456789'),
+            u'1234,56,789')
+        self.assertEquals(
+            f.format(u'1234567.89'),
+            u'12,34,567.89')
+
+        f = DecimalFormatter(
+            grouping=[3, 2, -1], thousandsSeparator=u'.',
+            decimalSeparator=u',')
+        self.assertEquals(
+            f.format(u'123456'),
+            u'1.23.456')
+        self.assertEquals(
+            f.format(u'123456789'),
+            u'1234.56.789')
+        self.assertEquals(
+            f.format(u'1234567,89'),
+            u'12.34.567,89')
+
+
+    def test_formatNonString(self):
+        """
+        L{methanal.util.DecimalFormatter.format} can handle some non-string
+        values, such as C{None}, C{int} and C{Decimal}.
+        """
+        f = DecimalFormatter(grouping=[3, 2, -1])
+        self.assertEquals(
+            f.format(None),
+            u'')
+        self.assertEquals(
+            f.format(1),
+            u'1')
+        self.assertEquals(
+            f.format(Decimal(123)),
+            u'123')
+        self.assertEquals(
+            f.format(Decimal('1234')),
+            u'1,234')
+
+        f = DecimalFormatter(
+            grouping=[3, 2, -1], thousandsSeparator=u'.',
+            decimalSeparator=u',')
+        self.assertEquals(
+            f.format(123456),
+            u'1.23.456')
+        self.assertEquals(
+            f.format(123456789),
+            u'1234.56.789')
+
+
+
+class CurrencyFormatterTests(TestCase):
+    """
+    Tests for L{methanal.util.CurrencyFormatter}.
+    """
+    def test_formatDefaults(self):
+        """
+        Formatting a value with the default settings produces the currency
+        symbol followed by one space and the decimal number grouped 3 digits at
+        a time.
+        """
+        f = CurrencyFormatter(u'X')
+
+        self.assertEquals(
+            f.format(u'1'),
+            u'X 1')
+        self.assertEquals(
+            f.format(u'1234'),
+            u'X 1,234')
+        self.assertEquals(
+            f.format(u'1234.56'),
+            u'X 1,234.56')
+        self.assertEquals(
+            f.format(u'1234567'),
+            u'X 1,234,567')
+
+
+    def test_formatCustom(self):
+        """
+        Formatting a value obeys the decimal grouping, separator and currency
+        symbol separator specifications.
+        """
+        f = CurrencyFormatter(
+            symbol=u'X', symbolSeparator=u'', grouping=[3, 2, -1])
+
+        self.assertEquals(
+            f.format(u'1'),
+            u'X1')
+        self.assertEquals(
+            f.format(u'1234'),
+            u'X1,234')
+        self.assertEquals(
+            f.format(u'1234.56'),
+            u'X1,234.56')
+        self.assertEquals(
+            f.format(u'1234567'),
+            u'X12,34,567')
+        self.assertEquals(
+            f.format(u'1234567890'),
+            u'X12345,67,890')

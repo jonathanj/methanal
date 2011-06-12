@@ -183,6 +183,159 @@ Methanal.Util.strToFloat = function strToFloat(s) {
 
 
 /**
+ * Format values as date values.
+ *
+ * @type twentyFourHours: C{Boolean}
+ * @ivar twentyFourHours: Format times as 24 hour values?
+ */
+Divmod.Class.subclass(Methanal.Util, 'DateFormatter').methods(
+    function __init__(self, twentyFourHours) {
+        self.twentyFourHours = twentyFourHours;
+    },
+
+
+    function format(self, value) {
+        if (!value) {
+            return ''
+        }
+        var msg = '';
+        try {
+            // XXX: There is probably a potential bug here: If "value" (a UTC
+            // timestamp) falls before the switch-over for daylight savings
+            // before the timezone offset has been corrected for, the timezone
+            // offset given here will be the wrong one.
+            var d = new Date(value);
+            var time = Methanal.Util.Time.fromTimestamp(
+                value, d.getTimezoneOffset()).oneDay();
+            if (time) {
+                msg = time.asHumanly(self.twentyFourHours);
+            }
+        } catch (e) {
+            msg = 'Unknown date';
+            if (!(e instanceof Methanal.Util.TimeParseError)) {
+                msg = e.toString();
+            }
+        }
+        return msg;
+    });
+
+
+
+/**
+ * Format values as decimal values.
+ *
+ * @type grouping: C{Array} of I{integers}
+ * @ivar grouping: Digit group sizes from right to left. Use C{0} to indicate
+ *     that the previous group size should be used for the rest of the digit
+ *     groups; use C{-1} to indicate that no more grouping should occur.
+ *     Defaults to C{[3, 0]}.
+ *
+ * @type thousandsSeparator: C{String}
+ * @ivar thousandsSeparator: Separator between digit groups. Defaults to
+ *     C{','}.
+ *
+ * @type decimalSeparator: C{String}
+ * @ivar decimalSeparator: Decimal separator. Defaults to C{'.'}.
+ */
+Divmod.Class.subclass(Methanal.Util, 'DecimalFormatter').methods(
+    function __init__(self, grouping/*=[3,0]*/, thousandsSeparator/*=','*/,
+                      decimalSeparator/*='.'*/) {
+        if (grouping == null) {
+            grouping = [3, 0];
+        }
+        self.grouping = grouping;
+        if (thousandsSeparator == null) {
+            thousandsSeparator = ',';
+        }
+        self.thousandsSeparator = thousandsSeparator;
+        if (decimalSeparator == null) {
+            decimalSeparator = '.';
+        }
+        self.decimalSeparator = decimalSeparator;
+    },
+
+
+    /**
+     * Format C{value} as a decimal value, grouping digits if required.
+     */
+    function format(self, value) {
+        if (!value) {
+            return '';
+        }
+        value = value.toString();
+        var parts = Methanal.Util.split(value, self.decimalSeparator, 1);
+        var value = parts[0].split('');
+        var j = 0, grouping = self.grouping[j];
+        for (var i = value.length - grouping; i >= 1; i -= grouping) {
+            value.splice(i, 0, self.thousandsSeparator);
+            if (self.grouping[j + 1] === -1) {
+                break;
+            } else if (self.grouping[j + 1] > 0) {
+                grouping = self.grouping[++j];
+            }
+        }
+
+        parts[0] = value.join('');
+        return parts.join(self.decimalSeparator);
+    });
+
+
+
+/**
+ * Format values as percentage values.
+ */
+Methanal.Util.DecimalFormatter.subclass(Methanal.Util,
+                                        'PercentageFormatter').methods(
+    /**
+     * Format C{value} (expressed as a decimal) as a percentage, performing
+     * digit grouping.
+     */
+    function format(self, value) {
+        return Methanal.Util.PercentageFormatter.upcall(
+            self, 'format', value * 100) + '%';
+    });
+
+
+
+/**
+ * Format values as currency values.
+ *
+ * @type symbol: C{String}
+ * @ivar symbol: Currency symbol.
+ *
+ * @type symbolSeparator: C{String}
+ * @ivar symbolSeparator: Separator between then currency symbol and decimal
+ *     value, defaults to C{' '}.
+ *
+ * @see: L{Methanal.Util.DecimalFormatter}.
+ */
+Methanal.Util.DecimalFormatter.subclass(Methanal.Util,
+                                        'CurrencyFormatter').methods(
+    function __init__(self, symbol, symbolSeparator/*=' '*/,
+                      grouping/*=[3,0]*/, thousandsSeparator/*=','*/,
+                      decimalSeparator/*='.'*/) {
+        Methanal.Util.CurrencyFormatter.upcall(
+            self, '__init__', grouping, thousandsSeparator, decimalSeparator);
+        self.symbol = symbol;
+        if (symbolSeparator == null) {
+            symbolSeparator = ' ';
+        }
+        self.symbolSeparator = symbolSeparator;
+    },
+
+
+    /**
+     * Format C{value} as a currency, prefixing the grouped decimal value with
+     * the currency symbol and separator.
+     */
+    function format(self, value) {
+        value = Methanal.Util.CurrencyFormatter.upcall(self, 'format', value);
+        return self.symbol + self.symbolSeparator + value;
+    });
+
+
+
+/**
  * Pretty print a decimal number with thousands separators.
  *
  * Useful for formatting large currency amounts in a human-readable way.
@@ -192,16 +345,10 @@ Methanal.Util.strToFloat = function strToFloat(s) {
  * @rtype: C{String}
  */
 Methanal.Util.formatDecimal = function formatDecimal(value) {
-    var value = value.toString();
-    var l = value.split('')
-    var pointIndex = value.indexOf('.');
-    pointIndex = pointIndex > -1 ? pointIndex : value.length;
-
-    for (var i = pointIndex - 3; i >= 1; i -= 3) {
-        l.splice(i, 0, ',');
-    }
-
-    return l.join('');
+    Divmod.warn(
+        'formatDecimal is deprecated, use Methanal.Util.DecimalFormatter',
+        Divmod.DeprecationWarning);
+    return Methanal.Util.DecimalFormatter().format(value.toString());
 };
 
 

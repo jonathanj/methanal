@@ -1705,8 +1705,17 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
         Methanal.View.TextInput.upcall(self, '__init__', node, args);
         self.embeddedLabel = args.embeddedLabel;
         self.stripWhitespace = args.stripWhitespace;
+        if (!args.formatter) {
+            args.formatter = self.defaultFormatter();
+        }
+        self.formatter = args.formatter;
         self._tooltipNode = null;
         self._useDisplayValue = false;
+    },
+
+
+    function defaultFormatter(self) {
+        return null;
     },
 
 
@@ -1793,7 +1802,10 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * @rtype:  C{String}
      */
     function makeDisplayValue(self, value) {
-        throw new Error('Not implemented');
+        if (self.formatter) {
+            return self.formatter.format(value);
+        }
+        return '';
     },
 
 
@@ -2361,8 +2373,13 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
  */
 Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
     function __init__(self, node, args) {
-        Methanal.View.TextInput.upcall(self, '__init__', node, args);
         self.twentyFourHours = args.twentyFourHours;
+        Methanal.View.DateInput.upcall(self, '__init__', node, args);
+    },
+
+
+    function defaultFormatter(self) {
+        return Methanal.Util.DateFormatter(self.twentyFourHours);
     },
 
 
@@ -2386,29 +2403,6 @@ Methanal.View.TextInput.subclass(Methanal.View, 'DateInput').methods(
     function nodeInserted(self) {
         Methanal.View.DateInput.upcall(self, 'nodeInserted');
         self.enableDisplayValue();
-    },
-
-
-    function makeDisplayValue(self, value) {
-        var msg = '';
-        try {
-            // XXX: There is probably a potential bug here: If "value" (a UTC
-            // timestamp) falls before the switch-over for daylight savings
-            // before the timezone offset has been corrected for, the timezone
-            // offset given here will be the wrong one.
-            var d = new Date(value);
-            var time = Methanal.Util.Time.fromTimestamp(
-                value, d.getTimezoneOffset()).oneDay();
-            if (time) {
-                msg = time.asHumanly(self.twentyFourHours);
-            }
-        } catch (e) {
-            if (!(e instanceof Methanal.Util.TimeParseError)) {
-                msg = e.toString();
-            }
-            msg = 'Unknown date';
-        }
-        return msg;
     },
 
 
@@ -2518,8 +2512,8 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'FloatInput').methods(
 /**
  * Decimal number input.
  *
- * @type decimalPlaces: C{Integer}
- * @ivar decimalPlaces: Number of decimal places
+ * @type decimalPlaces: I{Integer}
+ * @ivar decimalPlaces: Number of decimal places.
  */
 Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
     function __init__(self, node, args) {
@@ -2530,17 +2524,14 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'DecimalInput').methods(
     },
 
 
-    function nodeInserted(self) {
-        Methanal.View.DecimalInput.upcall(self, 'nodeInserted');
-        self.enableDisplayValue();
+    function defaultFormatter(self) {
+        return Methanal.Util.DecimalFormatter();
     },
 
 
-    function makeDisplayValue(self, value) {
-        if (isNaN(value)) {
-            return '';
-        }
-        return Methanal.Util.formatDecimal(value.toFixed(self.decimalPlaces));
+    function nodeInserted(self) {
+        Methanal.View.DecimalInput.upcall(self, 'nodeInserted');
+        self.enableDisplayValue();
     },
 
 
@@ -2589,8 +2580,8 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
     },
 
 
-    function makeDisplayValue(self, value) {
-        return (value * 100).toFixed(self.decimalPlaces) + '%';
+    function defaultFormatter(self) {
+        return Methanal.Util.PercentageFormatter();
     },
 
 
