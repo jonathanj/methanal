@@ -238,7 +238,7 @@ Divmod.Class.subclass(Methanal.Util, 'DateFormatter').methods(
  * @ivar decimalSeparator: Decimal separator. Defaults to C{'.'}.
  */
 Divmod.Class.subclass(Methanal.Util, 'DecimalFormatter').methods(
-    function __init__(self, grouping/*=[3,0]*/, thousandsSeparator/*u','*/,
+    function __init__(self, grouping/*=[3,0]*/, thousandsSeparator/*=','*/,
                       decimalSeparator/*='.'*/) {
         if (grouping == null) {
             grouping = [3, 0];
@@ -312,7 +312,7 @@ Methanal.Util.DecimalFormatter.subclass(Methanal.Util,
 Methanal.Util.DecimalFormatter.subclass(Methanal.Util,
                                         'CurrencyFormatter').methods(
     function __init__(self, symbol, symbolSeparator/*=' '*/,
-                      grouping/*=[3,0]*/, thousandsSeparator/*u','*/,
+                      grouping/*=[3,0]*/, thousandsSeparator/*=','*/,
                       decimalSeparator/*='.'*/) {
         Methanal.Util.CurrencyFormatter.upcall(
             self, '__init__', grouping, thousandsSeparator, decimalSeparator);
