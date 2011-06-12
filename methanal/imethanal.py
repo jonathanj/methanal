@@ -122,6 +122,9 @@ class IEnumeration(Interface):
 
 
 class ITextFormatter(Interface):
+    """
+    Format values as text in a human-readable way.
+    """
     def format(value):
         """
         Provide a legible well-formatted representation of I{value}.
