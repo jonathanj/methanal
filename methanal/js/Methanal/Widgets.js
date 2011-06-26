@@ -1491,7 +1491,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
 Methanal.Widgets.ModalDialog.fromWidgetInfo = function fromWidgetInfo(widgetParent, widgetInfo) {
     var d = widgetParent.addChildWidgetFromWidgetInfo(widgetInfo);
     return d.addCallback(function (widget) {
-        widgetParent.node.appendChild(widget.node);
+        widgetParent.node.ownerDocument.body.appendChild(widget.node);
         Methanal.Util.nodeInserted(widget);
         return widget;
     });
