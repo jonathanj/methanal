@@ -368,8 +368,10 @@ optgroup option {
     margin: 5% auto;
     background: white;
     padding: 1em;
+    border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
+    box-shadow: 0 0 30px #333;
     -moz-box-shadow: 0 0 30px #333;
     -webkit-box-shadow: 0 0 30px #333;
 }
