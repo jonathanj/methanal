@@ -568,3 +568,37 @@ optgroup option {
     margin: 0.5em;
     margin-top: 1em;
 }
+
+@media print {
+    body.printing > * {
+        display: none;
+    }
+
+    body.printing .print-target {
+        display: block;
+        position: absolute:
+        left: 0;
+        top: 0;
+        font-size: 50%;
+    }
+
+    .print-target .modal-dialog-middle {
+        display: block;
+    }
+
+    .print-target .modal-dialog-inner {
+        display: block;
+        max-width: 100%;
+        margin: auto;
+        border-radius: 0;
+        -moz-border-radius: 0;
+        -webkit-border-radius: 0;
+        box-shadow: none;
+        -moz-box-shadow: none;
+        -webkit-box-shadow: none;
+    }
+
+    .print-target .unprintable {
+        display: none;
+    }
+}

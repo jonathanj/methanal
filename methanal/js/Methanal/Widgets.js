@@ -1465,6 +1465,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
         var T = Methanal.Util.DOMBuilder(self.node.ownerDocument);
         self._overlayNode = T('div', {'class': 'modal-dialog-overlay'});
         self.node.parentNode.appendChild(self._overlayNode);
+
+        Methanal.Util.addElementClass(
+            self.node.ownerDocument.body, 'printing');
+        Methanal.Util.addElementClass(
+            self.node, 'print-target');
     },
 
 
@@ -1472,6 +1477,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
      * Dismiss the dialog.
      */
     function close(self) {
+        Methanal.Util.removeElementClass(
+            self.node.ownerDocument.body, 'printing');
+        Methanal.Util.removeElementClass(
+            self.node, 'print-target');
+
         self.detach();
         self.node.parentNode.removeChild(self.node);
         self._overlayNode.parentNode.removeChild(self._overlayNode);
