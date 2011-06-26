@@ -598,7 +598,7 @@ optgroup option {
         -webkit-box-shadow: none;
     }
 
-    .print-target .unprintable {
+    .print-target .no-print {
         display: none;
     }
 }
