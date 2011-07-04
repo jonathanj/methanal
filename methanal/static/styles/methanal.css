@@ -72,10 +72,11 @@
 
 .methanal-multi-input,
 .methanal-lookup-form {
-    float: left;
     background: white;
-    padding: 3px 5px;
-    border: 1px outset black;
+    border: 1px solid #ccc;
+    border-bottom: 2px solid #aaa;
+    padding: 0.5em;
+    float: left;
 }
 
 .methanal-lookup-form .lookup-result .methanal-caption {
@@ -98,14 +99,19 @@
 input.methanal-input,
 select.methanal-input,
 textarea.methanal-input {
-    border: 1px inset #bbb;
-    padding: 2px;
-    margin-right: 3px;
+    background-image: url(/static/Methanal/images/icons/valid.png);
+    background-repeat: no-repeat;
+    background-position: 4px center;
+    border: 1px solid #ccc;
+    padding: 4px;
+    padding-left: 22px;
+    margin-right: 4px;
     float: left;
 }
 
 select.methanal-input {
-    padding: 1px 2px;
+    padding-top: 3px;
+    padding-bottom: 3px;
 }
 
 textarea.methanal-input {
@@ -113,16 +119,12 @@ textarea.methanal-input {
     height: 14ex;
 }
 
-/*
-input.methanal-input:hover,
-input.methanal-input:focus,
-select.methanal-input:hover,
-select.methanal-input:focus,
-textarea.methanal-input:hover,
-textarea.methanal-input:focus {
-    background-color: #f5f5f5;
+.methanal-control-error input.methanal-input,
+.methanal-control-error select.methanal-input,
+.methanal-control-error textarea.methanal-input {
+    background-image: url(/static/Methanal/images/icons/invalid.png);
+    border-color: #da2603;
 }
-*/
 
 .methanal-control-multicheck label input {
     margin: 0.5ex 0;
