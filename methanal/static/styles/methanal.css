@@ -90,6 +90,7 @@ select.methanal-input {
 }
 
 textarea.methanal-input {
+    background-position: 4px 4px;
     width: 20em;
     height: 14ex;
 }
