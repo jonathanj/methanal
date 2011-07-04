@@ -1353,23 +1353,6 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
  * Container for visually organising inputs into rows.
  */
 Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow').methods(
-    function nodeInserted(self) {
-        self._errorTextNode = self.nodeById('error-text');
-    },
-
-
-    function setError(self, error) {
-        Methanal.View.FormRow.upcall(self, 'setError', error);
-        Methanal.Util.replaceNodeText(self._errorTextNode, error);
-    },
-
-
-    function clearError(self) {
-        Methanal.View.FormRow.upcall(self, 'clearError');
-        Methanal.Util.replaceNodeText(self._errorTextNode, '');
-    },
-
-
     function setActive(self, active) {
         Methanal.View.FormRow.upcall(self, 'setActive', active);
         Methanal.Util.addElementClass(self.node, 'dependancy-child');
@@ -1532,7 +1515,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
 
     function nodeInserted(self) {
         self.inputNode = self.getInputNode();
-        self._errorNode = self.nodeById('error');
+        self._errorTooltip = Methanal.Util.Tooltip(
+            self.node, null, 'left', 'error-tooltip');
         self.reset();
 
         function _baseValidator(value) {
@@ -1588,13 +1572,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      */
     function setError(self, error) {
         Methanal.Util.addElementClass(self.node, 'methanal-control-error');
-        var node = self._errorNode;
-        Methanal.Util.replaceNodeText(node, '\xa0');
-        error = self.label + ': ' + error;
-        node.title = error;
-        node.style.display = 'block';
         self.error = error;
         self.widgetParent.checkForErrors();
+        self._errorTooltip.setText(self.error);
+        self._errorTooltip.show();
     },
 
 
@@ -1603,11 +1584,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      */
     function clearError(self) {
         Methanal.Util.removeElementClass(self.node, 'methanal-control-error');
-        var node = self._errorNode;
-        Methanal.Util.replaceNodeText(node, '');
-        node.style.display = 'none';
         self.error = null;
         self.widgetParent.checkForErrors();
+        self._errorTooltip.hide();
     },
 
 
