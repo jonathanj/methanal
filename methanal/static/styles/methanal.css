@@ -32,10 +32,11 @@
 }
 
 .methanal-caption {
-    min-width: 20em;
     float: left;
-    margin: 0 5px;
-    padding: 3px;
+    min-width: 20em;
+    line-height: 1.75em;
+    margin: 0 0.75em;
+    vertical-align: middle;
 }
 
 .methanal-inline-children .methanal-inline-control .methanal-input {
@@ -61,8 +62,8 @@
 
 .methanal-lookup-form .methanal-caption,
 .methanal-multi-input .methanal-caption {
-    min-width: 10em;
-    margin: 0;
+    min-width: 8em;
+    margin: 0 0.25em;
 }
 
 .methanal-sub-caption {
