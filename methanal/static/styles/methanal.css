@@ -31,36 +31,12 @@
     background-color: #f0f0fc;
 }
 
-.methanal-control-error {
-    background-color: #e3aeae !important;
-}
-
-.methanal-error,
-.methanal-error-text {
-    line-height: 3ex;
-    float: left;
-}
-
-.methanal-error-text {
-    font-size: 90%;
-}
-
-.methanal-error {
-    width: 20px;
-    margin-right: 3px;
-    background: url(/static/Methanal/images/error-icon.png) no-repeat top;
-}
-
 .methanal-caption {
+    float: left;
     min-width: 20em;
-    float: left;
-    margin: 0 5px;
-    padding: 3px;
-}
-
-.methanal-inline-group .methanal-error {
-    float: left;
-    padding: 2px;
+    line-height: 1.75em;
+    margin: 0 0.75em;
+    vertical-align: middle;
 }
 
 .methanal-inline-children .methanal-inline-control .methanal-input {
@@ -72,10 +48,11 @@
 
 .methanal-multi-input,
 .methanal-lookup-form {
-    float: left;
     background: white;
-    padding: 3px 5px;
-    border: 1px outset black;
+    border: 1px solid #ccc;
+    border-bottom: 2px solid #aaa;
+    padding: 0.5em;
+    float: left;
 }
 
 .methanal-lookup-form .lookup-result .methanal-caption {
@@ -85,8 +62,8 @@
 
 .methanal-lookup-form .methanal-caption,
 .methanal-multi-input .methanal-caption {
-    min-width: 10em;
-    margin: 0;
+    min-width: 8em;
+    margin: 0 0.25em;
 }
 
 .methanal-sub-caption {
@@ -98,31 +75,33 @@
 input.methanal-input,
 select.methanal-input,
 textarea.methanal-input {
-    border: 1px inset #bbb;
-    padding: 2px;
-    margin-right: 3px;
+    background-image: url(/static/Methanal/images/icons/valid.png);
+    background-repeat: no-repeat;
+    background-position: 4px center;
+    border: 1px solid #ccc;
+    padding: 4px;
+    padding-left: 22px;
+    margin-right: 4px;
     float: left;
 }
 
 select.methanal-input {
-    padding: 1px 2px;
+    padding-top: 3px;
+    padding-bottom: 3px;
 }
 
 textarea.methanal-input {
+    background-position: 4px 4px;
     width: 20em;
     height: 14ex;
 }
 
-/*
-input.methanal-input:hover,
-input.methanal-input:focus,
-select.methanal-input:hover,
-select.methanal-input:focus,
-textarea.methanal-input:hover,
-textarea.methanal-input:focus {
-    background-color: #f5f5f5;
+.methanal-control-error input.methanal-input,
+.methanal-control-error select.methanal-input,
+.methanal-control-error textarea.methanal-input {
+    background-image: url(/static/Methanal/images/icons/invalid.png);
+    border-color: #da2603;
 }
-*/
 
 .methanal-control-multicheck label input {
     margin: 0.5ex 0;
@@ -278,9 +257,11 @@ optgroup option {
 
 .friendly-representation {
     font-weight: bold;
+    font-style: italic;
     font-size: 85%;
-    padding: 0.5ex;
-    float: left;
+    padding: 0 0.25em;
+    line-height: 2em;
+    vertical-align: middle;
 }
 
 .embedded-label {
@@ -601,4 +582,163 @@ optgroup option {
     .print-target .no-print {
         display: none;
     }
+}
+
+/**
+ * Hover tooltip.
+ */
+
+.hover-tooltip {
+    float: left;
+    position: relative;
+    border: 1px solid;
+    border-radius: 2px;
+    box-shadow: 0 0 2px black;
+    -o-box-shadow: 0 0 2px black;
+    -moz-box-shadow: 0 0 2px black;
+    -webkit-box-shadow: 0 0 2px black;
+    color: #fff;
+    font-size: 90%;
+    font-style: italic;
+    padding: 0.25em;
+    margin-right: 0.5em;
+}
+
+.hover-tooltip,
+.hover-tooltip-arrow {
+    border-style: solid;
+    border-color: #6094a4;
+    background: #6094a4;
+}
+
+.hover-tooltip h2 {
+    text-shadow: 0 -1px 0 #333;
+}
+
+.hover-tooltip-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-bottom-width: 0;
+    background: none;
+}
+
+.error-tooltip .hover-tooltip,
+.error-tooltip .hover-tooltip-arrow {
+    border-color: #8d0e1b;
+}
+
+/** Tooltip bottom orientation. */
+
+.hover-tooltip-bottom {
+    left: -3em;
+    margin-top: -1.5em;
+}
+
+.hover-tooltip-bottom .hover-tooltip-arrow {
+    bottom: -0.7em;
+    right: auto;
+    left: 1.5em;
+    border-left: 0.7em dotted transparent;
+    border-right: 0.7em dotted transparent;
+    border-top-width: 0.7em;
+    border-bottom-width: 0;
+    margin-left: -0.7em;
+}
+
+/** Tooltip left orientation. */
+
+.hover-tooltip-left {
+    left: 0.25em;
+    margin-top: -0.25em;
+}
+
+.hover-tooltip-left .hover-tooltip-arrow {
+    left: 0;
+    top: 0.8em;
+    bottom: auto;
+    margin-top: -0.6em;
+    border-top: 0.6em dotted transparent;
+    border-bottom: 0.6em dotted transparent;
+    border-right-width: 1em;
+    border-left-width: 0;
+    margin-left: -0.9em;
+}
+
+/** Tooltip top orientation. */
+
+.hover-tooltip-top .hover-tooltip-arrow {
+    top: -0.7em;
+    right: auto;
+    left: 1.5em;
+    border-left: 0.7em dotted transparent;
+    border-right: 0.7em dotted transparent;
+    border-bottom-width: 0.7em;
+    border-top-width: 0;
+    margin-left: -0.7em;
+}
+
+/** Error hover tooltip. */
+
+.error-tooltip .hover-tooltip,
+.submission-error-tooltip .hover-tooltip {
+    background-repeat: no-repeat;
+    background-position: 0.25em center;
+    padding-left: 25px;
+}
+
+.error-tooltip .hover-tooltip {
+    background-image: url(/static/Methanal/images/icons/warning.png);
+    background-color: #8d0e1b;
+    border-color: #8d0e1b;
+    color: #fff;
+}
+
+/** TextInput hover tooltip. */
+
+.label-tooltip .hover-tooltip {
+    position: absolute;
+    left: inherit;
+    margin-top: -2em;
+}
+
+/** LiveForm submission error tooltip. */
+
+.submission-error-tooltip .hover-tooltip {
+    background-image: url(/static/Methanal/images/icons/error.png);
+    margin-top: 0.5em;
+}
+
+.submission-error-tooltip h2 {
+    margin: 0.25em 0;
+    font-weight: normal;
+    font-style: normal;
+    cursor: pointer;
+}
+
+.submission-error-tooltip p {
+    font-size: 110%;
+    margin: 0.5em 0;
+}
+
+/** LiveForm validation error tooltip. */
+
+.form-validation-error-tooltip .hover-tooltip {
+    background-image: url(/static/Methanal/images/icons/warning.png);
+    max-width: 25%;
+}
+
+.form-validation-error-tooltip a:link,
+.form-validation-error-tooltip a:visited {
+    padding: 0 0.3em;
+    color: #fee34d;
+    text-decoration: underline;
+}
+
+.form-validation-error-tooltip a:hover {
+    background: #a94a54;
+}
+
+.form-validation-error-tooltip h2 {
+    cursor: default;
 }

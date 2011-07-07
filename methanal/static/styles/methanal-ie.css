@@ -55,6 +55,13 @@ form {
     background-position: 3px center;
 }
 
+.label-tooltip .hover-tooltip {
+    position: relative;
+    top: -0.25em;
+    left: -3em;
+    margin-right: -100%;
+}
+
 @media print {
     .print-target .modal-dialog-middle {
         top: 0;

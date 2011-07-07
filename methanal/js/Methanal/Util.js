@@ -1281,3 +1281,121 @@ Methanal.Util.unapply = function unapply(f) {
         return f(Array.prototype.slice.call(arguments));
     }
 };
+
+
+
+/**
+ * A dynamic hover tooltip.
+ *
+ * @type parentNode: DOM node
+ * @ivar parentNode: Parent DOM node to which the tooltip will be appended as a
+ *     child.
+ *
+ * @type text: C{String}
+ * @ivar text: Tooltip text, if not specified during initialization
+ *     L{Tooltip.setText} will not be called right away.
+ *
+ * @type orientation: C{String}
+ * @ivar orientation: Orientation name that matches a value in
+ *     L{Methanal.Util.Tooltip.POINTER_ORIENTATIONS}, defaults to C{'bottom'}.
+ *
+ * @type extraClassName: C{String}
+ * @ivar extraClassName: An additional CSS class name to apply to an outermost
+ *     element. Useful for overriding tooltip styles for specific uses.
+ */
+Divmod.Class.subclass(Methanal.Util, 'Tooltip').methods(
+    function __init__(self, parentNode, text, orientation/*=bottom*/,
+                      extraClassName/*=undefined*/) {
+        Methanal.Util.Tooltip.upcall(self, '__init__');
+        self.parentNode = parentNode;
+        self.orientation = orientation || 'bottom';
+        self.extraClassName = extraClassName || '';
+        self._hidden = false;
+        if (text != null) {
+            self.setText(text);
+        }
+    },
+
+
+    /**
+     * Scroll the tooltip into view.
+     */
+    function scrollIntoView(self, alignWithTop) {
+        if (self.node.scrollIntoView !== undefined) {
+            self.node.scrollIntoView(alignWithTop);
+        }
+    },
+
+
+    /**
+     * Show the tooltip.
+     */
+    function show(self) {
+        if (self.node) {
+            Methanal.Util.removeElementClass(self.node, 'hidden');
+            self._hidden = false;
+        }
+    },
+
+
+    /**
+     * Hide the tooltip.
+     */
+    function hide(self) {
+        if (self.node) {
+            Methanal.Util.addElementClass(self.node, 'hidden');
+            self._hidden = true;
+        }
+    },
+
+
+    /**
+     * Remove the tooltip DOM node.
+     */
+    function destroy(self) {
+        if (self.node) {
+            self.parentNode.removeChild(self.node);
+            delete self.node;
+        }
+    },
+
+
+    /**
+     * Set the tooltip text.
+     *
+     * Create the tooltip DOM node and insert it into the DOM. The tooltip's
+     * hidden state is preserved.
+     */
+    function setText(self, text) {
+        self.destroy();
+        var D = Methanal.Util.DOMBuilder(self.parentNode.ownerDocument);
+        var POINTER_ORIENTATIONS = Methanal.Util.Tooltip.POINTER_ORIENTATIONS;
+        var orientationClass = POINTER_ORIENTATIONS[self.orientation] || '';
+        self.node = D('span', {'class': self.extraClassName}, [
+            D('div', {'class': 'hover-tooltip ' + orientationClass}, [
+                text, D('div', {'class': 'hover-tooltip-arrow'})])]);
+        if (self._hidden) {
+            self.hide();
+        }
+        self.parentNode.appendChild(self.node);
+    });
+
+
+
+/**
+ * Tooltip "pointer" (the tail end of the tooltip) orientations::
+ *
+ *     none:
+ *         Tooltip has no tail.
+ *
+ *     left:
+ *         Tail comes from the left edge.
+ *
+ *     bottom:
+ *         Tail comes from the bottom edge.
+ */
+Methanal.Util.Tooltip.POINTER_ORIENTATIONS = {
+    'none':   '',
+    'left':   'hover-tooltip-left',
+    'bottom': 'hover-tooltip-bottom',
+    'top':    'hover-tooltip-top'};
