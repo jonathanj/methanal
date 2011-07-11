@@ -963,6 +963,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
  * @ivar hideModificationIndicator: Hide the modification indicator for this
  *     form? Defaults to C{false}.
  *
+ * @type hideValidationErrorIndicator: C{boolean}
+ * @ivar hideValidationErrorIndicator: Hide the validation error indicator for
+ *     this form? Defaults to C{false}.
+ *
  * @type controlNames: C{object} of C{String}
  * @ivar controlNames: Names of form inputs as a mapping
  *
@@ -991,6 +995,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         }
         self.viewOnly = args.viewOnly;
         self.hideModificationIndicator = args.hideModificationIndicator;
+        self.hideValidationErrorIndicator = args.hideValidationErrorIndicator;
         if (!(controlNames instanceof Array)) {
             throw new Error('"controlNames" must be an Array of control names');
         }
@@ -1004,6 +1009,9 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
     function nodeInserted(self) {
         self._formErrorNode = self.nodeById('form-error');
+        self._validationErrorTooltip = Methanal.Util.Tooltip(
+            self.node, null, 'top', 'error-tooltip submission-error-tooltip ' +
+                                    'form-validation-error-tooltip');
     },
 
 
@@ -1230,15 +1238,58 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function setValid(self) {
         self.valid = true;
         self.actions.enable();
+        self._validationErrorTooltip.hide();
+    },
+
+
+    /**
+     * Create and display the form validation error tooltip if necessary.
+     */
+    function _showFormValidationErrorTooltip(self, invalidControls) {
+        if (self.hideValidationErrorIndicator) {
+            return;
+        }
+
+        function focusControl(control) {
+            return function () {
+                control.focus(true);
+                return false;
+            }
+        }
+
+        var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+        var errors = [];
+        for (var i = 0; i < invalidControls.length; ++i) {
+            var control = invalidControls[i];
+            var label = control.label || control.name;
+            var a = D('a', {'href': '#', 'title': control.error},
+                      [label.replace(/\s/g, '\xa0')]);
+            a.onclick = focusControl(control);
+            errors.push(D('span', {}, [a, ' ']));
+        }
+
+        var numErrors = errors.length;
+        if (numErrors) {
+            var errorText = D('span', {}, [
+                D('h2', {}, [
+                    errors.length.toString() + ' validation ' +
+                    Methanal.Util.plural(numErrors, 'error')]),
+                D('p', {}, errors)]);
+            self._validationErrorTooltip.setText(errorText);
+            self._validationErrorTooltip.show();
+        }
     },
 
 
     /**
      * Disable form submission.
      */
-    function setInvalid(self) {
+    function setInvalid(self, invalidControls) {
         self.valid = false;
         self.actions.disable();
+        if (invalidControls !== undefined && invalidControls.length) {
+            self._showFormValidationErrorTooltip(invalidControls);
+        }
     });
 
 
