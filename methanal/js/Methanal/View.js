@@ -443,12 +443,17 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
             return;
         }
 
+        var invalidControls = [];
         for (var controlName in self.controls) {
             var control = self.getControl(controlName);
             if (control.active && control.error) {
-                self.setInvalid();
-                return;
+                invalidControls.push(control);
             }
+        }
+
+        if (invalidControls.length) {
+            self.setInvalid(invalidControls);
+            return;
         }
 
         for (var name in self.subforms) {
