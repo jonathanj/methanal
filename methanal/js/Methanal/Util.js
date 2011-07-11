@@ -1373,7 +1373,8 @@ Divmod.Class.subclass(Methanal.Util, 'Tooltip').methods(
         var orientationClass = POINTER_ORIENTATIONS[self.orientation] || '';
         self.node = D('span', {'class': self.extraClassName}, [
             D('div', {'class': 'hover-tooltip ' + orientationClass}, [
-                text, D('div', {'class': 'hover-tooltip-arrow'})])]);
+                text, D('div', {'class': 'hover-tooltip-arrow'})]),
+            D('div', {'class': 'terminator'})]);
         if (self._hidden) {
             self.hide();
         }
