@@ -1132,7 +1132,11 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Rollup').methods(
     function toggleExpand(self) {
         self.expanded = !self.expanded;
 
-        self._contentNode.style.display = self.expanded ? 'block' : 'none';
+        if (self.expanded) {
+            Methanal.Util.removeElementClass(self._contentNode, 'hidden');
+        } else {
+            Methanal.Util.addElementClass(self._contentNode, 'hidden');
+        }
 
         var buttonNode = self._buttonNode;
         if (self.expanded) {
