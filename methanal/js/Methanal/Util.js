@@ -605,10 +605,6 @@ Methanal.Util.divmod = function divmod(x, y) {
  * Finds a node with the ID "throbber" and provides convenience functions
  * to operate it.
  *
- * @type toggleDisplay: C{String}
- * @ivar toggleDisplay: When defined, specifies the C{style.display} attribute
- *     value used when making the throbber visible
- *
  * @type node: DOM node
  * @ivar node: DOM node of the throbber graphic
  */
@@ -617,14 +613,17 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      * Create the throbber helper.
      *
      * @type  widget: L{Nevow.Athena.Widget}
-     * @param widget: The widget containing the throbber node
+     * @param widget: Widget containing a node with the ID C{'throbber'} if
+     *     L{node} is not given.
+     *
+     * @type  node: I{DOM node}
+     * @param node: Throbber node, defaults to C{undefined}.
      */
-    function __init__(self, widget, toggleDisplay, node/*=undefined*/) {
+    function __init__(self, widget, node/*=undefined*/) {
         if (node === undefined) {
             node = widget.nodeById('throbber');
         }
         self.node = node;
-        self.toggleDisplay = toggleDisplay;
     },
 
 
@@ -632,10 +631,7 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      * Display the throbber.
      */
     function start(self) {
-        self.node.style.visibility = 'visible';
-        if (self.toggleDisplay !== undefined) {
-            self.node.style.display = self.toggleDisplay;
-        }
+        Methanal.Util.removeElementClass(self.node, 'hidden');
     },
 
 
@@ -643,10 +639,7 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
      * Hide the throbber.
      */
     function stop(self) {
-        self.node.style.visibility = 'hidden';
-        if (self.toggleDisplay !== undefined) {
-            self.node.style.display = 'none';
-        }
+        Methanal.Util.addElementClass(self.node, 'hidden');
     });
 
 

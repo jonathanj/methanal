@@ -1099,7 +1099,6 @@ Methanal.View.LiveForm.subclass(Methanal.Widgets, 'FilterListForm').methods(
  * @ivar expanded: Flag indicating whether the container is expanded or not
  *
  * @type throbber: L{Methanal.Util.Throbber}
- * @ivar throbber: Throbber controller
  */
 Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Rollup').methods(
     /**
@@ -1121,7 +1120,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Rollup').methods(
         self._buttonNode = self.nodeById('roll-button');
         self._totalNode = self.nodeById('summary-total');
         self._summaryDescNode = self.nodeById('summary-description');
-        self.throbber = Methanal.Util.Throbber(self)
+        self.throbber = Methanal.Util.Throbber(self);
 
         self.update(self._params);
     },
@@ -1286,8 +1285,7 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
             'src': '/static/Methanal/images/main-throbber.gif'});
         resultControl.node.parentNode.insertBefore(
             throbberNode, resultControl.node);
-        self.throbber = Methanal.Util.Throbber(
-            undefined, 'inline', throbberNode);
+        self.throbber = Methanal.Util.Throbber(undefined, throbberNode);
         self.throbber.stop();
         self.widgetParent.formLoaded(self);
     },
@@ -1697,7 +1695,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      * Create a throbber object.
      */
     function _makeThrobber(self) {
-        return Methanal.Util.Throbber(self, 'inline');
+        return Methanal.Util.Throbber(self);
     },
 
 
