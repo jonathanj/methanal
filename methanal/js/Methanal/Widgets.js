@@ -1082,6 +1082,13 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'FilterList').methods(
  * that inherits from this.
  */
 Methanal.View.LiveForm.subclass(Methanal.Widgets, 'FilterListForm').methods(
+    function __init__(self, node, args, controlNames) {
+        args.hideModificationIndicator = true;
+        Methanal.Widgets.FilterListForm.upcall(
+            self, '__init__', node, args, controlNames);
+    },
+
+
     function submitSuccess(self, widgetInfo) {
         return self.widgetParent.setResultWidget(widgetInfo, self);
     });
