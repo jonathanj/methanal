@@ -1539,6 +1539,25 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
 
 
     /**
+     * Give keyboard focus to the form input.
+     */
+    function focus(self, scrollIntoView/*=true*/) {
+        if (!self.inputNode) {
+            return;
+        }
+
+        if (self.inputNode.focus !== undefined) {
+            self.inputNode.focus();
+        }
+        if (scrollIntoView === undefined || scrollIntoView) {
+            if (self.inputNode.scrollIntoView) {
+                self.inputNode.scrollIntoView(true);
+            }
+        }
+    },
+
+
+    /**
      * Has this input finished loading?
      */
     function isLoaded(self) {
