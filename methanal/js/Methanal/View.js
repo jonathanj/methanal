@@ -1286,7 +1286,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
      * @param error: Error message
      */
     function setError(self, error) {
-        Methanal.Util.addElementClass(self.node, 'methanal-control-error');
+        Methanal.Util.addElementClass(self.node, 'methanal-container-error');
     },
 
 
@@ -1294,7 +1294,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
      * Reset the error state.
      */
     function clearError(self) {
-        Methanal.Util.removeElementClass(self.node, 'methanal-control-error');
+        Methanal.Util.removeElementClass(self.node, 'methanal-container-error');
     },
 
 
