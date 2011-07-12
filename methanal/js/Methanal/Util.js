@@ -1384,16 +1384,19 @@ Divmod.Class.subclass(Methanal.Util, 'Tooltip').methods(
 
 
 /**
- * Tooltip "pointer" (the tail end of the tooltip) orientations::
+ * Tooltip "pointer" (the tail end of the tooltip) orientations:
  *
- *     none:
+ *     - none:
  *         Tooltip has no tail.
  *
- *     left:
+ *     - left:
  *         Tail comes from the left edge.
  *
- *     bottom:
+ *     - bottom:
  *         Tail comes from the bottom edge.
+ *
+ *     - top:
+ *         Tail comes from the top edge.
  */
 Methanal.Util.Tooltip.POINTER_ORIENTATIONS = {
     'none':   '',
