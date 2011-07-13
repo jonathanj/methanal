@@ -517,6 +517,29 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertIdentical(
             Methanal.Util.unapply(f)(1, 2, 3),
             6);
+    },
+
+
+    /**
+     * Pluralise a word.
+     */
+    function test_plural(self) {
+        var plural = Methanal.Util.plural;
+        self.assertIdentical(
+            plural(1, 'hammer'),
+            'hammer');
+        self.assertIdentical(
+            plural(0, 'hammer'),
+            'hammers');
+        self.assertIdentical(
+            plural(2, 'hammer'),
+            'hammers');
+        self.assertIdentical(
+            plural(-1, 'hammer'),
+            'hammers');
+        self.assertIdentical(
+            plural(2, 'fix', 'fixes'),
+            'fixes');
     });
 
 

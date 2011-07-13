@@ -1366,7 +1366,8 @@ Divmod.Class.subclass(Methanal.Util, 'Tooltip').methods(
         var orientationClass = POINTER_ORIENTATIONS[self.orientation] || '';
         self.node = D('span', {'class': self.extraClassName}, [
             D('div', {'class': 'hover-tooltip ' + orientationClass}, [
-                text, D('div', {'class': 'hover-tooltip-arrow'})])]);
+                text, D('div', {'class': 'hover-tooltip-arrow'})]),
+            D('div', {'class': 'terminator'})]);
         if (self._hidden) {
             self.hide();
         }
@@ -1376,19 +1377,44 @@ Divmod.Class.subclass(Methanal.Util, 'Tooltip').methods(
 
 
 /**
- * Tooltip "pointer" (the tail end of the tooltip) orientations::
+ * Tooltip "pointer" (the tail end of the tooltip) orientations:
  *
- *     none:
+ *     - none:
  *         Tooltip has no tail.
  *
- *     left:
+ *     - left:
  *         Tail comes from the left edge.
  *
- *     bottom:
+ *     - bottom:
  *         Tail comes from the bottom edge.
+ *
+ *     - top:
+ *         Tail comes from the top edge.
  */
 Methanal.Util.Tooltip.POINTER_ORIENTATIONS = {
     'none':   '',
     'left':   'hover-tooltip-left',
     'bottom': 'hover-tooltip-bottom',
     'top':    'hover-tooltip-top'};
+
+
+
+/**
+ * Pluralise a word.
+ *
+ * @type  n: C{Number}
+ * @param n: Count.
+ *
+ * @type  word: C{String}
+ * @param word: Word to pluralise.
+ *
+ * @type  pluralForm: C{String}
+ * @param pluralForm: Plural form of L{word}, defaults to C{word + 's'}.
+ *
+ * @rtype:  C{String}
+ * @return: Plural form of C{word} it C{n} indicates it should be a plural.
+ */
+Methanal.Util.plural = function plural(n, word, pluralForm/*=undefined*/) {
+    pluralForm = pluralForm || word + 's';
+    return n == 1 ? word : pluralForm;
+};

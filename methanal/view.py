@@ -240,6 +240,14 @@ class LiveForm(SimpleForm):
     @ivar viewOnly: Flag indicating whether model values are written back when
         invoked.
 
+    @type hideModificationIndicator: C{bool}
+    @ivar hideModificationIndicator: Hide the modification indicator for this
+        form? Defaults to C{False}.
+
+    @type hideValidationErrorIndicator: C{bool}
+    @ivar hideValidationErrorIndicator: Hide the validation error indicator for
+        this form? Defaults to C{False}.
+
     @type actions: L{ActionContainer}
 
     @type doc: C{unicode}
@@ -262,6 +270,9 @@ class LiveForm(SimpleForm):
         self.actions = actions
         self.doc = doc
 
+        self.hideModificationIndicator = False
+        self.hideValidationErrorIndicator = False
+
 
     def getInitialArguments(self):
         args = super(LiveForm, self).getInitialArguments()
@@ -269,7 +280,10 @@ class LiveForm(SimpleForm):
 
 
     def getArgs(self):
-        return {u'viewOnly': self.viewOnly}
+        return {
+            u'viewOnly': self.viewOnly,
+            u'hideModificationIndicator': self.hideModificationIndicator,
+            u'hideValidationErrorIndicator': self.hideValidationErrorIndicator}
 
 
     @renderer
