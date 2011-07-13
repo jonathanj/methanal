@@ -55,10 +55,16 @@ form {
     background-position: 3px center;
 }
 
+.hover-tooltip {
+    /* Simulate inline-block. */
+    zoom: 1;
+    display: inline;
+    vertical-align: top;
+}
+
 .label-tooltip .hover-tooltip {
     position: relative;
     top: -0.25em;
-    left: -3em;
     margin-right: -100%;
 }
 
