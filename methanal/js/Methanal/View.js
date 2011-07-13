@@ -1111,7 +1111,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      */
     function clearError(self) {
         Methanal.Util.removeNodeContent(self._formErrorNode);
-        self._formErrorNode.style.display = 'none';
+        Methanal.Util.addElementClass(self._formErrorNode, 'hidden');
     },
 
 
@@ -1146,7 +1146,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             T('h1', {}, ['Error submitting form', a]),
             T('div', {'class': 'methanal-submit-error-message'}, [
                 self.formatFailure(failure)])]);
-        self._formErrorNode.style.display = 'block';
+        Methanal.Util.removeElementClass(self._formErrorNode, 'hidden');
     },
 
 
@@ -1731,7 +1731,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * Enable the human-readable "display value" representation.
      */
     function enableDisplayValue(self) {
-        self._displayValueNode.style.display = 'block';
+        Methanal.Util.removeElementClass(self._displayValueNode, 'hidden');
         self._useDisplayValue = true;
         self._updateDisplayValue();
     },
@@ -1741,7 +1741,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * Disable the human-readable "display value" representation.
      */
     function disableDisplayValue(self) {
-        self._displayValueNode.style.display = 'none';
+        Methanal.Util.addElementClass(self._displayValueNode, 'hidden');
         self._useDisplayValue = false;
     },
 
@@ -2313,13 +2313,12 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
         if (values !== null) {
             Methanal.Util.replaceNodeText(
                 selnode, 'Selected ' + values.length.toString() + ' item(s).');
-            selnode.style.display = 'block';
+            Methanal.Util.removeElementClass(selnode, 'hidden');
         } else {
-            selnode.style.display = 'none';
+            Methanal.Util.addElementClass(selnode, 'hidden');
         }
         return Methanal.View.MultiSelectInput.upcall(self, 'onChange', node);
     });
-
 
 
 
