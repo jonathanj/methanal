@@ -624,6 +624,8 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
             node = widget.nodeById('throbber');
         }
         self.node = node;
+        // Hide it by default.
+        self.stop();
     },
 
 
