@@ -624,6 +624,8 @@ Divmod.Class.subclass(Methanal.Util, 'Throbber').methods(
             node = widget.nodeById('throbber');
         }
         self.node = node;
+        // Hide it by default.
+        self.stop();
     },
 
 
@@ -1366,8 +1368,7 @@ Divmod.Class.subclass(Methanal.Util, 'Tooltip').methods(
         var orientationClass = POINTER_ORIENTATIONS[self.orientation] || '';
         self.node = D('span', {'class': self.extraClassName}, [
             D('div', {'class': 'hover-tooltip ' + orientationClass}, [
-                text, D('div', {'class': 'hover-tooltip-arrow'})]),
-            D('div', {'class': 'terminator'})]);
+                text, D('div', {'class': 'hover-tooltip-arrow'})])]);
         if (self._hidden) {
             self.hide();
         }
