@@ -764,8 +764,12 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormAction').methods(
 
     /**
      * Disable form action.
+     *
+     * @type  state: C{String}
+     * @param state: An arbitrary string describing the disabled state; useful
+     *     for differentiating between states like "busy" and "error".
      */
-    function disable(self) {
+    function disable(self, state) {
         throw new Error('Subclasses must implement "disable"');
     },
 
@@ -797,14 +801,22 @@ Methanal.View.FormAction.subclass(Methanal.View, 'ActionButton').methods(
 
     function enable(self) {
         self._buttonNode.disabled = false;
-        Methanal.Util.removeElementClass(self._buttonNode, 'methanal-submit-disabled');
+        Methanal.Util.removeElementClass(
+            self._buttonNode, 'methanal-submit-disabled');
+        Methanal.Util.removeElementClass(
+            self._buttonNode, 'methanal-waiting');
     },
 
 
-    function disable(self) {
+    function disable(self, state) {
         if (!self.allowViewOnly) {
             self._buttonNode.disabled = true;
-            Methanal.Util.addElementClass(self._buttonNode, 'methanal-submit-disabled');
+            Methanal.Util.addElementClass(
+                self._buttonNode, 'methanal-submit-disabled');
+            if (state === 'waiting') {
+                Methanal.Util.addElementClass(
+                    self._buttonNode, 'methanal-waiting');
+            }
         }
     });
 
@@ -944,9 +956,9 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'ActionContainer').methods(
     /**
      * Disable all form actions.
      */
-    function disable(self) {
+    function disable(self, state) {
         for (var i = 0; i < self.childWidgets.length; ++i) {
-            self.childWidgets[i].disable();
+            self.childWidgets[i].disable(state);
         }
         self._disabled = true;
     });
@@ -1098,7 +1110,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         }
 
         self.clearError();
-        self.actions.disable();
+        self.actions.disable('waiting');
         self.freeze();
         self.actions.throbber.start();
 

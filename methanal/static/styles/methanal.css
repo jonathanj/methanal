@@ -126,10 +126,18 @@ input.methanal-check-input {
     cursor: pointer;
 }
 
+button.methanal-waiting,
+button.methanal-waiting:hover,
+button.methanal-waiting:active {
+    cursor: wait;
+}
+
 button.methanal-submit-disabled,
-button.methanal-submit-disabled:hover {
+button.methanal-submit-disabled:hover,
+button.methanal-submit-disabled:active {
     background-color: #bbb;
     cursor: default;
+    cursor: not-allowed;
 }
 
 button.methanal-submit-disabled:active {
