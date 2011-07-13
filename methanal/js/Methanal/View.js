@@ -1124,7 +1124,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      */
     function clearError(self) {
         Methanal.Util.removeNodeContent(self._formErrorNode);
-        self._formErrorNode.style.display = 'none';
+        Methanal.Util.addElementClass(self._formErrorNode, 'hidden');
     },
 
 
@@ -1159,7 +1159,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             T('h1', {}, ['Error submitting form', a]),
             T('div', {'class': 'methanal-submit-error-message'}, [
                 self.formatFailure(failure)])]);
-        self._formErrorNode.style.display = 'block';
+        Methanal.Util.removeElementClass(self._formErrorNode, 'hidden');
     },
 
 
@@ -1342,7 +1342,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
      * @param error: Error message
      */
     function setError(self, error) {
-        Methanal.Util.addElementClass(self.node, 'methanal-control-error');
+        Methanal.Util.addElementClass(self.node, 'methanal-container-error');
     },
 
 
@@ -1350,7 +1350,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
      * Reset the error state.
      */
     function clearError(self) {
-        Methanal.Util.removeElementClass(self.node, 'methanal-control-error');
+        Methanal.Util.removeElementClass(self.node, 'methanal-container-error');
     },
 
 
@@ -1763,7 +1763,6 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
             args.formatter = self.defaultFormatter();
         }
         self.formatter = args.formatter;
-        self._tooltipNode = null;
         self._useDisplayValue = false;
     },
 
@@ -1804,36 +1803,10 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
 
 
     /**
-     * Create a DOM node for the tooltip.
-     */
-    function _createTooltip(self) {
-        if (!self._tooltipNode) {
-            var doc = self.node.ownerDocument;
-            var div = doc.createElement('div');
-            Methanal.Util.replaceNodeText(div, self.label);
-            Methanal.Util.addElementClass(div, 'tooltip');
-            self.node.appendChild(div);
-            self._tooltipNode = div;
-        }
-    },
-
-
-    /**
-     * Destroy the tooltip DOM node.
-     */
-    function _destroyTooltip(self) {
-        if (self._tooltipNode) {
-            self.node.removeChild(self._tooltipNode);
-            self._tooltipNode = null;
-        }
-    },
-
-
-    /**
      * Enable the human-readable "display value" representation.
      */
     function enableDisplayValue(self) {
-        self._displayValueNode.style.display = 'block';
+        Methanal.Util.removeElementClass(self._displayValueNode, 'hidden');
         self._useDisplayValue = true;
         self._updateDisplayValue();
     },
@@ -1843,7 +1816,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * Disable the human-readable "display value" representation.
      */
     function disableDisplayValue(self) {
-        self._displayValueNode.style.display = 'none';
+        Methanal.Util.addElementClass(self._displayValueNode, 'hidden');
         self._useDisplayValue = false;
     },
 
@@ -1886,6 +1859,11 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
     function nodeInserted(self) {
         Methanal.View.TextInput.upcall(self, 'nodeInserted');
         self._displayValueNode = self.nodeById('displayValue');
+        if (self.embeddedLabel) {
+            self._labelTooltip = Methanal.Util.Tooltip(
+                self.node, self.label, 'bottom', 'label-tooltip');
+            self._labelTooltip.hide();
+        }
     },
 
 
@@ -1917,7 +1895,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      */
     function onBlur(self, node) {
         if (self.embeddedLabel) {
-            self._destroyTooltip();
+            self._labelTooltip.hide();
             if (self._needsLabel(node.value)) {
                 self._setLabel(node);
                 // XXX: It's possible that nothing actually changed and there
@@ -1939,7 +1917,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
             node.value = '';
         }
         if (self.embeddedLabel) {
-            self._createTooltip();
+            self._labelTooltip.show();
         }
     },
 
@@ -2410,13 +2388,12 @@ Methanal.View.SelectInput.subclass(Methanal.View, 'MultiSelectInput').methods(
         if (values !== null) {
             Methanal.Util.replaceNodeText(
                 selnode, 'Selected ' + values.length.toString() + ' item(s).');
-            selnode.style.display = 'block';
+            Methanal.Util.removeElementClass(selnode, 'hidden');
         } else {
-            selnode.style.display = 'none';
+            Methanal.Util.addElementClass(selnode, 'hidden');
         }
         return Methanal.View.MultiSelectInput.upcall(self, 'onChange', node);
     });
-
 
 
 

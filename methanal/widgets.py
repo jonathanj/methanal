@@ -26,8 +26,8 @@ from xmantissa.webtheme import ThemedElement
 from methanal.imethanal import IColumn
 from methanal.util import getArgsDict
 from methanal.view import (
-    liveFormFromAttributes, SimpleForm, FormInput, LiveForm, SubmitAction,
-    ActionButton, ActionContainer, SelectInput)
+    liveFormFromAttributes, SimpleForm, FormInput, LiveForm, ActionButton,
+    SelectInput)
 from methanal.model import Value
 from methanal.errors import InvalidIdentifier
 
@@ -628,14 +628,16 @@ class CancelAction(ActionButton):
 class ModalDialogForm(LiveForm):
     """
     L{methanal.view.LiveForm} for L{methanal.widgets.ModalDialog}.
+
+    @type addCancelAction: C{bool}
+    @ivar addCancelAction: Add the cancel action? Defaults to C{True}.
     """
     jsClass = u'Methanal.Widgets.ModalDialogForm'
 
-    def __init__(self, actions=None, **kw):
-        if actions is None:
-            actions = ActionContainer(
-                actions=[SubmitAction(name=u'OK'), CancelAction()])
-        super(ModalDialogForm, self).__init__(actions=actions, **kw)
+    def __init__(self, addCancelAction=True, **kw):
+        super(ModalDialogForm, self).__init__(**kw)
+        if addCancelAction:
+            self.actions.addAction(CancelAction())
 
 
 

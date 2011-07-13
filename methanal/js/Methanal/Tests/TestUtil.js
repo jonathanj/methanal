@@ -903,13 +903,13 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
  */
 Divmod.UnitTest.TestCase.subclass(
     Methanal.Tests.TestUtil, 'TestThrobber').methods(
-    function _createThrobber(self, toggleDisplay) {
+    function _createThrobber(self) {
         var widget = Nevow.Athena.Widget(
             Nevow.Test.WidgetUtil.makeWidgetNode());
         var throbberNode = Methanal.Tests.Util.makeWidgetChildNode(
             widget, 'img', 'throbber');
         document.body.appendChild(widget.node);
-        return Methanal.Util.Throbber(widget, toggleDisplay);
+        return Methanal.Util.Throbber(widget);
     },
 
 
@@ -929,24 +929,13 @@ Divmod.UnitTest.TestCase.subclass(
     function test_startStop(self) {
         var throbber = self._createThrobber();
         throbber.start();
-        self.assertIdentical(throbber.node.style.visibility, 'visible');
+        self.assertIdentical(
+            Methanal.Util.containsElementClass(throbber.node, 'hidden'),
+            false);
         throbber.stop();
-        self.assertIdentical(throbber.node.style.visibility, 'hidden');
-    },
-
-
-    /**
-     * Specifying the C{toggleDisplay} augments the behaviour of the C{stop}
-     * and C{start} methods.
-     */
-    function test_toggleDisplay(self) {
-        var throbber = self._createThrobber('foo');
-        throbber.start();
-        self.assertIdentical(throbber.node.style.visibility, 'visible');
-        self.assertIdentical(throbber.node.style.display, 'foo');
-        throbber.stop();
-        self.assertIdentical(throbber.node.style.visibility, 'hidden');
-        self.assertIdentical(throbber.node.style.display, 'none');
+        self.assertIdentical(
+            Methanal.Util.containsElementClass(throbber.node, 'hidden'),
+            true);
     });
 
 

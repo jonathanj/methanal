@@ -1082,85 +1082,15 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'FilterList').methods(
  * that inherits from this.
  */
 Methanal.View.LiveForm.subclass(Methanal.Widgets, 'FilterListForm').methods(
+    function __init__(self, node, args, controlNames) {
+        args.hideModificationIndicator = true;
+        Methanal.Widgets.FilterListForm.upcall(
+            self, '__init__', node, args, controlNames);
+    },
+
+
     function submitSuccess(self, widgetInfo) {
         return self.widgetParent.setResultWidget(widgetInfo, self);
-    });
-
-
-
-/**
- * A collapsable container widget.
- *
- * @type _params: C{object} mapping C{String} to values
- * @ivar _params: Mapping of names to values, used specifically for
- *     L{Methanal.Widgets.Rollup.update}
- *
- * @type expanded: C{boolean}
- * @ivar expanded: Flag indicating whether the container is expanded or not
- *
- * @type throbber: L{Methanal.Util.Throbber}
- * @ivar throbber: Throbber controller
- */
-Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Rollup').methods(
-    /**
-     * Create the rollup widget.
-     *
-     * @type params: C{object} mapping C{String} to values
-     * @ivar params: Mapping of names to values, used specifically for
-     *     L{Methanal.Widgets.Rollup.update}
-     */
-    function __init__(self, node, params) {
-        Methanal.Widgets.Rollup.upcall(self, '__init__', node);
-        self.expanded = false;
-        self._params = params;
-    },
-
-
-    function nodeInserted(self) {
-        self._contentNode = self.nodeById('content');
-        self._buttonNode = self.nodeById('roll-button');
-        self._totalNode = self.nodeById('summary-total');
-        self._summaryDescNode = self.nodeById('summary-description');
-        self.throbber = Methanal.Util.Throbber(self)
-
-        self.update(self._params);
-    },
-
-
-    /**
-     * Toggle the rollup's expanded state.
-     */
-    function toggleExpand(self) {
-        self.expanded = !self.expanded;
-
-        self._contentNode.style.display = self.expanded ? 'block' : 'none';
-
-        var buttonNode = self._buttonNode;
-        if (self.expanded) {
-            Methanal.Util.addElementClass(buttonNode, 'roll-up');
-            Methanal.Util.removeElementClass(buttonNode, 'roll-down');
-        } else {
-            Methanal.Util.removeElementClass(buttonNode, 'roll-up');
-            Methanal.Util.addElementClass(buttonNode, 'roll-down');
-        }
-        return false;
-    },
-
-
-    /**
-     * Update the rollup view.
-     *
-     * The base implementation updates the node, with ID "summary-description",
-     * with the value from the key "summary".
-     *
-     * @type params: C{object} mapping C{String} to values
-     * @ivar params: Mapping of names to values, used specifically for
-     *     L{Methanal.Widgets.Rollup.update}
-     */
-    function update(self, params) {
-        var summary = params['summary'];
-        summary = summary === undefined ? '' : summary;
-        Methanal.Util.replaceNodeText(self._summaryDescNode, summary);
     });
 
 
@@ -1286,8 +1216,7 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
             'src': '/static/Methanal/images/main-throbber.gif'});
         resultControl.node.parentNode.insertBefore(
             throbberNode, resultControl.node);
-        self.throbber = Methanal.Util.Throbber(
-            undefined, 'inline', throbberNode);
+        self.throbber = Methanal.Util.Throbber(undefined, throbberNode);
         self.throbber.stop();
         self.widgetParent.formLoaded(self);
     },
@@ -1697,7 +1626,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      * Create a throbber object.
      */
     function _makeThrobber(self) {
-        return Methanal.Util.Throbber(self, 'inline');
+        return Methanal.Util.Throbber(self);
     },
 
 
