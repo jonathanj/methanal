@@ -584,7 +584,7 @@ optgroup option {
  */
 
 .hover-tooltip {
-    float: left;
+    display: inline-block;
     position: relative;
     border: 1px solid;
     border-radius: 2px;
