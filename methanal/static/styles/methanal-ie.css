@@ -58,7 +58,7 @@ form {
 .label-tooltip .hover-tooltip {
     position: relative;
     top: -0.25em;
-    left: -3em;
+    left: -100%;
     margin-right: -100%;
 }
 

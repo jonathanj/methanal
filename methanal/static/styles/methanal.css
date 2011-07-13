@@ -164,18 +164,6 @@ optgroup option {
     padding-left: 1em;
 }
 
-.tooltip {
-    position: absolute;
-    color: black;
-    background: white;
-    border: 1px solid #275e8c;
-    border-left: none;
-    margin: 0;
-    left: 0;
-    padding: 2px;
-    min-width: 10em;
-}
-
 .methanal-multiselect {
     max-height: 30ex;
 }
