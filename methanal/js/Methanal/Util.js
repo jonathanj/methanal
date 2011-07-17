@@ -1453,8 +1453,8 @@ Methanal.Util.scrollTo = function scrollTo(node, scrollPosition) {
         if (innerHeight === undefined) {
             innerHeight = node.ownerDocument.documentElement.clientHeight;
         }
-        // Scroll the view up by half its size, after scrolling control
-        // to the top of it, to centre the control.
+        // Scroll the view up by half its size, after scrolling the node to the
+        // top of it, to centre the node.
         window.scrollBy(0, -innerHeight / 2);
     } else {
         node.scrollIntoView(true);
