@@ -1419,3 +1419,44 @@ Methanal.Util.plural = function plural(n, word, pluralForm/*=undefined*/) {
     pluralForm = pluralForm || word + 's';
     return n == 1 ? word : pluralForm;
 };
+
+
+
+/**
+ * Scroll a node into view.
+ *
+ * @type  node: I{DOM element}
+ *
+ * @type  scrollPosition: C{String}
+ * @param scrollPosition: Name of the position to scroll C{node} to. Available
+ *     options are:
+ *
+ *     - C{'top'}: Scroll the element to the top of the screen.
+ *
+ *     - C{'bottom'}: Scroll the element to the bottom of the screen.
+ *
+ *     - C{'middle'}: Scroll the element to the middle of the screen.
+ *
+ *     - C{null}: Perform no scrolling.
+ */
+Methanal.Util.scrollTo = function scrollTo(node, scrollPosition) {
+    if (scrollPosition === null || !node.scrollIntoView) {
+        return;
+    }
+
+    if (scrollPosition === 'bottom') {
+        node.scrollIntoView(false);
+    } else if (scrollPosition === 'middle') {
+        node.scrollIntoView(true);
+        var innerHeight = window.innerHeight;
+        // For IE < 9.
+        if (innerHeight === undefined) {
+            innerHeight = node.ownerDocument.documentElement.clientHeight;
+        }
+        // Scroll the view up by half its size, after scrolling the node to the
+        // top of it, to centre the node.
+        window.scrollBy(0, -innerHeight / 2);
+    } else {
+        node.scrollIntoView(true);
+    }
+};

@@ -1252,7 +1252,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
         function focusControl(control) {
             return function () {
-                control.focus(true);
+                control.focus();
                 return false;
             }
         }
@@ -1596,20 +1596,28 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
 
     /**
      * Give keyboard focus to the form input.
+     *
+     * @type  scrollPosition: C{String}
+     * @param scrollPosition: Scroll the input into a view position, defaults
+     *     to C{'middle'}.
+     *
+     * @see: L{Methanal.Util.scrollTo}
      */
-    function focus(self, scrollIntoView/*=true*/) {
+    function focus(self, scrollPosition/*='middle'*/) {
         if (!self.inputNode) {
             return;
         }
 
         if (self.inputNode.focus !== undefined) {
-            self.inputNode.focus();
-        }
-        if (scrollIntoView === undefined || scrollIntoView) {
-            if (self.inputNode.scrollIntoView) {
-                self.inputNode.scrollIntoView(true);
+            try {
+                self.inputNode.focus();
+            } catch (e) {
+                // Internet Explorer throws an exception when it can't focus
+                // things.
             }
         }
+
+        Methanal.Util.scrollTo(self.inputNode, scrollPosition || 'middle');
     },
 
 
