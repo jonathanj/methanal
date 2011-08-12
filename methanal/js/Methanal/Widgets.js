@@ -1110,8 +1110,10 @@ Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
 
     function formLoaded(self, form) {
         self._lookupForm = form;
-        self._waitForForm.callback(null);
-        self._waitForForm = Divmod.Defer.succeed(null);
+        self.getForm()._waitForForm.addCallback(function () {
+            self._waitForForm.callback(null);
+            self._waitForForm = Divmod.Defer.succeed(null);
+        });
     },
 
 

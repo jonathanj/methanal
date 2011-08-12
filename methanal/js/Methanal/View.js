@@ -374,6 +374,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
      * attributes.
      */
     function formInit(self) {
+        self._waitForForm = Divmod.Defer.Deferred();
         self._frozen = 0;
         self.controls = {};
         self.subforms = {};
@@ -557,6 +558,8 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         self._stripeControls();
         // Thaw freeze from formInit.
         self.thaw();
+        self._waitForForm.callback(null);
+        self._waitForForm = Divmod.Defer.succeed(null);
         self.formLoaded();
 
         if (self.viewOnly && self.actions) {
