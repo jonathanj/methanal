@@ -1393,10 +1393,7 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
  */
 Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
     function nodeInserted(self) {
-        var T = Methanal.Util.DOMBuilder(self.node.ownerDocument);
-        self._overlayNode = T('div', {'class': 'modal-dialog-overlay'});
-        self.node.parentNode.appendChild(self._overlayNode);
-
+        Methanal.Util.setModalOverlay(true);
         Methanal.Util.addElementClass(
             self.node.ownerDocument.body, 'printing');
         Methanal.Util.addElementClass(
@@ -1415,7 +1412,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
 
         self.detach();
         self.node.parentNode.removeChild(self.node);
-        self._overlayNode.parentNode.removeChild(self._overlayNode);
+        Methanal.Util.setModalOverlay(false);
     });
 
 
