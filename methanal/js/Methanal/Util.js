@@ -1460,3 +1460,24 @@ Methanal.Util.scrollTo = function scrollTo(node, scrollPosition) {
         node.scrollIntoView(true);
     }
 };
+
+
+
+/**
+ * Set the visibility of the modal overlay.
+ *
+ * If the modal overlay is already in the requested state no action is taken.
+ */
+Methanal.Util.setModalOverlay = function setModalOverlay(visible) {
+    if (visible && Methanal.Util._modalOverlayNode === null) {
+        var T = Methanal.Util.DOMBuilder(document);
+        Methanal.Util._modalOverlayNode = T(
+            'div', {'class': 'modal-dialog-overlay'});
+        document.body.appendChild(Methanal.Util._modalOverlayNode);
+    } else if (!visible && Methanal.Util._modalOverlayNode !== null) {
+        document.body.removeChild(Methanal.Util._modalOverlayNode);
+        Methanal.Util._modalOverlayNode = null;
+    }
+};
+
+Methanal.Util._modalOverlayNode = null;
