@@ -82,7 +82,7 @@ function accessorDescriptor(field, fun) {
         configurable: true};
     desc[field] = fun;
     return desc;
-}
+};
 
 
 
@@ -99,7 +99,7 @@ Methanal.Tests.Util.defineGetter = function defineGetter(obj, prop, get) {
         return obj.__defineGetter__(prop, get);
     }
     throw new Error('Getter properties not supported!');
-}
+};
 
 
 /**
@@ -115,7 +115,7 @@ Methanal.Tests.Util.defineSetter = function defineSetter(obj, prop, set) {
         return obj.__defineSetter__(prop, set);
     }
     throw new Error('Setter properties not supported!');
-}
+};
 
 
 /**

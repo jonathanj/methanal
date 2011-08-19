@@ -413,11 +413,11 @@ Methanal.Tests.TestPreds.PredsTestCase.subclass(
      */
     function test_isChars(self) {
         var isChars = Methanal.Preds.isChars;
-        self.assertTrue(isChars('[0-9]'), '0123456789')
-        self.assertTrue(isChars('[A-Z]'), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-        self.assertTrue(isChars('[a-z]'), 'abcdefghijklmnopqrstuvwxyz')
-        self.assertTrue(isChars("[a-z_']"), "hello_world's")
-        self.assertFalse(isChars('[0-9]'), 'hello')
+        self.assertTrue(isChars('[0-9]'), '0123456789');
+        self.assertTrue(isChars('[A-Z]'), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        self.assertTrue(isChars('[a-z]'), 'abcdefghijklmnopqrstuvwxyz');
+        self.assertTrue(isChars("[a-z_']"), "hello_world's");
+        self.assertFalse(isChars('[0-9]'), 'hello');
     },
 
 
