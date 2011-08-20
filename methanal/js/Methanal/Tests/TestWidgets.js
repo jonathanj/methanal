@@ -83,8 +83,7 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function assertHasActions(self, table, actions) {
         var actionDisplayNames = [];
-        var i;
-        for (i = 0; i < actions.length; ++i) {
+        for (var i = 0; i < actions.length; ++i) {
             actionDisplayNames.push(actions[i].displayName);
         }
         actionDisplayNames.sort();
@@ -94,7 +93,7 @@ Methanal.Tests.Util.TestCase.subclass(
             'Number of action nodes does not match number of actions.');
 
         var textValues = [];
-        for (i = 0; i < anchors.length; ++i) {
+        for (var i = 0; i < anchors.length; ++i) {
             var children = anchors[i].childNodes;
             for (var j = 0; j < children.length; ++j) {
                 if (children[j].nodeType == children[j].TEXT_NODE) {
@@ -435,14 +434,13 @@ Methanal.Tests.Util.TestCase.subclass(
         }
 
         var _tabIDs = {};
-        var i;
-        for (i = 0; i < tabIDs.length; ++i) {
+        for (var i = 0; i < tabIDs.length; ++i) {
             _tabIDs[tabIDs[i]] = true;
         }
 
         tabGroups = tabGroups || [];
         var _tabGroups = {};
-        for (i = 0; i < tabGroups.length; ++i) {
+        for (var i = 0; i < tabGroups.length; ++i) {
             _tabGroups[tabGroups[i].id] = tabGroups[i];
         }
 

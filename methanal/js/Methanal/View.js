@@ -1104,11 +1104,10 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      */
     function submit(self) {
         var data = {};
-        var name;
-        for (name in self.controls) {
+        for (var name in self.controls) {
             data[name] = self.getControlValue(name);
         }
-        for (name in self.subforms) {
+        for (var name in self.subforms) {
             var form = self.subforms[name];
             data[form.name] = form.getValue();
         }
@@ -1515,11 +1514,10 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'GroupInput').methods(
 
     function getValue(self) {
         var data = {};
-        var name;
-        for (name in self.controls) {
+        for (var name in self.controls) {
             data[name] = self.getControlValue(name);
         }
-        for (name in self.subforms) {
+        for (var name in self.subforms) {
             var form = self.subforms[name];
             data[form.name] = form.getValue();
         }

@@ -142,15 +142,14 @@ Methanal.Tests.Util.TestCase.subclass(
         }
 
         var childWidgets = [];
-        var i = 0;
-        for (i = 0; i < 5; ++i) {
+        for (var i = 0; i < 5; ++i) {
             childWidgets.push(makeWidget([]));
         }
         var widget = makeWidget(childWidgets);
 
         Methanal.Util.nodeInserted(widget);
         self.assertIdentical(widget.nodeInserted, true);
-        for (i = 0; i < childWidgets.length; ++i) {
+        for (var i = 0; i < childWidgets.length; ++i) {
             self.assertIdentical(childWidgets[i].nodeInserted, true);
         }
     },

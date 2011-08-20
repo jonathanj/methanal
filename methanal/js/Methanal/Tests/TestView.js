@@ -69,8 +69,7 @@ Methanal.Tests.Util.TestCase.subclass(
                         postFormInsertion/*=undefined*/) {
         controls = controls || [];
         var controlNames = [];
-        var i;
-        for (i = 0; i < controls.length; ++i) {
+        for (var i = 0; i < controls.length; ++i) {
             controlNames.push(controls[i].name);
         }
 
@@ -80,7 +79,7 @@ Methanal.Tests.Util.TestCase.subclass(
         if (postFormInsertion) {
             postFormInsertion(form);
         }
-        for (i = 0; i < controls.length; ++i) {
+        for (var i = 0; i < controls.length; ++i) {
             var control = controls[i];
             form.addChildWidget(control);
             form.loadedUp(control);
