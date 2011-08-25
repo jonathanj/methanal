@@ -249,7 +249,7 @@ Methanal.Validators.isChars = function isChars(expn) {
         if (!pred(value)) {
             return 'Invalid characters: ' + value.replace(extractExpn, ' ');
         }
-    }
+    };
 };
 
 

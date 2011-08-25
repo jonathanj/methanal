@@ -139,7 +139,7 @@ Methanal.Tests.Util.TestCase.subclass(
                 'nodeInserted': function () {
                     this.nodeInserted = true;
                 }};
-        };
+        }
 
         var childWidgets = [];
         for (var i = 0; i < 5; ++i) {
@@ -282,7 +282,7 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertIdentical(rjust('a', 3, 'b'), 'bba');
         self.assertIdentical(rjust('a', 3, 'b'), 'bba');
         self.assertIdentical(rjust('a', 3, 'xy'), 'xxa');
-        var s = 'a'
+        var s = 'a';
         self.assertIdentical(rjust(s, 2), ' a');
         self.assertIdentical(s, 'a');
     },
@@ -332,7 +332,7 @@ Methanal.Tests.Util.TestCase.subclass(
         var seq = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
         function gatherNth(start, n) {
-            var res = []
+            var res = [];
             Methanal.Util.nthItem(seq, start, n, function (v) {
                 res.push(v);
             });
@@ -382,7 +382,7 @@ Methanal.Tests.Util.TestCase.subclass(
 
         function isOdd(x) {
             return x % 2 !== 0;
-        };
+        }
 
         self.assertArraysEqual(
             filter(null, seq),
@@ -453,7 +453,7 @@ Methanal.Tests.Util.TestCase.subclass(
 
         self.assertArraysEqual(
             split('foo bar  baz', ' '),
-            ['foo', 'bar', '', 'baz'])
+            ['foo', 'bar', '', 'baz']);
 
         self.assertArraysEqual(
             split('foo bar  baz', ' '),
@@ -596,32 +596,33 @@ Divmod.UnitTest.TestCase.subclass(
      * in milliseconds.
      */
     function test_offset(self) {
-        var td = Methanal.Util.TimeDelta({'days': 1});
+        var td;
+        td = Methanal.Util.TimeDelta({'days': 1});
         self.assertIdentical(td.offset, 1000 * 3600 * 24);
 
-        var td = Methanal.Util.TimeDelta({'days': -1});
+        td = Methanal.Util.TimeDelta({'days': -1});
         self.assertIdentical(td.offset, 1000 * 3600 * -24);
 
-        var td = Methanal.Util.TimeDelta({'days': 1,
-                                          'hours': 2});
+        td = Methanal.Util.TimeDelta({'days': 1,
+                                      'hours': 2});
         self.assertIdentical(td.offset, 1000 * 3600 * 26);
 
-        var td = Methanal.Util.TimeDelta({'days': 1,
-                                          'hours': 2,
-                                          'minutes': 3});
+        td = Methanal.Util.TimeDelta({'days': 1,
+                                      'hours': 2,
+                                      'minutes': 3});
         self.assertIdentical(td.offset, 1000 * (3600 * 26 + 60 * 3));
 
-        var td = Methanal.Util.TimeDelta({'days': 1,
-                                          'hours': 2,
-                                          'minutes': 3,
-                                          'seconds': 4});
+        td = Methanal.Util.TimeDelta({'days': 1,
+                                      'hours': 2,
+                                      'minutes': 3,
+                                      'seconds': 4});
         self.assertIdentical(td.offset, 1000 * (3600 * 26 + 60 * 3 + 4));
 
-        var td = Methanal.Util.TimeDelta({'days': 1,
-                                          'hours': 2,
-                                          'minutes': 3,
-                                          'seconds': 4,
-                                          'milliseconds': 5});
+        td = Methanal.Util.TimeDelta({'days': 1,
+                                      'hours': 2,
+                                      'minutes': 3,
+                                      'seconds': 4,
+                                      'milliseconds': 5});
         self.assertIdentical(td.offset, 1000 * (3600 * 26 + 60 * 3 + 4) + 5);
     },
 
@@ -697,7 +698,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
             // pass regardless of the runner's local timezone, so we use UTC
             // dates.
             self.assertIdentical(time.asUTCDate().getTime(), timestamp);
-        };
+        }
 
         assertTimeParsed('2009/9/1',   1251763200000);
         assertTimeParsed('2009.09.01', 1251763200000);
@@ -720,7 +721,7 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
             self.assertThrows(
                 Methanal.Util.TimeParseError,
                 function() { return Methanal.Util.Time.guess(data); });
-        };
+        }
 
         assertTimeParseError('');
         assertTimeParseError('hello');
@@ -754,18 +755,19 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
     function test_fromRelative(self) {
         var today = self._knownTime;
 
-        var t = Methanal.Util.Time.fromRelative('tomorrow', today);
+        var t;
+        t = Methanal.Util.Time.fromRelative('tomorrow', today);
         self.assertIdentical(t.asHumanly(), 'Mon, 7 Sep 2009');
-        var t = Methanal.Util.Time.fromRelative('yesterday', today);
+        t = Methanal.Util.Time.fromRelative('yesterday', today);
         self.assertIdentical(t.asHumanly(), 'Sat, 5 Sep 2009');
-        var t = Methanal.Util.Time.fromRelative('today', today);
+        t = Methanal.Util.Time.fromRelative('today', today);
         self.assertIdentical(t.asHumanly(), 'Sun, 6 Sep 2009');
 
-        var t = Methanal.Util.Time.fromRelative('sun', today);
+        t = Methanal.Util.Time.fromRelative('sun', today);
         self.assertIdentical(t.asHumanly(), 'Sun, 13 Sep 2009');
-        var t = Methanal.Util.Time.fromRelative('mon', today);
+        t = Methanal.Util.Time.fromRelative('mon', today);
         self.assertIdentical(t.asHumanly(), 'Mon, 7 Sep 2009');
-        var t = Methanal.Util.Time.fromRelative('satur', today);
+        t = Methanal.Util.Time.fromRelative('satur', today);
         self.assertIdentical(t.asHumanly(), 'Sat, 12 Sep 2009');
 
         self.assertThrows(
@@ -885,12 +887,13 @@ Divmod.UnitTest.TestCase.subclass(Methanal.Tests.TestUtil, 'TestTime').methods(
      * milliseconds.
      */
     function test_offset(self) {
-        var t = self._knownTime.offset(
+        var t;
+        t = self._knownTime.offset(
             Methanal.Util.TimeDelta({'days': -1}));
         self.assertIdentical(t.asTimestamp(), 1252107383002);
         self.assertIdentical(t.oneDay().asHumanly(), 'Sat, 5 Sep 2009');
 
-        var t = self._knownTime.offset(
+        t = self._knownTime.offset(
             Methanal.Util.TimeDelta({'days': 1}));
         self.assertIdentical(t.asTimestamp(), 1252280183002);
         self.assertIdentical(t.oneDay().asHumanly(), 'Mon, 7 Sep 2009');
@@ -1002,8 +1005,8 @@ Divmod.UnitTest.TestCase.subclass(
         var src = {'a': 5};
         var dst = {'b': 6};
         Methanal.Util.copyProperties(src, dst);
-        self.assertIdentical(dst['b'], 6);
-        self.assertIdentical(dst['a'], 5);
+        self.assertIdentical(dst.b, 6);
+        self.assertIdentical(dst.a, 5);
     });
 
 
@@ -1078,7 +1081,7 @@ Methanal.Tests.Util.TestCase.subclass(
 
         self.assertIdentical(
             f.format(''),
-            '')
+            '');
         self.assertIdentical(
             f.format('1'),
             '1');
@@ -1096,16 +1099,16 @@ Methanal.Tests.Util.TestCase.subclass(
             '1234,56,789');
 
         f = Methanal.Util.DecimalFormatter(
-            [3, 2, -1], '.', ',')
+            [3, 2, -1], '.', ',');
         self.assertIdentical(
             f.format('123456'),
-            '1.23.456')
+            '1.23.456');
         self.assertIdentical(
             f.format('123456789'),
-            '1234.56.789')
+            '1234.56.789');
         self.assertIdentical(
             f.format('1234567,89'),
-            '12.34.567,89')
+            '12.34.567,89');
     });
 
 

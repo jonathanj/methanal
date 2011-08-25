@@ -92,7 +92,7 @@ Methanal.Tests.Util.TestCase.subclass(
         self.assertIdentical(anchors.length, actions.length,
             'Number of action nodes does not match number of actions.');
 
-        var textValues = []
+        var textValues = [];
         for (var i = 0; i < anchors.length; ++i) {
             var children = anchors[i].childNodes;
             for (var j = 0; j < children.length; ++j) {
@@ -198,7 +198,7 @@ Methanal.Tests.Util.TestCase.subclass(
                 self.columnValues[column.id].value);
             self.assertThrows(TypeError,
                 function () {
-                    column.extractValue({})
+                    column.extractValue({});
                 });
         });
     },
@@ -216,7 +216,7 @@ Methanal.Tests.Util.TestCase.subclass(
                 self.columnValues[column.id].link);
             self.assertThrows(TypeError,
                 function () {
-                    column.extractLink({})
+                    column.extractLink({});
                 });
         });
     },
@@ -466,7 +466,7 @@ Methanal.Tests.Util.TestCase.subclass(
             'id': id,
             'title': title,
             'selected': selected || false,
-            'group': group || null})
+            'group': group || null});
         tabView.addChildWidget(tab);
         Methanal.Tests.Util.makeWidgetChildNode(tab, 'content');
         tabView.nodeById('contents').appendChild(tab.node);
@@ -481,12 +481,12 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function test_loadedUp(self) {
         var tabView = self.createTabView(['tab1']);
-        self.assertIdentical(tabView._labels['tab1'], undefined);
-        self.assertIdentical(tabView.tabIDs['tab1'], true);
+        self.assertIdentical(tabView._labels.tab1, undefined);
+        self.assertIdentical(tabView.tabIDs.tab1, true);
 
         self.createTab(tabView, 'tab1', 'Tab 1');
-        self.assertNotIdentical(tabView._labels['tab1'], undefined);
-        self.assertIdentical(tabView.tabIDs['tab1'], undefined);
+        self.assertNotIdentical(tabView._labels.tab1, undefined);
+        self.assertIdentical(tabView.tabIDs.tab1, undefined);
     },
 
 
@@ -709,7 +709,7 @@ Methanal.Tests.Util.TestCase.subclass(
         parentNode.appendChild(node);
         var m = Methanal.Widgets.ModalDialog(node);
         Methanal.Util.nodeInserted(m);
-        return m
+        return m;
     },
 
 
@@ -720,7 +720,7 @@ Methanal.Tests.Util.TestCase.subclass(
         var controlNames = [];
         form = Methanal.Tests.TestWidgets.MockModalDialogForm(controlNames);
         Methanal.Util.nodeInserted(form);
-        return form
+        return form;
     },
 
 
@@ -742,12 +742,12 @@ Methanal.Tests.Util.TestCase.subclass(
         function succeed(methodName, data) {
             closed = false;
             return Divmod.Defer.succeed(data);
-        };
+        }
 
         function fail(methodName, data) {
             closed = false;
             return Divmod.Defer.fail('too bad');
-        };
+        }
 
         form.callRemote = succeed;
         form.submit();

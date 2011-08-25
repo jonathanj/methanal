@@ -18,11 +18,11 @@ Methanal.View.buildInputNodeMapping = function buildInputNodeMapping(node) {
     var inputs = {};
     var nodes = node.getElementsByTagName('input');
     for (var i = 0; i < nodes.length; ++i) {
-        var node = nodes[i];
-        inputs[node.value] = node;
+        var n = nodes[i];
+        inputs[n.value] = n;
     }
     return inputs;
-}
+};
 
 
 
@@ -354,7 +354,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
     function _depUpdate(self, name, values) {
         function _and(x, y) {
             return x && y;
-        };
+        }
 
         var control = self.getControl(name);
         result = Methanal.Util.reduce(_and, values, true);
@@ -1051,7 +1051,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             }
         }
 
-        safeFocus(self.node)
+        safeFocus(self.node);
 
         // Loop over input containers.
         for (var i = 0; i < self.childWidgets.length; ++i) {
@@ -1160,13 +1160,13 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             var traceback = T('pre', {}, [failure.toPrettyText()]);
             this.parentNode.parentNode.appendChild(traceback);
             this.onclick = hideTraceback;
-        };
+        }
 
         function hideTraceback() {
             var node = this.parentNode.parentNode;
             node.removeChild(node.lastChild);
             this.onclick = showTraceback;
-        };
+        }
 
         a.onclick = showTraceback;
 
@@ -1269,7 +1269,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             return function () {
                 control.focus();
                 return false;
-            }
+            };
         }
 
         var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
@@ -1592,7 +1592,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
 
         function _baseValidator(value) {
             return self.baseValidator(value);
-        };
+        }
 
         var form = self.getForm();
         form.controls[self.name] = self;
@@ -1799,10 +1799,10 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * Does the input need an embedded label?
      */
     function _needsLabel(self, value) {
-        if (value != null) {
-            value = value.toString();
+        if (value === null || value === undefined) {
+            value = '';
         }
-        return self.embeddedLabel && (value == null || value.length == 0);
+        return self.embeddedLabel && value.toString().length === 0;
     },
 
 
@@ -2081,14 +2081,15 @@ Methanal.View.TextInput.subclass(
 
 
     function reset(self) {
+        var targetControl;
         Methanal.View.PrePopulatingTextInput.upcall(self, 'reset');
         try {
-            var targetControl = self.getTargetControl();
+            targetControl = self.getTargetControl();
         } catch (e) {
             if (e instanceof Methanal.View.MissingControlError) {
-                /* If the target control input node does not yet exist in the DOM,
-                 * then we do not need to, and indeed cannot, reset its value along
-                 * with this control's value.
+                /* If the target control input node does not yet exist in the
+                 * DOM, then we do not need to, and indeed cannot, reset its
+                 * value along with this control's value.
                  */
                 return;
             }
@@ -2172,7 +2173,7 @@ Methanal.View.MultiInputBase.subclass(Methanal.View, 'RadioGroupInput').methods(
     function getValue(self) {
         var nodes = self.getInputNodes();
         for (var name in nodes) {
-            if (nodes[name].checked == true) {
+            if (nodes[name].checked === true) {
                 return name;
             }
         }
@@ -2234,7 +2235,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
         // Setting the "text" attribute is the only way to do this that works
         // in IE and everything else.
         optionNode.text = desc;
-        return optionNode
+        return optionNode;
     },
 
 
@@ -2275,7 +2276,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'SelectInput').methods(
             self.inputNode.add(optionNode, before);
         } catch (e) {
             // Every version of IE is null-intolerant.
-            var index = undefined;
+            var index;
             if (before !== null) {
                 // In browsers before IE8, the second argument to "add" is an
                 // *index*. Great, thanks IE!
@@ -2529,7 +2530,7 @@ Methanal.View.TextInput.subclass(Methanal.View, 'NumericInput').methods(
 Methanal.View.NumericInput.subclass(Methanal.View, 'IntegerInput').methods(
     function __init__(self, node, args) {
         Methanal.View.IntegerInput.upcall(self, '__init__', node, args);
-        self._validInput = /^[-+]?\d+$/;
+        self._validInput = /^[\-+]?\d+$/;
     },
 
 
@@ -2549,7 +2550,7 @@ Methanal.View.NumericInput.subclass(Methanal.View, 'IntegerInput').methods(
 Methanal.View.NumericInput.subclass(Methanal.View, 'FloatInput').methods(
     function __init__(self, node, args) {
         Methanal.View.FloatInput.upcall(self, '__init__', node, args);
-        self._validInput = /^[-+]?\d*\.?\d*$/;
+        self._validInput = /^[\-+]?\d*\.?\d*$/;
     },
 
 
@@ -2662,7 +2663,7 @@ Methanal.View.DecimalInput.subclass(Methanal.View, 'PercentInput').methods(
         if (rv !== undefined) {
             return rv;
         } else if (value < 0 || value > 1) {
-            return 'Percentage values must be between 0% and 100%'
+            return 'Percentage values must be between 0% and 100%';
         }
     });
 
@@ -2758,8 +2759,8 @@ Methanal.View.TextInput.subclass(
 
 
 Methanal.View.VerifiedPasswordInput.STRENGTH_CRITERIA = {
-    'ALPHA':     function (value) { return /[a-zA-Z]/.test(value); },
-    'NUMERIC':   function (value) { return /[0-9]/.test(value); },
+    'ALPHA':     function (value) { return (/[a-zA-Z]/).test(value); },
+    'NUMERIC':   function (value) { return (/[0-9]/).test(value); },
     'MIXEDCASE': function (value) {
-        return /[a-z]/.test(value) && /[A-Z]/.test(value); },
-    'SYMBOLS':   function (value) { return /[^A-Za-z0-9\s]/.test(value); }};
+        return (/[a-z]/).test(value) && (/[A-Z]/).test(value); },
+    'SYMBOLS':   function (value) { return (/[^A-Za-z0-9\s]/).test(value); }};

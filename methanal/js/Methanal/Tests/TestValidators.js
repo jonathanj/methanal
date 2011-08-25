@@ -71,7 +71,7 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
      */
     function test_any(self) {
         var any = Methanal.Validators.any(
-            function identity(x) { return x });
+            function identity(x) { return x; });
         self.assertValid(any, true);
         self.assertValid(any, true, true);
         self.assertValid(any, false, true);
@@ -87,7 +87,7 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
      */
     function test_all(self) {
         var all = Methanal.Validators.all(
-            function identity(x) { return x });
+            function identity(x) { return x; });
         self.assertValid(all, true);
         self.assertValid(all, true, true);
         self.assertInvalid(all, false, true);
@@ -291,11 +291,11 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
      */
     function test_isChars(self) {
         var isChars = Methanal.Validators.isChars;
-        self.assertValid(isChars('[0-9]'), '0123456789')
-        self.assertValid(isChars('[A-Z]'), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-        self.assertValid(isChars('[a-z]'), 'abcdefghijklmnopqrstuvwxyz')
-        self.assertValid(isChars("[a-z_']"), "hello_world's")
-        self.assertInvalid(isChars('[0-9]'), 'hello')
+        self.assertValid(isChars('[0-9]'), '0123456789');
+        self.assertValid(isChars('[A-Z]'), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        self.assertValid(isChars('[a-z]'), 'abcdefghijklmnopqrstuvwxyz');
+        self.assertValid(isChars("[a-z_']"), "hello_world's");
+        self.assertInvalid(isChars('[0-9]'), 'hello');
     },
 
 
@@ -315,8 +315,8 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
      */
     function test_alpha(self) {
         var alpha = Methanal.Validators.alpha;
-        self.assertValid(alpha, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-        self.assertValid(alpha, 'abcdefghijklmnopqrstuvwxyz')
+        self.assertValid(alpha, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        self.assertValid(alpha, 'abcdefghijklmnopqrstuvwxyz');
         self.assertInvalid(alpha, '0a');
         self.assertInvalid(alpha, '0._');
     },
@@ -328,8 +328,8 @@ Methanal.Tests.TestValidators.ValidatorsTestCase.subclass(
     function test_alphaNumeric(self) {
         var alphaNumeric = Methanal.Validators.alphaNumeric;
         self.assertValid(alphaNumeric, '0123456789');
-        self.assertValid(alphaNumeric, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-        self.assertValid(alphaNumeric, 'abcdefghijklmnopqrstuvwxyz')
+        self.assertValid(alphaNumeric, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+        self.assertValid(alphaNumeric, 'abcdefghijklmnopqrstuvwxyz');
         self.assertValid(alphaNumeric, '0a');
         self.assertInvalid(alphaNumeric, '0._');
     },

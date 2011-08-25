@@ -196,7 +196,7 @@ Divmod.Class.subclass(Methanal.Util, 'DateFormatter').methods(
 
     function format(self, value) {
         if (!value) {
-            return ''
+            return '';
         }
         var msg = '';
         try {
@@ -240,15 +240,15 @@ Divmod.Class.subclass(Methanal.Util, 'DateFormatter').methods(
 Divmod.Class.subclass(Methanal.Util, 'DecimalFormatter').methods(
     function __init__(self, grouping/*=[3,0]*/, thousandsSeparator/*=','*/,
                       decimalSeparator/*='.'*/) {
-        if (grouping == null) {
+        if (grouping === undefined || grouping === null) {
             grouping = [3, 0];
         }
         self.grouping = grouping;
-        if (thousandsSeparator == null) {
+        if (thousandsSeparator === undefined || thousandsSeparator === null) {
             thousandsSeparator = ',';
         }
         self.thousandsSeparator = thousandsSeparator;
-        if (decimalSeparator == null) {
+        if (decimalSeparator === undefined || decimalSeparator === null) {
             decimalSeparator = '.';
         }
         self.decimalSeparator = decimalSeparator;
@@ -264,7 +264,7 @@ Divmod.Class.subclass(Methanal.Util, 'DecimalFormatter').methods(
         }
         value = value.toString();
         var parts = Methanal.Util.split(value, self.decimalSeparator, 1);
-        var value = parts[0].split('');
+        value = parts[0].split('');
         var j = 0, grouping = self.grouping[j];
         for (var i = value.length - grouping; i >= 1; i -= grouping) {
             value.splice(i, 0, self.thousandsSeparator);
@@ -317,7 +317,7 @@ Methanal.Util.DecimalFormatter.subclass(Methanal.Util,
         Methanal.Util.CurrencyFormatter.upcall(
             self, '__init__', grouping, thousandsSeparator, decimalSeparator);
         self.symbol = symbol;
-        if (symbolSeparator == null) {
+        if (symbolSeparator === undefined || symbolSeparator === null) {
             symbolSeparator = ' ';
         }
         self.symbolSeparator = symbolSeparator;
@@ -485,6 +485,7 @@ Methanal.Util._reprString = function _reprString(o) {
  * @rtype: C{String}
  */
 Methanal.Util.repr = function repr(o) {
+    var names;
     if (o === null) {
         return 'null';
     } else if (typeof(o) == 'string') {
@@ -496,16 +497,16 @@ Methanal.Util.repr = function repr(o) {
             return '<function ' + o.name + '>';
         }
     } else if (o instanceof Array) {
-        var names = Methanal.Util.map(Methanal.Util.repr, o);
+        names = Methanal.Util.map(Methanal.Util.repr, o);
         return '[' + names.join(', ') + ']';
     } else {
         if (o.constructor !== undefined && o.constructor.name !== undefined) {
             var typeName = o.constructor.name;
             if (typeName == 'Object') {
-                var names = [];
-                var repr = Methanal.Util.repr;
+                names = [];
+                var r = Methanal.Util.repr;
                 for (var key in o) {
-                    names.push(repr(key) + ': ' + repr(o[key]));
+                    names.push(r(key) + ': ' + r(o[key]));
                 }
                 return '{' + names.join(', ') + '}';
             }
@@ -572,9 +573,9 @@ Methanal.Util.map = function map(f, seq) {
  */
 Methanal.Util.filter = function filter(pred, seq) {
     if (pred === null) {
-        pred = function (x) { return !!x; }
+        pred = function (x) { return !!x; };
     } else if (pred === undefined) {
-        pred = function (x) { return x !== null && x !== undefined; }
+        pred = function (x) { return x !== null && x !== undefined; };
     } else if (typeof pred !== 'function') {
         throw new Error('"pred" must be a function, null or undefined');
     }
@@ -812,18 +813,18 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
         r.push(self.getMonthName(true));
         r.push(_date.getFullYear().toString());
 
+        function pad(v) {
+            return Methanal.Util.rjust(v.toString(), 2, '0');
+        }
+
         if (!self._oneDay) {
             var prefix = '';
             var hours = _date.getHours();
             if (!twentyFourHours) {
                 var dm = Methanal.Util.divmod(hours, 12);
                 prefix = dm[0] > 0 ? ' pm' : ' am';
-                hours = dm[1] == 0 ? 12 : dm[1];
+                hours = dm[1] === 0 ? 12 : dm[1];
             }
-
-            function pad(v) {
-                return Methanal.Util.rjust(v.toString(), 2, '0');
-            };
 
             var t = [];
             t.push(hours);
@@ -893,8 +894,8 @@ Divmod.Class.subclass(Methanal.Util, 'Time').methods(
      * @return: A new instance representing the newly offset time
      */
     function offset(self, timedelta) {
-        var offset = timedelta.offset || timedelta;
-        var t = Methanal.Util.Time.fromTimestamp(self.asTimestamp() + offset);
+        var _offset = timedelta.offset || timedelta;
+        var t = Methanal.Util.Time.fromTimestamp(self.asTimestamp() + _offset);
         t._oneDay = self._oneDay;
         t._timezoneOffset = self._timezoneOffset;
         return t;
@@ -978,7 +979,7 @@ Methanal.Util.Time.fromRelative = function fromRelative(value, _today) {
     if (value.length >= 3) {
         var dayNames = Methanal.Util.Time._dayNames;
         for (var i = 0; i < dayNames.length; ++i) {
-            if (dayNames[i].toLowerCase().indexOf(value) == 0) {
+            if (dayNames[i].toLowerCase().indexOf(value) === 0) {
                 var todayDay = today.asDate().getDay();
                 if (i <= todayDay) {
                     i += 7;
@@ -999,10 +1000,10 @@ Methanal.Util.Time.fromRelative = function fromRelative(value, _today) {
  * Determine whether C{year} is a leap year.
  */
 Methanal.Util.Time.isLeapYear = function isLeapYear(year) {
-    if (year % 100 == 0) {
-        return (year % 400 == 0);
+    if (year % 100 === 0) {
+        return (year % 400 === 0);
     }
-    return (year % 4 == 0);
+    return (year % 4 === 0);
 };
 
 
@@ -1045,7 +1046,7 @@ Methanal.Util.Time.guess = function guess(value) {
             }
         }
         return null;
-    };
+    }
 
     function _validDate(year, month, day) {
         if (year > 0 && month >= 0 && month < 12) {
@@ -1053,7 +1054,7 @@ Methanal.Util.Time.guess = function guess(value) {
             return day > 0 && day <= monthLength;
         }
         return false;
-    };
+    }
 
     try {
         return Methanal.Util.Time.fromRelative(value);
@@ -1203,7 +1204,7 @@ Methanal.Util.partial = function partial(f /*...*/) {
     return function (/*...*/) {
         var args = Array.prototype.slice.call(arguments);
         return f.apply(null, boundArgs.concat(args));
-    }
+    };
 };
 
 
@@ -1274,7 +1275,7 @@ Methanal.Util.compose = function compose(/*...*/) {
 Methanal.Util.unapply = function unapply(f) {
     return function (/*...*/) {
         return f(Array.prototype.slice.call(arguments));
-    }
+    };
 };
 
 
@@ -1306,7 +1307,7 @@ Divmod.Class.subclass(Methanal.Util, 'Tooltip').methods(
         self.orientation = orientation || 'bottom';
         self.extraClassName = extraClassName || '';
         self._hidden = false;
-        if (text != null) {
+        if (text) {
             self.setText(text);
         }
     },

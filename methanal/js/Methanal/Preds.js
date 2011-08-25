@@ -178,7 +178,7 @@ Methanal.Preds.empty = function empty(value) {
  */
 Methanal.Preds.lengthOf = partial(partial,
     function lengthOf(n, value) {
-        return value != null && value.length === n;
+        return value !== undefined && value !== null && value.length === n;
     });
 
 
@@ -188,7 +188,7 @@ Methanal.Preds.lengthOf = partial(partial,
  */
 Methanal.Preds.lengthAtLeast = partial(partial,
     function lengthAtLeast(n, value) {
-        return value != null && value.length >= n;
+        return value !== undefined && value !== null && value.length >= n;
     });
 
 
@@ -198,7 +198,7 @@ Methanal.Preds.lengthAtLeast = partial(partial,
  */
 Methanal.Preds.lengthAtMost = partial(partial,
     function lengthAtMost(n, value) {
-        return value != null && value.length <= n;
+        return value !== undefined && value !== null && value.length <= n;
     });
 
 

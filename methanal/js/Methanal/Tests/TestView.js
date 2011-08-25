@@ -157,12 +157,12 @@ Methanal.Tests.Util.TestCase.subclass(
         function succeed(methodName, data) {
             self.assertIdentical(form.actions._disabled, true);
             return Divmod.Defer.succeed(data);
-        };
+        }
 
         function fail(methodName, data) {
             self.assertIdentical(form.actions._disabled, true);
             return Divmod.Defer.fail('too bad');
-        };
+        }
 
         form.callRemote = succeed;
         form.formModified(true);
@@ -260,9 +260,9 @@ Methanal.Tests.Util.TestCase.subclass(
             'submitted': true};
         var form = self.createForm(args, [control]);
         var containsElementClass = Methanal.Util.containsElementClass;
-        self.assertIdentical(form.modified, false)
+        self.assertIdentical(form.modified, false);
         control.onChange();
-        self.assertIdentical(form.modified, true)
+        self.assertIdentical(form.modified, true);
     },
 
 
@@ -306,7 +306,7 @@ Methanal.Tests.Util.TestCase.subclass(
      * @rtype: L{Methanal.View.FormInput}
      */
     function createControl(self, args) {
-        throw new Error('Subclasses must implement "createControl".')
+        throw new Error('Subclasses must implement "createControl".');
     },
 
 
@@ -375,7 +375,7 @@ Methanal.Tests.Util.TestCase.subclass(
      */
     function testControl(self, args, testingFunc) {
         function defaultArg(name, value) {
-            if (args[name] === undefined || args[name] == null) {
+            if (args[name] === undefined || args[name] === null) {
                 args[name] = value;
             }
         }
@@ -441,7 +441,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = self.controlType(node, args);
         node.appendChild(document.createElement('select'));
-        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error');
         return control;
     },
 
@@ -538,7 +538,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
         self.assertIdentical(control.inputNode.options.length, 1);
         self.assertOption(control.inputNode.options[0], 'v1', 'd1');
         // Insert it as the first option.
-        control.insert('v2', 'd2', control.inputNode.options[0])
+        control.insert('v2', 'd2', control.inputNode.options[0]);
         self.assertIdentical(control.inputNode.options.length, 2);
         self.assertOption(control.inputNode.options[0], 'v2', 'd2');
     },
@@ -625,7 +625,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = Methanal.View.MultiSelectInput(node, args);
         node.appendChild(document.createElement('select'));
-        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error');
 
         // Monkey-patch the "onChange" handler to fail the test if it is
         // called.
@@ -656,8 +656,8 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
         var control = self.controlType(node, args);
         node.appendChild(document.createElement('input'));
         Methanal.Tests.Util.makeWidgetChildNode(
-            control, 'span', 'displayValue')
-        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
+            control, 'span', 'displayValue');
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error');
         return control;
     });
 
@@ -799,7 +799,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
      * is treated as being invalid.
      */
     function test_expression(self) {
-        self.testControl({value: null, expression: '[a-z0-9\-]'},
+        self.testControl({value: null, expression: '[a-z0-9-]'},
             function (control) {
                 self.assertValidInput(control, 'valid-input');
                 self.assertInvalidInput(control, 'INvalid input!');
@@ -817,7 +817,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
             function (control) {
                 control.addFilters([
                     function(value) { return value.toLowerCase(); },
-                    function(value) { return value.replace(/[^a-z0-9]/g, ''); },
+                    function(value) { return value.replace(/[^a-z0-9]/g, ''); }
                     ]);
                 control.setValue('A+');
                 control.onKeyUp(control.inputNode);
@@ -877,8 +877,8 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
         var control = controlType(node, args);
         node.appendChild(document.createElement('input'));
         Methanal.Tests.Util.makeWidgetChildNode(
-            control, 'span', 'displayValue')
-        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
+            control, 'span', 'displayValue');
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error');
         return control;
     },
 
@@ -924,7 +924,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
             function (controls) {
                 targetControl.addFilters([
                     function(value) { return value.toLowerCase(); },
-                    function(value) { return value.replace(/[^a-z]/g, '*'); },
+                    function(value) { return value.replace(/[^a-z]/g, '*'); }
                     ]);
                 control.setValue('Hello World.');
                 control.onChange(control.inputNode);
@@ -1112,7 +1112,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     function test_bounds(self) {
         self.testControl({value: null,
                           lowerBound: -11,
-                          upperBound:   8,},
+                          upperBound:   8},
             function (control) {
                 self.assertValidInput(control, '-10');
                 self.assertInvalidInput(control, '-11');
@@ -1218,7 +1218,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
     function test_bounds(self) {
         self.testControl({value: null,
                           lowerBound: -11,
-                          upperBound:   8,},
+                          upperBound:   8},
             function (control) {
                 self.assertValidInput(control, '-10.99');
                 self.assertInvalidInput(control, '-11.0');
@@ -1339,7 +1339,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
         self.testControl({value: null,
                           decimalPlaces: 2,
                           lowerBound: -10.5,
-                          upperBound:   7.5,},
+                          upperBound:   7.5},
             function (control) {
                 self.assertValidInput(control, '-10');
                 self.assertValidInput(control, '-10.4');
@@ -1668,7 +1668,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
     function createControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = self.controlType(node, args);
-        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error');
         Methanal.Tests.Util.makeWidgetChildNode(control, 'input').value = '42';
         Methanal.Tests.Util.makeWidgetChildNode(control, 'input').value = '13';
         return control;
@@ -1728,7 +1728,7 @@ Methanal.Tests.TestView.FormInputTestCase.subclass(
     function createControl(self, args) {
         var node = Nevow.Test.WidgetUtil.makeWidgetNode();
         var control = self.controlType(node, args);
-        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error')
+        Methanal.Tests.Util.makeWidgetChildNode(control, 'span', 'error');
         Methanal.Tests.Util.makeWidgetChildNode(control, 'input').value = '42';
         Methanal.Tests.Util.makeWidgetChildNode(control, 'input').value = '13';
         return control;

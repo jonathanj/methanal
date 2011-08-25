@@ -311,7 +311,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
         function insertCell(rowNode, title) {
             var td = tr.insertCell(-1);
             Methanal.Util.replaceNodeText(td, title);
-        };
+        }
 
         self.eachColumn(function (column) {
             insertCell(tr, column.title);
@@ -842,7 +842,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
     function createCellElement(self, columnID, rowData) {
         var doc = self.node.ownerDocument;
         var td = doc.createElement('td');
-        var link = rowData['__link__'];
+        var link = rowData.__link__;
         var a;
 
         if (link) {
@@ -885,7 +885,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
         for (var i = 0; i < self._columnIDs.length; ++i) {
             var cid = self._columnIDs[i];
             var cell = self.createCellElement(cid, rowData);
-            if (i == 0) {
+            if (i === 0) {
                 // Thank you IE6 for failing at life.
                 Methanal.Util.addElementClass(cell, 'first-child');
             }
@@ -1018,7 +1018,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
             tr.appendChild(td);
         }
         thead.appendChild(tr);
-        self.table.appendChild(thead)
+        self.table.appendChild(thead);
     });
 
 
@@ -1164,7 +1164,7 @@ Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
  */
 Divmod.Class.subclass(Methanal.Widgets, 'LookupResult').methods(
     function __init__(self, id, values, name/*=null*/) {
-        self.id = id
+        self.id = id;
         self.values = values;
         self.name = name;
     },
@@ -1172,7 +1172,7 @@ Divmod.Class.subclass(Methanal.Widgets, 'LookupResult').methods(
 
     function toString(self) {
         var name = self.name;
-        if (name == null) {
+        if (name === undefined || name === null) {
             name = Methanal.Util.repr(self.values);
         }
         return name;
@@ -1614,7 +1614,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         self._groups = {};
         self.fullyLoaded = false;
         if (_makeThrobber === undefined) {
-            _makeThrobber = function() { return self._makeThrobber() };
+            _makeThrobber = function() { return self._makeThrobber(); };
         }
         self.throbber = _makeThrobber();
         self.throbber.start();
@@ -1943,8 +1943,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      * it contains.
      */
     function _updateGroupVisiblity(self, groupID) {
+        var group;
         try {
-            var group = self.getGroup(groupID);
+            group = self.getGroup(groupID);
         } catch (e) {
             if (e instanceof Methanal.Widgets.UnknownGroup) {
                 return;
