@@ -1,9 +1,13 @@
 """
 Unit tests for L{methanal.widgets}.
 """
+from functools import partial
+
 from twisted.trial import unittest
 
 from nevow import inevow
+
+from xmantissa.webtheme import ThemedElement
 
 from methanal import widgets, errors
 
@@ -250,3 +254,86 @@ class TabGroupTests(unittest.TestCase):
         self.assertEquals(
             repr(tabGroup),
             "<TabGroup id=u'id' title=u'Title' tabs=%r>" % tabs)
+
+
+
+class ComparableLiveElement(ThemedElement):
+    """
+    C{LiveElement} implementing C{__eq__} comparing C{self.value}.
+    """
+    def __init__(self, value):
+        self.value = value
+
+
+    def __eq__(self, other):
+        try:
+            return self.value == other.value
+        except AttributeError:
+            return False
+
+
+
+class ExpanderTests(unittest.TestCase):
+    """
+    Tests for L{methanal.widgets.Expander}.
+    """
+    def test_getContent(self):
+        """
+        L{Expander.getContent} returns the content for the specified node ID,
+        C{KeyError} is raised if an unknown node ID is specified.
+        """
+        expander = widgets.Expander(
+            headerFactory=partial(ComparableLiveElement, u'foo'),
+            contentFactory=partial(ComparableLiveElement, u'bar'))
+        self.assertEqual(
+            expander.getContent(u'header').value, u'foo')
+        self.assertEqual(
+            expander.getContent(u'content').value, u'bar')
+        self.assertRaises(
+            KeyError, expander.getContent, u'not_a_thing')
+
+
+    def test_lazyHeaderContent(self):
+        """
+        L{Expander.getHeaderContent} returns the result of
+        L{Expander.headerFactory} if C{currentContent == newContent} returns
+        C{False}, otherwise C{None} is returned.
+        """
+        expander = widgets.Expander(
+            headerFactory=partial(ComparableLiveElement, u'content'),
+            contentFactory=None)
+
+        # Fresh.
+        content = expander.getHeaderContent()
+        self.assertNotIdentical(None, content)
+        self.assertEqual(u'content', content.value)
+        # Same as last time
+        self.assertIdentical(None, expander.getHeaderContent())
+        # New value.
+        expander.headerFactory = partial(ComparableLiveElement, u'other')
+        content = expander.getHeaderContent()
+        self.assertNotIdentical(None, content)
+        self.assertEqual(u'other', content.value)
+
+
+    def test_lazyExpanderContent(self):
+        """
+        L{Expander.getExpanderContent} returns the result of
+        L{Expander.contentFactory} if C{currentContent == newContent} returns
+        C{False}, otherwise C{None} is returned.
+        """
+        expander = widgets.Expander(
+            headerFactory=None,
+            contentFactory=partial(ComparableLiveElement, u'content'))
+
+        # Fresh.
+        content = expander.getExpanderContent()
+        self.assertNotIdentical(None, content)
+        self.assertEqual(u'content', content.value)
+        # Same as last time
+        self.assertIdentical(None, expander.getExpanderContent())
+        # New value.
+        expander.contentFactory = partial(ComparableLiveElement, u'other')
+        content = expander.getExpanderContent()
+        self.assertNotIdentical(None, content)
+        self.assertEqual(u'other', content.value)

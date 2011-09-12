@@ -1083,6 +1083,10 @@ class Expander(ThemedElement):
 
     @type expanded: C{bool}
     @ivar expanded: Is the content visible?
+
+    @ivar currentHeaderContent: Current header renderable.
+
+    @ivar currentExpanderContent: Current header renderable.
     """
     fragmentName = 'methanal-expander'
     jsClass = u'Methanal.Widgets.Expander'
@@ -1093,6 +1097,8 @@ class Expander(ThemedElement):
         self.headerFactory = headerFactory
         self.contentFactory = contentFactory
         self.expanded = expanded
+        self.currentHeaderContent = None
+        self.currentExpanderContent = None
 
 
     def getInitialArguments(self):
@@ -1101,31 +1107,74 @@ class Expander(ThemedElement):
 
     @expose
     def getContent(self, nodeID):
+        """
+        Get the content for C{nodeID}.
+
+        @rtype: I{renderable}
+        """
         return {
             'header':  self.getHeaderContent,
             'content': self.getExpanderContent}[nodeID]()
 
 
     def getHeaderContent(self):
+        """
+        Get the content for the expander header.
+
+        The content factory is invoked and its result compared to
+        L{currentHeaderContent}, with C{__eq__}, if the result is C{True}
+        then C{None} is returned.
+
+        @return: Renderable or C{None} if the content hasn't changed.
+        """
         content = self.headerFactory()
+        if content == self.currentHeaderContent:
+            return None
         content.setFragmentParent(self)
+        self.currentHeaderContent = content
         return content
 
 
     def getExpanderContent(self):
+        """
+        Get the content for the expander body.
+
+        The content factory is invoked and its result compared to
+        L{currentExpanderContent}, with C{__eq__}, if the result is C{True}
+        then C{None} is returned.
+
+        @return: Renderable or C{None} if the content hasn't changed.
+        """
         content = self.contentFactory()
+        if content == self.currentExpanderContent:
+            return None
         content.setFragmentParent(self)
+        self.currentExpanderContent = content
         return content
 
 
     def updateRemoteHeaderContent(self):
-        return self.callRemote(
-            'setContentFromWidgetInfo', self.getHeaderContent(), u'header')
+        """
+        Update the client-side header content.
+
+        If L{getHeaderContent} returns C{None} no update is performed.
+        """
+        content = self.getHeaderContent()
+        if content is not None:
+            return self.callRemote(
+                'setContentFromWidgetInfo', content, u'header')
 
 
     def updateRemoteContent(self):
-        return self.callRemote(
-            'setContentFromWidgetInfo', self.getExpanderContent(), u'content')
+        """
+        Update the client-side body content.
+
+        If L{getExpanderContent} returns C{None} no update is performed.
+        """
+        content = self.getExpanderContent()
+        if content is not None:
+            return self.callRemote(
+                'setContentFromWidgetInfo', content, u'content')
 
 
     @renderer
