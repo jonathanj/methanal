@@ -1,3 +1,5 @@
+// import Divmod
+
 /**
  * Determine if an element's "className" attribute contains a value.
  *
