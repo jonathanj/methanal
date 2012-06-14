@@ -1063,7 +1063,7 @@ class DemandTab(Tab):
         Force the remote content to be updated.
         """
         return self.callRemote(
-            'setContentFromWidgetInfo', self.getContent(), 'content')
+            'setContentFromWidgetInfo', self.getContent(), u'content')
 
 
 
