@@ -745,6 +745,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormAction').methods(
         Methanal.View.FormAction.upcall(self, '__init__', node);
         self.actionID = args.actionID;
         self.allowViewOnly = args.allowViewOnly;
+        self.identifier = args.identifier;
     },
 
 
@@ -799,6 +800,10 @@ Methanal.View.FormAction.subclass(Methanal.View, 'ActionButton').methods(
         self._buttonNode = self.node.getElementsByTagName('button')[0];
         Methanal.View.ActionButton.upcall(self, 'nodeInserted');
         self.widgetParent.loadedUp(self);
+        if (self.identifier) {
+            Methanal.Util.addElementClass(
+                self._buttonNode, 'methanal-action-button-' + self.identifier);
+        }
     },
 
 

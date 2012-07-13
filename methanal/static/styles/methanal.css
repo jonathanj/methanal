@@ -335,15 +335,23 @@ optgroup option {
 }
 
 .methanal-action-container {
-    border-top: 1px solid #aaa;
-    background: white;
-    margin: -5px;
-    margin-top: 5px;
-    padding: 5px 0;
+    margin-top: 0.5em;
 }
 
 .methanal-action-container .methanal-action-button {
-    margin: 0 5px;
+    margin: 0;
+    margin-right: 1em;
+}
+
+.methanal-action-button-submit {
+    border-color: #3580bf #1c4364 #1c4364 #3580bf;
+    background-color: #3580bf;
+}
+
+.methanal-action-button-submit:active:focus,
+.methanal-action-button-submit:active {
+    border-color: #1c4364 #2d6da2 #2d6da2 #1c4364;
+    background-color: #2d6da2;
 }
 
 .throbber {
