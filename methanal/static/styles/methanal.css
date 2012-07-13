@@ -260,12 +260,19 @@ optgroup option {
 }
 
 .friendly-representation {
-    font-weight: bold;
+    float: left;
     font-style: italic;
-    font-size: 85%;
-    padding: 0 0.25em;
-    line-height: 2em;
     vertical-align: middle;
+    padding: 0.333em 5px;
+    margin-left: -0.333em;
+    margin-right: 0.333em;
+    border: 1px solid #b7b7b7;
+    border-left: none;
+    background: #eee;
+    color: #555;
+    box-shadow: 0 1px #fff;
+    -moz-box-shadow: 0 1px #fff;
+    -webkit-box-shadow: 0 1px #fff;
 }
 
 .embedded-label {

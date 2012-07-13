@@ -1826,12 +1826,28 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
 
 
     /**
+     * Show the display value element.
+     */
+    function _showDisplayValue(self) {
+        Methanal.Util.removeElementClass(self._displayValueNode, 'hidden');
+    },
+
+
+    /**
      * Enable the human-readable "display value" representation.
      */
-    function enableDisplayValue(self) {
-        Methanal.Util.removeElementClass(self._displayValueNode, 'hidden');
+    function enableDisplayValue(self, update) {
+        self._showDisplayValue();
         self._useDisplayValue = true;
         self._updateDisplayValue();
+    },
+
+
+    /**
+     * Hide the display value element.
+     */
+    function _hideDisplayValue(self) {
+        Methanal.Util.addElementClass(self._displayValueNode, 'hidden');
     },
 
 
@@ -1839,7 +1855,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * Disable the human-readable "display value" representation.
      */
     function disableDisplayValue(self) {
-        Methanal.Util.addElementClass(self._displayValueNode, 'hidden');
+        self._hideDisplayValue();
         self._useDisplayValue = false;
     },
 
@@ -1875,7 +1891,13 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
         if (value && self.baseValidator(value) === undefined) {
             displayValue = self.makeDisplayValue(value);
         }
-        Methanal.Util.replaceNodeText(self._displayValueNode, displayValue);
+        if (displayValue) {
+            Methanal.Util.replaceNodeText(
+                self._displayValueNode, displayValue);
+            self._showDisplayValue(false);
+        } else {
+            self._hideDisplayValue();
+        }
     },
 
 
