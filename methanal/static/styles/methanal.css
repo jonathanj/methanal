@@ -1,8 +1,8 @@
 button {
     color: #fff;
     font-weight: bold;
-    border: 2px solid #9099a3;
-    border-bottom-color: #333;
+    border: 2px solid;
+    border-color: #9099a3 #444 #444 #9099a3;
     background-color: #9099a3;
     padding: 0.5em 1em;
     border-radius: 0.2em;
@@ -11,11 +11,8 @@ button {
 
 button:active:focus,
 button:active {
+    border-color: #444 #7b858f #7b858f #444;
     background-color: #7b858f;
-    border-color: #7b858f;
-    border-top-color: #333;
-    border-left-color: #666;
-    border-right-color: #666;
     position: relative;
     top: 1px
 }
