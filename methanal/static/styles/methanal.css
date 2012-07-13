@@ -687,11 +687,10 @@ optgroup option {
 .submission-error-tooltip .hover-tooltip {
     background-repeat: no-repeat;
     background-position: 0.25em center;
-    padding-left: 25px;
+    padding-left: 0.5em;
 }
 
 .error-tooltip .hover-tooltip {
-    background-image: url(/static/Methanal/images/icons/warning.png);
     background-color: #8d0e1b;
     border-color: #8d0e1b;
     color: #fff;
@@ -702,13 +701,13 @@ optgroup option {
 .label-tooltip .hover-tooltip {
     position: absolute;
     left: inherit;
+    margin-left: -3em;
     margin-top: -2em;
 }
 
 /** LiveForm submission error tooltip. */
 
 .submission-error-tooltip .hover-tooltip {
-    background-image: url(/static/Methanal/images/icons/error.png);
     margin-top: 0.5em;
 }
 
@@ -727,7 +726,6 @@ optgroup option {
 /** LiveForm validation error tooltip. */
 
 .form-validation-error-tooltip .hover-tooltip {
-    background-image: url(/static/Methanal/images/icons/warning.png);
     max-width: 25%;
 }
 
