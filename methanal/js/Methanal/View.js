@@ -1246,9 +1246,11 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     },
 
 
-    function valueChanged(self, control) {
+    function valueChanged(self, control, updateModified/*=true*/) {
         Methanal.View.LiveForm.upcall(self, 'valueChanged', control);
-        self.formModified(true);
+        if (updateModified === undefined || !!updateModified) {
+            self.formModified(true);
+        }
     },
 
 
