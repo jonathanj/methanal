@@ -1441,7 +1441,7 @@ Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow').methods(
 Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     function __init__(self, node, controlNames) {
         Methanal.View.SimpleForm.upcall(
-            self, '__init__', node, true, controlNames);
+            self, '__init__', node, {'viewOnly': true}, controlNames);
         self.hideModificationIndicator = true;
     },
 
