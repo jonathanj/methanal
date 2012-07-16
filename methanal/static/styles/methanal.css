@@ -640,14 +640,12 @@ optgroup option {
     display: inline-block;
     position: relative;
     border: 1px solid;
-    border-radius: 2px;
-    box-shadow: 0 0 2px black;
-    -o-box-shadow: 0 0 2px black;
-    -moz-box-shadow: 0 0 2px black;
-    -webkit-box-shadow: 0 0 2px black;
+    box-shadow: 1px 1px black;
+    -o-box-shadow: 1px 1px black;
+    -moz-box-shadow: 1px 1px black;
+    -webkit-box-shadow: 1px 1px black;
     color: #fff;
     font-size: 90%;
-    font-style: italic;
     padding: 0.25em;
     margin-right: 0.5em;
 }
@@ -657,10 +655,6 @@ optgroup option {
     border-style: solid;
     border-color: #6094a4;
     background: #6094a4;
-}
-
-.hover-tooltip h2 {
-    text-shadow: 0 -1px 0 #333;
 }
 
 .hover-tooltip-arrow {
