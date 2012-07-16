@@ -564,7 +564,7 @@ optgroup option {
  */
 
 .expander {
-    background: #e0e0e0;
+    background: #f8f8f8;
     border: 1px solid #ddd;
     border-color: #f5f5f5 #ddd #bbb;
     border-radius: 3px;
@@ -575,14 +575,10 @@ optgroup option {
 }
 
 .expander-header {
-    background: #f0f0f0 url(/static/Methanal/images/expander-header-bg.png) repeat-x left bottom;
+    background: #e8e8e8;
     vertical-align: middle;
-    height: 18px;
+    height: auto;
     padding: 0.5em;
-}
-
-.expander-header:hover {
-    color: #247dc2;
 }
 
 .expanded .expander-header-label {
@@ -597,8 +593,9 @@ optgroup option {
 }
 
 .expander-content {
-    margin: 0.5em;
-    margin-top: 1em;
+    padding: 0.5em;
+    padding-top: 1em;
+    border-top: 1px solid #c7c7c7;
 }
 
 @media print {
