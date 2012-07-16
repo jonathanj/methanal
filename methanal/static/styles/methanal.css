@@ -48,17 +48,28 @@ button.methanal-submit-disabled:active {
     cursor: not-allowed;
     top: 0;
     opacity: 0.5;
+    box-shadow: none;
+    -o-box-shadow: none;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
 }
 
 .methanal-form-group {
-    margin: 10px 0;
-    border: 1px outset #25a;
-    background: #e5e5ef url(/static/Methanal/images/group-bg.png) repeat-x top left;
-    padding: 10px;
+    margin: 1em 0;
+    border: none;
+    border-top: 1px solid #ccc;
+    padding: 1em;
+    padding-top: 0;
+}
+
+.methanal-form-group legend {
+    color: #c9000c;
+    font-weight: bold;
+    font-size: 120%;
 }
 
 .methanal-control {
-    padding: 3px 0;
+    margin: 0.666em 0;
     clear: left;
 }
 
@@ -75,20 +86,22 @@ button.methanal-submit-disabled:active {
     margin: 0 0 0.5em 0;
 }
 
-.methanal-form-group .methanal-control-even {
-    background-color: #d3d3ea;
-}
-
 .methanal-control-even {
-    background-color: #f0f0fc;
+    background-color: #f0f0f0;
+    background-color: rgba(127, 127, 127, 0.08);
 }
 
 .methanal-caption {
     float: left;
-    min-width: 20em;
+    clear: left;
+    width: 20em;
     line-height: 1.75em;
-    margin: 0 0.75em;
+    margin-right: 2em;
+    margin-top: 0.2em;
     vertical-align: middle;
+    text-align: right;
+    font-weight: bold;
+    color: #353535;
 }
 
 .methanal-inline-children .methanal-inline-control .methanal-input {
@@ -98,15 +111,6 @@ button.methanal-submit-disabled:active {
     min-width: 5em;
 }
 
-.methanal-multi-input,
-.methanal-lookup-form {
-    background: white;
-    border: 1px solid #ccc;
-    border-bottom: 2px solid #aaa;
-    padding: 0.5em;
-    float: left;
-}
-
 .methanal-lookup-form .lookup-result .methanal-caption {
     font-style: italic;
     font-weight: bold;
@@ -114,8 +118,8 @@ button.methanal-submit-disabled:active {
 
 .methanal-lookup-form .methanal-caption,
 .methanal-multi-input .methanal-caption {
-    min-width: 8em;
-    margin: 0 0.25em;
+    width: 8em;
+    margin-right: 0.533em;
 }
 
 .methanal-sub-caption {
@@ -127,19 +131,23 @@ button.methanal-submit-disabled:active {
 input.methanal-input,
 select.methanal-input,
 textarea.methanal-input {
+    float: left;
+    background-color: #fff;
     background-image: url(/static/Methanal/images/icons/valid.png);
     background-repeat: no-repeat;
     background-position: 4px center;
-    border: 1px solid #ccc;
-    padding: 4px;
+    border: 1px solid #b7b7b7;
+    padding: 0.333em 5px;
     padding-left: 22px;
-    margin-right: 4px;
-    float: left;
+    margin-right: 0.333em;
+    box-shadow: 0 1px #fff;
+    -moz-box-shadow: 0 1px #fff;
+    -webkit-box-shadow: 0 1px #fff;
 }
 
 select.methanal-input {
-    padding-top: 3px;
-    padding-bottom: 3px;
+    padding-top: 0.233em;
+    padding-bottom: 0.233em;
 }
 
 textarea.methanal-input {
@@ -286,11 +294,11 @@ optgroup option {
     padding: 1em;
 }
 
+.methanal-multi-input,
 .methanal-lookup-form {
     float: left;
-    border: 1px outset #777;
-    background: white;
-    padding: 2px;
+    padding-left: 1em;
+    border-left: 1px solid #b7b7b7;
 }
 
 .friendly-representation {
@@ -529,10 +537,6 @@ optgroup option {
 
 .methanal-lookup-form .methanal-control-even {
     background-color: #f5f5f5;
-}
-
-.methanal-lookup-form .lookup-result {
-    background: #e0f1ff;
 }
 
 .dependancy-parent {
