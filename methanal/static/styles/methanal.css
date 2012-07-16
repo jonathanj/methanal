@@ -1,36 +1,46 @@
 button {
     color: #fff;
     font-weight: bold;
-    border: 2px solid;
-    border-color: #9099a3 #444 #444 #9099a3;
+    border: 1px solid transparent;
+    box-shadow: 2px 2px #444;
+    -o-box-shadow: 2px 2px #444;
+    -moz-box-shadow: 2px 2px #444;
+    -webkit-box-shadow: 2px 2px #444;
     background-color: #9099a3;
     padding: 0.5em 1em;
-    border-radius: 0.2em;
     cursor: pointer;
 }
 
 button:active:focus,
 button:active {
-    border-color: #444 #7b858f #7b858f #444;
+    box-shadow: none;
+    -o-box-shadow: none;
+    -moz-box-shadow: none;
+    -webkit-box-shadow: none;
     background-color: #7b858f;
     position: relative;
     top: 1px
 }
 
 button:focus {
-    background-color: #a2abb8;
-    border-color: #a2abb8;
+    border-color: #444;
+}
+
+button:hover {
+    text-decoration: underline;
 }
 
 button.methanal-waiting,
 button.methanal-waiting:hover,
 button.methanal-waiting:active {
+    text-decoration: none;
     cursor: wait;
 }
 
 button.methanal-submit-disabled,
 button.methanal-submit-disabled:hover,
 button.methanal-submit-disabled:active {
+    text-decoration: none;
     border-color: #ccc;
     background-color: #ccc;
     color: #444;
@@ -344,13 +354,11 @@ optgroup option {
 }
 
 .methanal-action-button-submit {
-    border-color: #3580bf #1c4364 #1c4364 #3580bf;
     background-color: #3580bf;
 }
 
 .methanal-action-button-submit:active:focus,
 .methanal-action-button-submit:active {
-    border-color: #1c4364 #2d6da2 #2d6da2 #1c4364;
     background-color: #2d6da2;
 }
 
