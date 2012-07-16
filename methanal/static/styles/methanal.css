@@ -421,54 +421,48 @@ optgroup option {
 }
 
 .methanal-tab-view .methanal-tab-labels {
-    background: #e0f1ff;
-    color: #185280;
-    list-style: none;
     margin: 0;
-    padding: 0.5em 0;
-    border-bottom: 1px solid #247dc2;
+    padding: 0;
+    padding-left: 1px;
+    overflow: hidden;
 }
 
 .methanal-tab-view .methanal-tab-label {
     cursor: pointer;
-    display: inline-block;
     list-style: none;
+    float: left;
+    padding: 0.75em 1.413em;
+    border: 1px solid #ccc;
+    margin-left: -1px;
+    background: #e8e8e8;
 }
 
 .methanal-tab-view .methanal-tab-label a {
-    padding: 0.5em 1em;
-    border: 1px solid transparent;
-    border-bottom: none;
-}
-
-.methanal-tab-view .methanal-dynamic-tab a {
-    background: #f2e0ff;
+    font-weight: bold;
+    color: #404040;
 }
 
 .methanal-tab-view .methanal-tab-label a:hover {
-    background: #247dc2;
-    color: white;
+    color: #247dc2;
+    text-decoration: underline;
 }
 
-.methanal-tab-view .selected-tab-label a,
-.methanal-tab-view .selected-tab-label a:hover {
-    background: white;
-    color: black;
+.methanal-tab-view .selected-tab-label {
+    background: #fff;
+    border-bottom: 1px solid transparent;
+    border-top-color: #000;
 }
 
 .methanal-tab-view .selected-tab-label a {
-    position: relative;
-    top: 1px;
-    padding-top: 0.8em;
-    border-color: #247dc2;
+    color: #000;
 }
 
 .methanal-tab-view .methanal-tab-content {
-    border: 1px solid #247dc2;
-    border-top: none;
+    background: #fff;
+    border: 1px solid #ccc;
     display: none;
-    clear: left;
     padding: 1em;
+    margin-top: -1px;
 }
 
 .methanal-tab-view .selected-tab {

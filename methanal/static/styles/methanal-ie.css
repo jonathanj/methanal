@@ -24,28 +24,9 @@ button {
     border: 2px solid #999;
 }
 
-.methanal-tab-view .methanal-tab-labels {
-    padding-top: 0;
-}
-
-.methanal-tab-view .methanal-tab-label {
-    /* Simulate inline-block. */
-    zoom: 1;
-    display: inline;
-}
-
-.methanal-tab-view .methanal-tab-label a {
-    zoom: 1;
-    margin-bottom: -0.5em;
-}
-
-.methanal-tab-view .selected-tab-label a {
-    padding-top: 0.5em;
-}
-
-.methanal-tab-view .methanal-tab-group-label {
-    margin-bottom: -0.5em;
-    padding: 0.25em;
+.methanal-tab-view .selected-tab-label {
+    border-bottom: 1px solid #fff;
+    position: relative;
 }
 
 .dependancy-parent {
