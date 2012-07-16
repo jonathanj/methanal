@@ -54,6 +54,14 @@ button.methanal-submit-disabled:active {
     -webkit-box-shadow: none;
 }
 
+optgroup {
+    font-style: normal;
+}
+
+optgroup option {
+    padding-left: 1em;
+}
+
 .methanal-form-group {
     margin: 1em 0;
     border: none;
@@ -82,7 +90,6 @@ button.methanal-submit-disabled:active {
 .methanal-form-group h2 {
     color: #555;
     font-weight: normal;
-    text-shadow: 0 1px 0 #fff;
     margin: 0 0 0.5em 0;
 }
 
@@ -141,6 +148,7 @@ textarea.methanal-input {
     padding-left: 22px;
     margin-right: 0.333em;
     box-shadow: 0 1px #fff;
+    -o-box-shadow: 0 1px #fff;
     -moz-box-shadow: 0 1px #fff;
     -webkit-box-shadow: 0 1px #fff;
 }
@@ -184,14 +192,6 @@ textarea.methanal-input {
 .methanal-multi-input label,
 .methanal-multi-input label input {
     cursor: pointer;
-}
-
-optgroup {
-    font-style: normal;
-}
-
-optgroup option {
-    padding-left: 1em;
 }
 
 .methanal-multiselect {
@@ -293,6 +293,7 @@ optgroup option {
     background: #ddd;
     color: #333;
     box-shadow: 0 1px #fff;
+    -o-box-shadow: 0 1px #fff;
     -moz-box-shadow: 0 1px #fff;
     -webkit-box-shadow: 0 1px #fff;
 }
@@ -506,10 +507,6 @@ optgroup option {
     margin: 0 0 0.25em 0;
 }
 
-.methanal-lookup-form .methanal-control-even {
-    background-color: #f5f5f5;
-}
-
 .dependancy-parent {
     border-left: 3px solid #777;
     margin-left: -3px;
@@ -518,10 +515,6 @@ optgroup option {
 .dependancy-child {
     border-left: 3px solid #bbb;
     margin-left: -3px;
-}
-
-.form-modified {
-    background: #fbede1;
 }
 
 .modified-indicator {
@@ -590,10 +583,8 @@ optgroup option {
         display: block;
         max-width: 100%;
         margin: auto;
-        border-radius: 0;
-        -moz-border-radius: 0;
-        -webkit-border-radius: 0;
         box-shadow: none;
+        -o-box-shadow: none;
         -moz-box-shadow: none;
         -webkit-box-shadow: none;
     }
