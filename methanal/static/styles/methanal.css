@@ -380,14 +380,13 @@ optgroup option {
     left: 0;
     bottom: 0;
     right: 0;
-    background: white;
+    background: #000;
     opacity: 0.75;
     z-index: 1000;
 }
 
 .modal-dialog-outer {
     z-index: 1001;
-
     display: table;
     position: absolute;
     top: 0;
@@ -405,14 +404,12 @@ optgroup option {
 .modal-dialog-inner {
     display: table;
     margin: 5% auto;
-    background: white;
+    background: #fff;
     padding: 1em;
-    border-radius: 4px;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    box-shadow: 0 0 30px #333;
-    -moz-box-shadow: 0 0 30px #333;
-    -webkit-box-shadow: 0 0 30px #333;
+    box-shadow: 0.5em 0.5em #aaa;
+    -o-box-shadow: 0.5em 0.5em #aaa;
+    -moz-box-shadow: 0.5em 0.5em #aaa;
+    -webkit-box-shadow: 0.5em 0.5em #aaa;
 }
 
 .modal-dialog-inner h1 {
