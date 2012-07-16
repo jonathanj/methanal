@@ -537,15 +537,12 @@ optgroup option {
 }
 
 .dependancy-parent {
-    border-left: 3px solid #6094a4;
+    border-left: 3px solid #777;
     margin-left: -3px;
-    background-image: url("/static/Methanal/images/icons/dependency_parent.gif");
-    background-repeat: no-repeat;
-    background-position: left center;
 }
 
 .dependancy-child {
-    border-left: 3px solid #9fc4cf;
+    border-left: 3px solid #bbb;
     margin-left: -3px;
 }
 
