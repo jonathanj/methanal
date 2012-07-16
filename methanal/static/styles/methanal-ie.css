@@ -1,13 +1,15 @@
 form {
     margin: 0;
+    padding: 0;
 }
 
-.methanal-multi-input {
-    border: 1px outset #ddd;
+button {
+    border-color: #444;
 }
 
-.methanal-form-group {
-    border-color: white;
+.methanal-control {
+    margin: 0;
+    padding: 0.333em 0;
 }
 
 .modal-dialog-overlay {
