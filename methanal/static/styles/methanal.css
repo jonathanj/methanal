@@ -145,6 +145,20 @@ textarea.methanal-input {
     -webkit-box-shadow: 0 1px #fff;
 }
 
+input.methanal-check-input {
+    border: none;
+    margin-left: 0;
+    float: left;
+    cursor: pointer;
+}
+
+.methanal-check-input-label {
+    float: left;
+    margin-right: 0.5em;
+    cursor: pointer;
+    line-height: 1.75em;
+}
+
 select.methanal-input {
     padding-top: 0.233em;
     padding-bottom: 0.233em;
@@ -163,26 +177,12 @@ textarea.methanal-input {
     border-color: #da2603;
 }
 
-.methanal-check-input-label {
-    float: left;
-    margin-right: 0.5em;
-    cursor: pointer;
-    line-height: 1.75em;
-}
-
 .methanal-multi-input input {
     margin-left: 0;
 }
 
 .methanal-multi-input label,
 .methanal-multi-input label input {
-    cursor: pointer;
-}
-
-input.methanal-check-input {
-    border: none;
-    margin-left: 0;
-    float: left;
     cursor: pointer;
 }
 
