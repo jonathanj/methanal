@@ -24,9 +24,19 @@ button {
     border: 2px solid #999;
 }
 
+.methanal-tab-view .methanal-tab-label {
+    display: inline;
+    zoom: 1;
+}
+
 .methanal-tab-view .selected-tab-label {
     border-bottom: 1px solid #fff;
     position: relative;
+}
+
+.methanal-tab-view .methanal-tab-group {
+    position: relative;
+    top: 1px;
 }
 
 .dependancy-parent {
