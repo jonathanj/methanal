@@ -1627,9 +1627,14 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         self._groups = {};
         self.fullyLoaded = false;
         if (_makeThrobber === undefined) {
-            _makeThrobber = function() { return self._makeThrobber(); };
+            _makeThrobber = function() { return self._defaultMakeThrobber(); };
         }
-        self.throbber = _makeThrobber();
+        self._makeThrobber = _makeThrobber;
+    },
+
+
+    function nodeInserted(self) {
+        self.throbber = self._makeThrobber();
         self.throbber.start();
     },
 
@@ -1637,7 +1642,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
     /**
      * Create a throbber object.
      */
-    function _makeThrobber(self) {
+    function _defaultMakeThrobber(self) {
         return Methanal.Util.Throbber(self);
     },
 
