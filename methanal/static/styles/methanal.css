@@ -420,6 +420,10 @@ textarea.methanal-input {
     margin: 3em 0;
 }
 
+.methanal-tab-view .methanal-tab-view {
+    margin: 1em 0;
+}
+
 .methanal-tab-view .methanal-tab-labels {
     margin: 0;
     padding: 0;
