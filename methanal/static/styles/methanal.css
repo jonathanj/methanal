@@ -438,6 +438,11 @@ textarea.methanal-input {
     background: #e8e8e8;
 }
 
+.methanal-tab-view .methanal-tab-label-throbber {
+    border: none;
+    background: none
+}
+
 .methanal-tab-view .methanal-tab-label a {
     font-weight: bold;
     color: #404040;
