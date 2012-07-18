@@ -1160,7 +1160,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
             var traceback = D('pre', {}, [failure.toPrettyText()]);
             this.parentNode.appendChild(traceback);
             this.onclick = null;
-        };
+        }
 
         var header = D('h2', {}, ['Submission error']);
         header.onclick = showTraceback;
