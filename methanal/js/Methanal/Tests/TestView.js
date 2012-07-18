@@ -986,7 +986,7 @@ Methanal.Tests.TestView.BaseTestTextInput.subclass(
      * value for valid date values.
      */
     function test_displayValue(self) {
-        self.testControl({value: null},
+        self.testControl({value: '2012-07-18'},
             function (control) {
                 // TextInput._updateDisplayValue should have been called by the
                 // time the node has been inserted, if it has then the first
