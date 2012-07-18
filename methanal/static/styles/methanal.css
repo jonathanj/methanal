@@ -118,16 +118,15 @@ optgroup option {
     color: #353535;
 }
 
-.methanal-inline-children .methanal-inline-control .methanal-input {
-    clear: none;
+.methanal-multi-input,
+.methanal-lookup-form {
     float: left;
-    margin-right: 3px;
-    min-width: 5em;
+    padding-left: 1em;
+    border-left: 1px solid #b7b7b7;
 }
 
-.methanal-lookup-form .lookup-result .methanal-caption {
-    font-style: italic;
-    font-weight: bold;
+.methanal-lookup-form .lookup-result {
+    border-top: 2px solid #3580bf;
 }
 
 .methanal-lookup-form .methanal-caption,
@@ -179,10 +178,26 @@ select.methanal-input {
     padding-bottom: 0.233em;
 }
 
-textarea.methanal-input {
+textarea.methanal-input,
+select.methanal-multiselect {
     background-position: 4px 4px;
+}
+
+textarea.methanal-input {
     width: 20em;
-    height: 14ex;
+    height: 10em;
+}
+
+.methanal-multiselect {
+    max-height: 20em;
+}
+
+.methanal-multiselect-selection {
+    font-size: 80%;
+    clear: left;
+    float: left;
+    margin: 2px;
+    font-weight: bold;
 }
 
 .methanal-control-error input.methanal-input,
