@@ -1,3 +1,7 @@
+/**
+ * Button styles.
+ */
+
 button {
     color: #fff;
     font-weight: bold;
@@ -54,12 +58,34 @@ button.methanal-submit-disabled:active {
     -webkit-box-shadow: none;
 }
 
+/**
+ * Option groups.
+ */
+
 optgroup {
     font-style: normal;
 }
 
 optgroup option {
     padding-left: 1em;
+}
+
+/**
+ * LiveForm and controls.
+ */
+
+.methanal-liveform h1 {
+    color: #000;
+    font-weight: bold;
+    margin: 0 0 0.5em 0;
+    text-transform: uppercase;
+    font-size: 130%;
+    padding: 0.5em 0;
+    border-bottom: 2px solid #ccc;
+}
+
+.methanal-liveform .modified-indicator {
+    font-weight: bold;
 }
 
 .methanal-form-group {
@@ -84,20 +110,6 @@ optgroup option {
 .methanal-control-inputs,
 .methanal-control-inputs > * {
     float: left;
-}
-
-.methanal-liveform h1 {
-    color: #000;
-    font-weight: bold;
-    margin: 0 0 0.5em 0;
-    text-transform: uppercase;
-    font-size: 130%;
-    padding: 0.5em 0;
-    border-bottom: 2px solid #ccc;
-}
-
-.methanal-liveform .modified-indicator {
-    font-weight: bold;
 }
 
 .methanal-control-even {
@@ -135,10 +147,25 @@ optgroup option {
     margin-right: 0.533em;
 }
 
-.methanal-sub-caption {
-    padding: 3px 0;
-    float: left;
-    clear: left;
+.methanal-choice-group {
+    border: solid #ddd;
+    border-width: 0 0 0 1px;
+    margin: 0.5em;
+    padding: 0.3em 0 0.3em 0.5em;
+}
+
+.methanal-choice-group h4 {
+    margin: 0 0 0.25em 0;
+}
+
+.dependancy-parent {
+    border-left: 3px solid #777;
+    margin-left: -3px;
+}
+
+.dependancy-child {
+    border-left: 3px solid #bbb;
+    margin-left: -3px;
 }
 
 input.methanal-input,
@@ -216,20 +243,25 @@ textarea.methanal-input {
     cursor: pointer;
 }
 
-.methanal-multiselect {
-    max-height: 30ex;
-}
-
-.methanal-multiselect-selection {
-    font-size: 80%;
-    clear: left;
+.friendly-representation {
     float: left;
-    margin: 2px;
-    font-weight: bold;
+    font-style: italic;
+    vertical-align: middle;
+    padding: 0.333em 5px;
+    margin-left: -0.333em;
+    margin-right: 0.333em;
+    border: 1px solid #b7b7b7;
+    border-left: none;
+    background: #ddd;
+    color: #333;
+    box-shadow: 0 1px #fff;
+    -o-box-shadow: 0 1px #fff;
+    -moz-box-shadow: 0 1px #fff;
+    -webkit-box-shadow: 0 1px #fff;
 }
 
-.terminator {
-    clear: both;
+.embedded-label {
+    color: #bbb !important;
 }
 
 /**
@@ -290,45 +322,22 @@ textarea.methanal-input {
     background-color: rgba(0, 0, 0, 0.03);
 }
 
+/**
+ * Filter list widget.
+ */
+
 .methanal-filter-list {
-    margin: 5px;
-    border: 1px outset #777;
-    background-color: #f4f4f4;
-    padding: 5px;
+    margin: 0.5em;
+    padding: 0.5em;
 }
 
 .methanal-filter-list .filter-results {
-    background: url(/static/Methanal/images/liveform-bg-bottom-top.png) repeat-x top left;
-    padding: 1em;
+    margin-top: 1em;
 }
 
-.methanal-multi-input,
-.methanal-lookup-form {
-    float: left;
-    padding-left: 1em;
-    border-left: 1px solid #b7b7b7;
-}
-
-.friendly-representation {
-    float: left;
-    font-style: italic;
-    vertical-align: middle;
-    padding: 0.333em 5px;
-    margin-left: -0.333em;
-    margin-right: 0.333em;
-    border: 1px solid #b7b7b7;
-    border-left: none;
-    background: #ddd;
-    color: #333;
-    box-shadow: 0 1px #fff;
-    -o-box-shadow: 0 1px #fff;
-    -moz-box-shadow: 0 1px #fff;
-    -webkit-box-shadow: 0 1px #fff;
-}
-
-.embedded-label {
-    color: #bbb !important;
-}
+/**
+ * LiveForm submission error.
+ */
 
 .methanal-submit-error {
     color: white;
@@ -361,6 +370,10 @@ textarea.methanal-input {
     vertical-align: middle;
 }
 
+/**
+ * LiveForm actions.
+ */
+
 .methanal-action-container {
     margin-top: 0.5em;
 }
@@ -379,9 +392,9 @@ textarea.methanal-input {
     background-color: #2d6da2;
 }
 
-.throbber {
-    vertical-align: middle;
-}
+/**
+ * Modal dialog.
+ */
 
 .modal-dialog-overlay {
     position: fixed;
@@ -435,14 +448,8 @@ textarea.methanal-input {
     height: 16px;
 }
 
-.placeholder {
-    height: 32px;
-    background: url(/static/Methanal/images/long-throbber.gif) no-repeat center center;
-    padding: 1em 0;
-}
-
 /**
- * Tab view widget.
+ * Tab view.
  */
 
 .methanal-tab-view {
@@ -520,31 +527,6 @@ textarea.methanal-input {
     padding: 0;
 }
 
-.hidden {
-    display: none !important;
-}
-
-.methanal-choice-group {
-    border: solid #ddd;
-    border-width: 0 0 0 1px;
-    margin: 0.5em;
-    padding: 0.3em 0 0.3em 0.5em;
-}
-
-.methanal-choice-group h4 {
-    margin: 0 0 0.25em 0;
-}
-
-.dependancy-parent {
-    border-left: 3px solid #777;
-    margin-left: -3px;
-}
-
-.dependancy-child {
-    border-left: 3px solid #bbb;
-    margin-left: -3px;
-}
-
 /**
  * Expander widget.
  */
@@ -583,6 +565,10 @@ textarea.methanal-input {
     padding-top: 1em;
     border-top: 1px solid #c7c7c7;
 }
+
+/**
+ * Print media.
+ */
 
 @media print {
     body.printing > * {
@@ -765,4 +751,26 @@ textarea.methanal-input {
 
 .form-validation-error-tooltip h2 {
     cursor: default;
+}
+
+/**
+ * Utility.
+ */
+
+.hidden {
+    display: none !important;
+}
+
+.throbber {
+    vertical-align: middle;
+}
+
+.placeholder {
+    height: 32px;
+    background: url(/static/Methanal/images/long-throbber.gif) no-repeat center center;
+    padding: 1em 0;
+}
+
+.terminator {
+    clear: both;
 }
