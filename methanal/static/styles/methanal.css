@@ -6,10 +6,10 @@ button {
     color: #fff;
     font-weight: bold;
     border: 1px solid transparent;
-    box-shadow: 2px 2px #444;
     -o-box-shadow: 2px 2px #444;
     -moz-box-shadow: 2px 2px #444;
     -webkit-box-shadow: 2px 2px #444;
+    box-shadow: 2px 2px #444;
     background-color: #9099a3;
     padding: 0.5em 1em;
     cursor: pointer;
@@ -17,10 +17,10 @@ button {
 
 button:active:focus,
 button:active {
-    box-shadow: none;
     -o-box-shadow: none;
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
+    box-shadow: none;
     background-color: #7b858f;
     position: relative;
     top: 1px
@@ -52,10 +52,10 @@ button.methanal-submit-disabled:active {
     cursor: not-allowed;
     top: 0;
     opacity: 0.5;
-    box-shadow: none;
     -o-box-shadow: none;
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
+    box-shadow: none;
 }
 
 /**
@@ -108,7 +108,7 @@ optgroup option {
 }
 
 .methanal-control-inputs,
-.methanal-control-inputs > * {
+.methanal-control-inputs > div {
     float: left;
 }
 
@@ -180,13 +180,13 @@ textarea.methanal-input {
     padding: 0.333em 5px;
     padding-left: 22px;
     margin-right: 0.333em;
-    box-shadow: 0 1px #fff;
     -o-box-shadow: 0 1px #fff;
     -moz-box-shadow: 0 1px #fff;
     -webkit-box-shadow: 0 1px #fff;
+    box-shadow: 0 1px #fff;
 }
 
-input.methanal-check-input {
+.methanal-check-input {
     border: none;
     margin-left: 0;
     float: left;
@@ -254,10 +254,10 @@ textarea.methanal-input {
     border-left: none;
     background: #ddd;
     color: #333;
-    box-shadow: 0 1px #fff;
     -o-box-shadow: 0 1px #fff;
     -moz-box-shadow: 0 1px #fff;
     -webkit-box-shadow: 0 1px #fff;
+    box-shadow: 0 1px #fff;
 }
 
 .embedded-label {
@@ -291,7 +291,7 @@ textarea.methanal-input {
 }
 
 .methanal-table tbody tr:hover {
-    background-color: #e8e8e8 !important;
+    background-color: #e8e8e8;
 }
 
 .methanal-table tr,
@@ -317,7 +317,7 @@ textarea.methanal-input {
     vertical-align: middle;
 }
 
-.methanal-table tr.even {
+.methanal-table .even {
     background-color: #f9f9f9;
     background-color: rgba(0, 0, 0, 0.03);
 }
@@ -383,7 +383,6 @@ textarea.methanal-input {
 }
 
 .modal-dialog-middle {
-    margin: 0 auto;
     display: table-cell;
     vertical-align: middle;
 }
@@ -393,10 +392,10 @@ textarea.methanal-input {
     margin: 5% auto;
     background: #fff;
     padding: 1em;
-    box-shadow: 0.5em 0.5em #aaa;
     -o-box-shadow: 0.5em 0.5em #aaa;
     -moz-box-shadow: 0.5em 0.5em #aaa;
     -webkit-box-shadow: 0.5em 0.5em #aaa;
+    box-shadow: 0.5em 0.5em #aaa;
 }
 
 .modal-dialog-inner h1 {
@@ -546,7 +545,7 @@ textarea.methanal-input {
 
     body.printing .print-target {
         display: block;
-        position: absolute:
+        position: absolute;
         left: 0;
         top: 0;
         font-size: 50%;
@@ -560,10 +559,10 @@ textarea.methanal-input {
         display: block;
         max-width: 100%;
         margin: auto;
-        box-shadow: none;
         -o-box-shadow: none;
         -moz-box-shadow: none;
         -webkit-box-shadow: none;
+        box-shadow: none;
     }
 
     .print-target .no-print {
@@ -579,10 +578,10 @@ textarea.methanal-input {
     display: inline-block;
     position: relative;
     border: 1px solid;
-    box-shadow: 1px 1px black;
     -o-box-shadow: 1px 1px black;
     -moz-box-shadow: 1px 1px black;
     -webkit-box-shadow: 1px 1px black;
+    box-shadow: 1px 1px black;
     color: #fff;
     font-size: 90%;
     padding: 0.25em;
