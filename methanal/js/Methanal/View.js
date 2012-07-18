@@ -1028,7 +1028,8 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
 
 
     function nodeInserted(self) {
-        self._formErrorNode = self.nodeById('form-error');
+        self._submissionErrorTooltip = Methanal.Util.Tooltip(
+            self.node, null, 'top', 'error-tooltip submission-error-tooltip');
         self._validationErrorTooltip = Methanal.Util.Tooltip(
             self.node, null, 'top', 'error-tooltip submission-error-tooltip ' +
                                     'form-validation-error-tooltip');
@@ -1143,8 +1144,7 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * Clear submission errors.
      */
     function clearError(self) {
-        Methanal.Util.removeNodeContent(self._formErrorNode);
-        Methanal.Util.addElementClass(self._formErrorNode, 'hidden');
+        self._submissionErrorTooltip.hide();
     },
 
 
@@ -1154,32 +1154,21 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
      * @type failure: C{Divmod.Defer.Failure}
      */
     function setError(self, failure) {
-        var T = Methanal.Util.DOMBuilder(self.node.ownerDocument);
-
-        var a = T('a', {'class': 'methanal-submit-error-action'}, [
-            T('img', {
-                'src':   '/static/Methanal/images/icons/page_white_error.png',
-                'title': 'Toggle traceback'})]);
+        var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
 
         function showTraceback() {
-            var traceback = T('pre', {}, [failure.toPrettyText()]);
-            this.parentNode.parentNode.appendChild(traceback);
-            this.onclick = hideTraceback;
-        }
+            var traceback = D('pre', {}, [failure.toPrettyText()]);
+            this.parentNode.appendChild(traceback);
+            this.onclick = null;
+        };
 
-        function hideTraceback() {
-            var node = this.parentNode.parentNode;
-            node.removeChild(node.lastChild);
-            this.onclick = showTraceback;
-        }
-
-        a.onclick = showTraceback;
-
-        Methanal.Util.replaceNodeContent(self._formErrorNode, [
-            T('h1', {}, ['Error submitting form', a]),
-            T('div', {'class': 'methanal-submit-error-message'}, [
-                self.formatFailure(failure)])]);
-        Methanal.Util.removeElementClass(self._formErrorNode, 'hidden');
+        var header = D('h2', {}, ['Submission error']);
+        header.onclick = showTraceback;
+        var errorText = D('span', {}, [header,
+            D('p', {}, [self.formatFailure(failure)])]);
+        self._submissionErrorTooltip.setText(errorText);
+        self._submissionErrorTooltip.show();
+        self._submissionErrorTooltip.scrollIntoView(true);
     },
 
 
