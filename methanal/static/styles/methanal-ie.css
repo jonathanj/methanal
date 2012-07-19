@@ -5,6 +5,8 @@ form {
 
 button {
     border-color: #444;
+    width: auto;
+    overflow: visible;
 }
 
 .modal-dialog-overlay {
