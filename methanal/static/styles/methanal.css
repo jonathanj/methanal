@@ -472,6 +472,10 @@ textarea.methanal-input {
     display: none;
     padding: 1em;
     margin-top: -1px;
+    -o-box-shadow: 2px 2px #eee;
+    -moz-box-shadow: 2px 2px #eee;
+    -webkit-box-shadow: 2px 2px #eee;
+    box-shadow: 2px 2px #eee;
 }
 
 .methanal-tab-view .selected-tab {
