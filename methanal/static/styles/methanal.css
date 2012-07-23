@@ -140,6 +140,10 @@ optgroup option {
     border-top: 2px solid #3580bf;
 }
 
+.methanal-simple-form .methanal-control-even {
+    background-color: transparent;
+}
+
 .methanal-lookup-form .methanal-caption,
 .methanal-multi-input .methanal-caption {
     width: 8em;
