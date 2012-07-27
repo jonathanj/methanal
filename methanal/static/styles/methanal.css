@@ -5,13 +5,17 @@
 button {
     color: #fff;
     font-weight: bold;
+    text-transform: uppercase;
     border: 1px solid transparent;
-    -o-box-shadow: 2px 2px #444;
-    -moz-box-shadow: 2px 2px #444;
-    -webkit-box-shadow: 2px 2px #444;
-    box-shadow: 2px 2px #444;
-    background-color: #9099a3;
+    border-color: rgba(0, 0, 0, 0.15);
+    border-radius: 0.2em;
+    -o-box-shadow: 0px 1px rgba(0, 0, 0, 0.333);
+    -moz-box-shadow: 0px 1px rgba(0, 0, 0, 0.333);
+    -webkit-box-shadow: 0px 1px rgba(0, 0, 0, 0.333);
+    box-shadow: 0px 1px rgba(0, 0, 0, 0.333);
+    background-color: #555;
     padding: 0.5em 1em;
+    padding: 0.6em 1em;
     cursor: pointer;
 }
 
@@ -21,13 +25,14 @@ button:active {
     -moz-box-shadow: none;
     -webkit-box-shadow: none;
     box-shadow: none;
-    background-color: #7b858f;
+    background-color: #193c59;
+    border-color: transparent;
     position: relative;
-    top: 1px
+    top: 1px;
 }
 
 button:focus {
-    border-color: #444;
+    border-color: #193c59;
 }
 
 button:hover {
@@ -46,7 +51,7 @@ button.methanal-submit-disabled:hover,
 button.methanal-submit-disabled:active {
     text-decoration: none;
     border-color: #ccc;
-    background-color: #ccc;
+    background-color: transparent;
     color: #444;
     cursor: default;
     cursor: not-allowed;
@@ -352,12 +357,8 @@ textarea.methanal-input {
 }
 
 .methanal-action-button-submit {
+    color: #fff;
     background-color: #3580bf;
-}
-
-.methanal-action-button-submit:active:focus,
-.methanal-action-button-submit:active {
-    background-color: #2d6da2;
 }
 
 /**
