@@ -53,7 +53,6 @@ function makeWidgetChildNode(widget, tagName, id) {
  */
 Methanal.Tests.Util.setUpForm = function setUpForm(form) {
     var makeWidgetChildNode = Methanal.Tests.Util.makeWidgetChildNode;
-    makeWidgetChildNode(form, 'span', 'form-error');
 
     Methanal.Util.addElementClass(
         makeWidgetChildNode(form, 'span', 'modifiedIndicator'),

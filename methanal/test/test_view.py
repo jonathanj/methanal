@@ -88,7 +88,7 @@ class LiveFormTests(unittest.TestCase):
             # Oh where, oh where can it be?
             # With real XPath support and functionality.
             # Oh where, oh where can it be?
-            candidates = tree.findall('//form/div')
+            candidates = tree.findall('.//form/div')
             actionsNode = None
             id = 'athenaid:%d-actions' % (self.form._athenaID,)
             for node in candidates:
@@ -717,7 +717,7 @@ class SelectInputTests(ChoiceInputTests):
             dict(values=values), checkExpectedValues=False)
 
         def verifyRendering(tree):
-            groupNodes = tree.findall('//select/optgroup')
+            groupNodes = tree.findall('.//select/optgroup')
             groups = set(item.group for item in values)
             self.assertEquals(len(groupNodes), len(groups))
             for groupNode, item in zip(groupNodes, values):
@@ -748,7 +748,7 @@ class SelectInputTests(ChoiceInputTests):
             dict(values=values), checkExpectedValues=False)
 
         def verifyRendering(tree):
-            optionNodes = tree.findall('//option')
+            optionNodes = tree.findall('.//option')
             self.assertEquals(len(optionNodes), len(list(values)))
             for optionNode, item in zip(optionNodes, values):
                 self.assertEquals(optionNode.get('value'), item.id)
@@ -1025,7 +1025,7 @@ class GroupedSelectInputTests(ChoiceInputTests):
             dict(values=values), checkExpectedValues=False)
 
         def verifyRendering(tree):
-            groupNodes = tree.findall('//select/optgroup')
+            groupNodes = tree.findall('.//select/optgroup')
             self.assertEquals(len(groupNodes), len(values))
             for groupNode, (group, subvalues) in zip(groupNodes, values):
                 self.assertEquals(groupNode.get('label'), group)
@@ -1094,7 +1094,7 @@ class RadioGroupInputTests(ChoiceInputTests):
         control = self.createControl(dict(values=values))
 
         def verifyRendering(tree):
-            inputs = tree.findall('//input')
+            inputs = tree.findall('.//input')
             self.assertEquals(len(values), len(inputs))
             for input, (value, desc) in zip(inputs, values):
                 self.assertEquals(input.get('name'), self.name)
@@ -1128,7 +1128,7 @@ class CheckboxInputTests(FormInputTests):
         control.parent.param.value = False
 
         def verifyRendering(tree):
-            input = tree.find('//input')
+            input = tree.find('.//input')
             self.assertIdentical(input.get('checked'), None)
 
         return renderWidget(control).addCallback(verifyRendering)
@@ -1142,7 +1142,7 @@ class CheckboxInputTests(FormInputTests):
         control.parent.param.value = True
 
         def verifyRendering(tree):
-            input = tree.find('//input')
+            input = tree.find('.//input')
             self.assertEquals(input.get('checked'), 'checked')
 
         return renderWidget(control).addCallback(verifyRendering)
@@ -1157,7 +1157,7 @@ class CheckboxInputTests(FormInputTests):
         control.parent.param.value = True
 
         def verifyRendering(tree):
-            input = tree.find('//input')
+            input = tree.find('.//input')
             self.assertEquals(input.tail.strip(), 'HELLO WORLD')
 
         return renderWidget(control).addCallback(verifyRendering)

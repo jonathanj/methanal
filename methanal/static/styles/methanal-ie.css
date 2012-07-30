@@ -1,13 +1,12 @@
 form {
     margin: 0;
+    padding: 0;
 }
 
-.methanal-multi-input {
-    border: 1px outset #ddd;
-}
-
-.methanal-form-group {
-    border-color: white;
+button {
+    border-color: #444;
+    width: auto;
+    overflow: visible;
 }
 
 .modal-dialog-overlay {
@@ -27,28 +26,19 @@ form {
     border: 2px solid #999;
 }
 
-.methanal-tab-view .methanal-tab-labels {
-    padding-top: 0;
-}
-
 .methanal-tab-view .methanal-tab-label {
-    /* Simulate inline-block. */
-    zoom: 1;
     display: inline;
-}
-
-.methanal-tab-view .methanal-tab-label a {
     zoom: 1;
-    margin-bottom: -0.5em;
 }
 
-.methanal-tab-view .selected-tab-label a {
-    padding-top: 0.5em;
+.methanal-tab-view .selected-tab-label {
+    border-bottom: 1px solid #fff;
+    position: relative;
 }
 
-.methanal-tab-view .methanal-tab-group-label {
-    margin-bottom: -0.5em;
-    padding: 0.25em;
+.methanal-tab-view .methanal-tab-group {
+    position: relative;
+    top: 1px;
 }
 
 .dependancy-parent {

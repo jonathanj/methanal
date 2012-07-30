@@ -1118,6 +1118,17 @@ Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
 
 
     /**
+     * Handler for the "onchange" DOM event.
+     *
+     * Inform the containing form that our value has changed.
+     */
+    function onChange(self, node, updateModified) {
+        self.getForm().valueChanged(self, updateModified);
+        return true;
+    },
+
+
+    /**
      * Set the values of the result input.
      *
      * @type  values: C{Array} of L{LookupResult}
@@ -1138,6 +1149,7 @@ Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
     function setValue(self, data) {
         self._waitForForm.addCallback(function () {
             self._lookupForm.populateForm(data, true);
+            self._lookupForm._initialisedOnce = true;
         });
     },
 
@@ -1204,6 +1216,7 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
 
         self.results = {};
         self.storeResults = false;
+        self._initialisedOnce = false;
     },
 
 
@@ -1360,7 +1373,7 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
         }
 
         // Trigger Lookup.onChange so the parent form refreshes validators.
-        self.widgetParent.onChange(control.node);
+        self.widgetParent.onChange(control.node, self._initialisedOnce);
 
         // Don't trigger when the result input is changed or when there are
         // validation errors.
@@ -1614,9 +1627,14 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         self._groups = {};
         self.fullyLoaded = false;
         if (_makeThrobber === undefined) {
-            _makeThrobber = function() { return self._makeThrobber(); };
+            _makeThrobber = function() { return self._defaultMakeThrobber(); };
         }
-        self.throbber = _makeThrobber();
+        self._makeThrobber = _makeThrobber;
+    },
+
+
+    function nodeInserted(self) {
+        self.throbber = self._makeThrobber();
         self.throbber.start();
     },
 
@@ -1624,7 +1642,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
     /**
      * Create a throbber object.
      */
-    function _makeThrobber(self) {
+    function _defaultMakeThrobber(self) {
         return Methanal.Util.Throbber(self);
     },
 

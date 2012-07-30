@@ -66,7 +66,8 @@ class FormAction(ThemedElement):
 
     def getArgs(self):
         return {u'actionID': self.id,
-                u'allowViewOnly': self.allowViewOnly}
+                u'allowViewOnly': self.allowViewOnly,
+                u'identifier': self.identifier}
 
 
 

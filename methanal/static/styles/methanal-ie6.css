@@ -12,15 +12,6 @@
     width: 20em;
 }
 
-.methanal-error {
-    background: none;
-    filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='/static/Methanal/images/error-icon.png', sizingMethod='image');
-}
-
-.methanal-error-text {
-    font-size: 75%;
-}
-
 .dependancy-child {
     border-bottom: 1px solid #ccc;
 }
