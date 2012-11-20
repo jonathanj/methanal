@@ -1403,6 +1403,9 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
 
 /**
  * Modal dialog widget.
+ *
+ * @ivar onClose: L{Deferred} that is fired with a L{Boolean}, indicating if
+ *     the dialog was cancelled, when the dialog is closed.
  */
 Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
     function nodeInserted(self) {
@@ -1411,13 +1414,22 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
             self.node.ownerDocument.body, 'printing');
         Methanal.Util.addElementClass(
             self.node, 'print-target');
+        self.onClose = Divmod.Defer.Deferred();
+    },
+
+
+    /**
+     * Cancel the dialog.
+     */
+    function cancel(self, node) {
+        return self.close(node, true);
     },
 
 
     /**
      * Dismiss the dialog.
      */
-    function close(self) {
+    function close(self, node, cancelled) {
         Methanal.Util.removeElementClass(
             self.node.ownerDocument.body, 'printing');
         Methanal.Util.removeElementClass(
@@ -1426,6 +1438,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
         self.detach();
         self.node.parentNode.removeChild(self.node);
         Methanal.Util.setModalOverlay(false);
+        self.onClose.callback(!!cancelled);
     });
 
 
@@ -1488,7 +1501,7 @@ Methanal.View.LiveForm.subclass(Methanal.Widgets, 'ModalDialogForm').methods(
      * Dismiss the dialog.
      */
     function cancel(self) {
-        self.widgetParent.close();
+        self.widgetParent.cancel();
         return false;
     });
 
