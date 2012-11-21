@@ -1411,7 +1411,6 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
             self.node.ownerDocument.body, 'printing');
         Methanal.Util.addElementClass(
             self.node, 'print-target');
-        self.onClose = Divmod.Defer.Deferred();
         self._notifyOnClose = [];
     },
 
