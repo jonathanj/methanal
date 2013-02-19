@@ -522,6 +522,14 @@ class FormInput(ThemedElement):
         return tag[value]
 
 
+    @renderer
+    def renderName(self, req, tag):
+        """
+        Render the input's name.
+        """
+        return tag[self.name]
+
+
     def invoke(self, data):
         """
         Set the model parameter's value from form data.
