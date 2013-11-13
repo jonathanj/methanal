@@ -1674,8 +1674,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         Methanal.Util.addElementClass(self.node, 'methanal-control-error');
         self.error = error;
         self.widgetParent.checkForErrors();
-        self._errorTooltip.setText(self.error);
-        self._errorTooltip.show();
+        if (self.error && self.error.length) {
+            self._errorTooltip.setText(self.error);
+            self._errorTooltip.show();
+        }
     },
 
 
