@@ -1362,6 +1362,14 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
     function resultChanged(self, control) {
     },
 
+    function setInvalid(self, invalidControls) {
+        Methanal.Widgets.LookupForm.upcall(self, 'setInvalid', invalidControls);
+        if (invalidControls.length === 1 &&
+            invalidControls[0].name === '__result__') {
+            self.valid = true;
+        }
+    },
+
 
     function valueChanged(self, control) {
         Methanal.Widgets.LookupForm.upcall(
@@ -1374,6 +1382,11 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
 
         // Trigger Lookup.onChange so the parent form refreshes validators.
         self.widgetParent.onChange(control.node, self._initialisedOnce);
+
+        if (!self.valid) {
+            self.setResults([]);
+            return;
+        }
 
         // Don't trigger when the result input is changed or when there are
         // validation errors.
