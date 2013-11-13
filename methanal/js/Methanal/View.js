@@ -1437,14 +1437,18 @@ Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow').methods(
 Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
     function __init__(self, node, controlNames) {
         Methanal.View.SimpleForm.upcall(
-            self, '__init__', node, {'viewOnly': true}, controlNames);
+            self, '__init__', node, {}, controlNames);
         self.hideModificationIndicator = true;
+        self.valid = true;
     },
 
 
     function nodeInserted(self) {
         // Explicitly override LiveForm's "nodeInserted" method, most of the
         // nodes it attempts to find will not exist in a simple form.
+        if (self.viewOnly === undefined && self.widgetParent.getForm) {
+            self.viewOnly = self.widgetParent.getForm().viewOnly;
+        }
     },
 
 
@@ -1454,11 +1458,13 @@ Methanal.View.LiveForm.subclass(Methanal.View, 'SimpleForm').methods(
 
 
     function setValid(self) {
+        self.valid = true;
         self.widgetParent.clearError();
     },
 
 
     function setInvalid(self, invalidControls) {
+        self.valid = false;
         self.widgetParent.setError('');
     });
 
