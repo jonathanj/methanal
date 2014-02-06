@@ -205,8 +205,12 @@ Methanal.Widgets.Column.subclass(Methanal.Widgets, 'BooleanColumn');
  */
 Methanal.Widgets.Column.subclass(Methanal.Widgets, 'TimestampColumn').methods(
     function valueToDOM(self, columnValue) {
+        var value = columnValue && columnValue.asHumanly();
+        if (value == null) {
+            value = '\u2014';  // EM DASH
+        }
         return Methanal.Widgets.TimestampColumn.upcall(
-            self, 'valueToDOM', columnValue.asHumanly());
+            self, 'valueToDOM', value);
     });
 
 
