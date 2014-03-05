@@ -1451,12 +1451,15 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
      * Cancel the dialog.
      */
     function cancel(self, node) {
-        return self.close(node, true);
+        self.close(node, true);
+        return false;
     },
 
 
     /**
      * Dismiss the dialog.
+     *
+     * @return: Was the dialog cancelled?
      */
     function close(self, node, cancelled) {
         Methanal.Util.removeElementClass(
@@ -1468,8 +1471,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'ModalDialog').methods(
         self.node.parentNode.removeChild(self.node);
         Methanal.Util.setModalOverlay(false);
         for (var i = 0; i < self._notifyOnClose.length; ++i) {
-            self._notifyOnClose[i].callback(!!cancelled);
+            self._notifyOnClose[i].callback(cancelled);
         }
+        return cancelled;
     });
 
 
