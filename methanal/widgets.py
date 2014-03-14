@@ -240,9 +240,10 @@ class Table(ThemedElement):
     """
     Tabulate data with column values derived from Items.
 
-    @type items: C{sequence} of C{axiom.item.Item}
+    @type _itemFactory: I{callable}, taking no arguments, that produces an
+        I{iterable} of L{axiom.item.Item}.
 
-    @type columns: C{sequence} of C{methanal.imethanal.IColumn}
+    @type columns: I{iterable} of L{methanal.imethanal.IColumn}
     """
     jsClass = u'Methanal.Widgets.Table'
     fragmentName = 'methanal-table'
@@ -250,8 +251,21 @@ class Table(ThemedElement):
 
     def __init__(self, items, columns, **kw):
         super(Table, self).__init__(**kw)
-        self.items = list(items)
+        if callable(items):
+            itemsFactory = items
+        else:
+            items = list(items)
+            itemsFactory = lambda: items
+        self._itemsFactory = itemsFactory
         self.columns = [IColumn(column) for column in columns]
+
+
+    @property
+    def items(self):
+        """
+        An  I{iterable} of L{axiom.item.Item}.
+        """
+        return self._itemsFactory()
 
 
     def getInitialArguments(self):
@@ -260,8 +274,27 @@ class Table(ThemedElement):
 
     def getArgs(self):
         return {u'columns': self.columns,
-                u'rows': [Row(item, index, self)
-                          for index, item in enumerate(self.items)]}
+                u'rows': self._createRows(self.items)}
+
+
+    def _createRows(self, items):
+        """
+        Create L{Row} items for use on the client.
+        """
+        return [
+            Row(item, index, self) for index, item in enumerate(items)]
+
+
+    def replaceRemoteRows(self, items=None):
+        """
+        Replace rows on the remote side.
+
+        @type  items: I{iterable} of L{axiom.item.Item}
+        @param items: Rows.
+        """
+        if items is None:
+            items = self.items
+        return self.callRemote('repopulate', self._createRows(items))
 
 
     @expose
@@ -269,6 +302,11 @@ class Table(ThemedElement):
         method = getattr(self, 'action_' + name)
         item = self.items[rowIndex]
         return method(item)
+
+
+    @expose
+    def _getRows(self):
+        return self._createRows(self.items)
 
 
 
