@@ -599,6 +599,30 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
 
 
     /**
+     * Fetch rows from the server and repopulate the table.
+     */
+    function repopulateFromServer(self) {
+        var d = self.callRemote('_getRows');
+        d.addCallback(function (rows) {
+            self.repopulate(rows);
+            return null;
+        });
+        return d;
+    },
+
+
+    /**
+     * Clear the table body and populate it.
+     *
+     * @param rows: C{Array} of row data objects
+     */
+    function repopulate(self, rows) {
+        self.clear();
+        self.populate(rows);
+    },
+
+
+    /**
      * Populate the table.
      *
      * @param rows: C{Array} of row data objects
