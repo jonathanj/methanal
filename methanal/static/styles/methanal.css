@@ -631,8 +631,8 @@ textarea.methanal-input {
     bottom: -0.7em;
     right: auto;
     left: 1.5em;
-    border-left: 0.7em dotted transparent;
-    border-right: 0.7em dotted transparent;
+    border-left: 0.7em solid transparent;
+    border-right: 0.7em solid transparent;
     border-top-width: 0.7em;
     border-bottom-width: 0;
     margin-left: -0.7em;
@@ -650,8 +650,8 @@ textarea.methanal-input {
     top: 0.8em;
     bottom: auto;
     margin-top: -0.6em;
-    border-top: 0.6em dotted transparent;
-    border-bottom: 0.6em dotted transparent;
+    border-top: 0.6em solid transparent;
+    border-bottom: 0.6em solid transparent;
     border-right-width: 1em;
     border-left-width: 0;
     margin-left: -0.9em;
@@ -663,8 +663,8 @@ textarea.methanal-input {
     top: -0.7em;
     right: auto;
     left: 1.5em;
-    border-left: 0.7em dotted transparent;
-    border-right: 0.7em dotted transparent;
+    border-left: 0.7em solid transparent;
+    border-right: 0.7em solid transparent;
     border-bottom-width: 0.7em;
     border-top-width: 0;
     margin-left: -0.7em;
