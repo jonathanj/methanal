@@ -1034,9 +1034,12 @@ class Tab(ThemedElement):
 
     @expose
     def getContent(self, nodeID=None):
-        content = self.contentFactory()
-        content.setFragmentParent(self)
-        return content
+        def _setFragmentParent(content):
+            content.setFragmentParent(self)
+            return content
+        d = maybeDeferred(self.contentFactory)
+        d.addCallback(_setFragmentParent)
+        return d
 
 
     @renderer
@@ -1066,7 +1069,9 @@ class StaticTab(Tab):
 
     @renderer
     def tabContent(self, req, tag):
-        return tag[self.getContent()]
+        d = self.getContent()
+        d.addCallback(tag.__getitem__)
+        return d
 
 
     def updateRemoteContent(self):
@@ -1100,8 +1105,12 @@ class DemandTab(Tab):
         """
         Force the remote content to be updated.
         """
-        return self.callRemote(
-            'setContentFromWidgetInfo', self.getContent(), u'content')
+        def _callRemote(content):
+            return self.callRemote(
+                'setContentFromWidgetInfo', content, u'content')
+        d = self.getContent()
+        d.addCallback(_callRemote)
+        return d
 
 
 
