@@ -435,6 +435,12 @@ textarea.methanal-input {
     overflow: hidden;
 }
 
+.methanal-tab-view .methanal-tab-label,
+.methanal-tab-view .methanal-tab-label a,
+.methanal-tab-view .methanal-tab-badge {
+    vertical-align: middle;
+}
+
 .methanal-tab-view .methanal-tab-label {
     cursor: pointer;
     list-style: none;
@@ -468,6 +474,17 @@ textarea.methanal-input {
 
 .methanal-tab-view .selected-tab-label a {
     color: #000;
+}
+
+.methanal-tab-view .methanal-tab-badge {
+    display: inline-block;
+    background: #f00;
+    color: #fff;
+    font-size: smaller;
+    border-radius: 1em;
+    padding: 0.25em 0.5em;
+    margin: -0.25em 0;
+    margin-left: 0.5em;
 }
 
 .methanal-tab-view .methanal-tab-content {

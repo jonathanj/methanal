@@ -383,6 +383,16 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
 
 
     /**
+     * Event callback called after L{populate} or L{clear} are called.
+     *
+     * @type  rows: L{Array} of L{Methanal.Widgets.Row}
+     * @param rows: Rows involved in the update.
+     */
+    function rowsUpdated(self, rows) {
+    },
+
+
+    /**
      * Event callback called when a cell is clicked.
      *
      * @type  cellNode: DOM node
@@ -631,6 +641,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
         for (var i = 0; i < rows.length; ++i) {
             self.appendRow(rows[i]);
         }
+        self.rowsUpdated(rows);
     },
 
 
@@ -653,6 +664,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
         var td = tr.insertCell(-1);
         td.colSpan = self._tableNode.tHead.rows[0].cells.length;
         Methanal.Util.replaceNodeText(td, 'No items to display');
+        self.rowsUpdated([]);
     });
 
 
@@ -1683,6 +1695,7 @@ Divmod.Error.subclass(Methanal.Widgets, 'UnknownGroup');
  * @ivar fullyLoaded: Have all the tabs finished loading?
  *
  * @ivar _labels: Mapping of L{Tab.id} to DOM nodes of the tab labels.
+ * @ivar _badges: Mapping of L{Tab.id} to DOM nodes of the tab badges.
  */
 Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
     function __init__(self, node, tabIDs, tabGroups, topLevel,
@@ -1695,6 +1708,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
             self._idToSelect = self._getTabIDFromLocation();
         }
         self._labels = {};
+        self._badges = {};
         self._tabs = {};
         self._groups = {};
         self.fullyLoaded = false;
@@ -1903,8 +1917,9 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
      */
     function _createLabel(self, tab) {
         var D = Methanal.Util.DOMBuilder(self.node.ownerDocument);
+        var badge = D('span', {'class': 'methanal-tab-badge hidden'});
         var label = D('li', {'class': 'methanal-tab-label'}, [
-            D('a', {}, [tab.title])]);
+            D('a', {}, [tab.title, badge])]);
         label.onclick = function onclick(node) {
             self.selectTab(tab);
         };
@@ -1932,6 +1947,7 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
         }
 
         self._labels[tab.id] = label;
+        self._badges[tab.id] = badge;
     },
 
 
@@ -2025,6 +2041,27 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'TabView').methods(
             self._tabToSelect = undefined;
             self._idToSelect = undefined;
         }
+    },
+
+
+    /**
+     * Set the badge for a tab.
+     *
+     * @type  tab: L{String}
+     * @param tab: Identifier of the tab whose badge should be set.
+     *
+     * @type  text: L{String}
+     * @param text: Badge text to set, if C{null} is given then the badge is
+     *     hidden.
+     */
+    function badgeByID(self, tabID, text) {
+        var badgeNode = self._badges[tabID];
+        if (text === null) {
+            Methanal.Util.addElementClass(badgeNode, 'hidden');
+        } else {
+            Methanal.Util.removeElementClass(badgeNode, 'hidden');
+        }
+        Methanal.Util.replaceNodeText(badgeNode, text || '');
     },
 
 
@@ -2220,6 +2257,16 @@ Methanal.Widgets.RemoteContentWidget.subclass(Methanal.Widgets, 'Tab').methods(
      * @return: Class name to use, or C{undefined} if there is none.
      */
     function getLabelClassName(self) {
+    },
+
+
+    /**
+     * Set the badge for this tab.
+     *
+     * @see: L{Methanal.Widgets.TabView.badgeByID}
+     */
+    function badge(self, text) {
+        return self.widgetParent.badgeByID(self.id, text);
     },
 
 
