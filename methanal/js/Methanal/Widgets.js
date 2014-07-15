@@ -1133,14 +1133,31 @@ Methanal.View.FormInput.subclass(Methanal.Widgets, 'Lookup').methods(
         Methanal.Widgets.Lookup.upcall(self, '__init__', node, args);
         self._lookupForm = null;
         self._waitForForm = Divmod.Defer.Deferred();
+        self._waitForLookupForm = Divmod.Defer.Deferred();
     },
 
 
     function formLoaded(self, form) {
         self._lookupForm = form;
-        self.getForm()._waitForForm.addCallback(function () {
+        self._waitForLookupForm.callback(null);
+        self._waitForLookupForm = Divmod.Defer.Deferred();
+
+        var parentForm = self.getForm();
+        parentForm._waitForForm.addCallback(function () {
             self._waitForForm.callback(null);
             self._waitForForm = Divmod.Defer.succeed(null);
+        });
+    },
+
+
+    /**
+     * Check if the parent form should be notified that this input is loaded.
+     *
+     * This input is not loaded until the lookup form has loaded.
+     */
+    function _checkLoaded(self) {
+        self._waitForLookupForm.addCallback(function () {
+            self._notifyLoaded();
         });
     },
 

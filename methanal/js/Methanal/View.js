@@ -1540,6 +1540,16 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'GroupInput').methods(
 
     function setInvalid(self) {
         self.valid = false;
+    },
+
+
+    /**
+     * Internal method for determining whether to set C{fullyLoaded} and
+     * finalise form loading. The FormBehaviour implementation is overridden
+     * because GroupInput does not have an action container.
+     */
+    function _isFullyLoaded(self) {
+        return self.controlsLoaded && !self.fullyLoaded;
     });
 
 
@@ -1590,6 +1600,28 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         self.inputNode = self.getInputNode();
         self._errorTooltip = Methanal.Util.Tooltip(
             self.node, null, 'left', 'error-tooltip');
+        self._checkLoaded();
+    },
+
+
+    /**
+     * Check if the parent form should be notified that this input is loaded.
+     *
+     * Subclasses can override this if they have additional requirements that
+     * must be satisfied before declaring themselves as loaded.
+     */
+    function _checkLoaded(self) {
+        self._notifyLoaded();
+    },
+
+
+    /**
+     * Notify this input's parent form that this input is loaded.
+     *
+     * This method should not be called before C{self.getValue()} is able to
+     * succeed.
+     */
+    function _notifyLoaded(self) {
         self.reset();
 
         function _baseValidator(value) {
