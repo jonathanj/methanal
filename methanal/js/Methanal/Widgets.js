@@ -1428,15 +1428,15 @@ Methanal.View.SimpleForm.subclass(Methanal.Widgets, 'LookupForm').methods(
         // Trigger Lookup.onChange so the parent form refreshes validators.
         self.widgetParent.onChange(control.node, self._initialisedOnce);
 
-        if (!self.valid) {
-            self.setResults([]);
-            return;
-        }
-
         // Don't trigger when the result input is changed or when there are
         // validation errors.
         if (control.name === '__result__') {
             self.resultChanged(control);
+            return;
+        }
+
+        if (!self.valid) {
+            self.setResults([]);
             return;
         }
 
