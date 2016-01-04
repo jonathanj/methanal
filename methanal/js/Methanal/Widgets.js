@@ -22,17 +22,23 @@
  * @ivar icon: If defined, specifies a URL to an image to display as an icon
  *     alongside L{displayName}
  *
+ * @type iconClass: C{String}
+ * @ivar iconClass: If defined, specifies a CSS class name to use as an icon
+ *     alongside L{displayName}
+ *
  * @type allowNavigate: C{Boolean}
  * @ivar allowNavigate: Should clicking this action allow navigation to
  *     proceed? Defaults to C{false}
  */
 Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
     function __init__(self, name, displayName, successHandler/*=undefined*/,
-        icon/*=undefined*/, allowNavigate/*=undefined*/) {
+                      icon/*=undefined*/, allowNavigate/*=undefined*/,
+                      iconClass/*=undefined*/) {
         self.name = name;
         self.displayName = displayName;
         self.successHandler = successHandler;
         self.icon = icon;
+        self.iconClass = iconClass;
         self.allowNavigate = allowNavigate || false;
     },
 
@@ -109,9 +115,11 @@ Divmod.Class.subclass(Methanal.Widgets, 'Action').methods(
         if (self.icon) {
             content.push(T('img', {'class': 'table-action-icon',
                                    'src': self.icon}));
+        } else if (self.iconClass) {
+            content.push(T('span', {'class': 'table-action-icon ' + self.iconClass}));
         }
         content.push(self.displayName);
-        var node = T('a', {'href': '#'}, content);
+        var node = T('a', {'class': 'table-action', 'href': '#'}, content);
         node.onclick = onclick;
         return node;
     },
