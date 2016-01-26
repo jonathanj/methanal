@@ -1,7 +1,10 @@
+import versioneer
 from setuptools import find_packages, setup
+
 setup(
     name='Methanal',
-    version='0.2.1',
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass(),
     maintainer='Methanal developers',
     description='A web forms library for Mantissa',
     url='https://github.com/fusionapp/methanal',
