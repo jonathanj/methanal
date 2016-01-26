@@ -1,3 +1,43 @@
+Methanal 0.3.0 (2016-01-26)
+===================================
+
+Features
+--------
+ - The display of the LiveForm modification indicator can now be controlled.
+ - Added Methanal.Util.split().
+ - Methanal.Preds.dateSince now accepts timestamps.
+ - Various higher order depcheckers and validators were added, which make it
+   easier to build these up in a functional way.
+ - New input (FloatInput) for ieee754_double values.
+ - LiveForm now has a callback that is fired once the form has completely
+   loaded.
+ - LiveForm now has an optional title.
+ - Lookup was enhanced and extended, replacing SimpleLookup entirely.
+ - Rollup and SimpleRollup were replaced by Expander.
+ - TextInput and other inputs based on this now accept a custom formatter for
+   determining the "friendly" display of the entered value.
+
+Bugfixes
+--------
+ - Methanal.Util.Time now handles timestamps in a better way (this change was
+   backwards incompatible, so you should check any code that relied on this).
+ - LiveForms are now frozen during initialization, preventing validators from
+   firing prematurely.
+ - Various other fixes relating to embedded forms (especially the kind used by
+   GroupInput and Lookup).
+ - Validation and actions are now disabled entirely in view-only LiveForm, but
+   dependency checkers still operate.
+ - Fixed an error trying to focus elements on IE.
+
+Other
+-----
+ - Methanal is now hosted at GitHub, not Launchpad:
+   https://github.com/fusionapp/methanal
+ - We at Fusion are moving away from the use of Athena; consequently, Methanal
+   is going into maintenance mode while we phase it out, and it is unlikely
+   that any further major enhancements will be made to it.
+
+
 Methanal 0.2.1 (2010-07-23)
 ===================================
 
