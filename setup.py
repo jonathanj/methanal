@@ -3,9 +3,8 @@ setup(
     name='Methanal',
     version='0.2.1',
     maintainer='Methanal developers',
-    maintainer_email='methanal-dev@lists.launchpad.net',
     description='A web forms library for Mantissa',
-    url='https://launchpad.net/methanal/',
+    url='https://github.com/fusionapp/methanal',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
@@ -25,5 +24,5 @@ setup(
     install_requires=['Twisted >= 2.5.0',
                       'Epsilon >= 0.5.0',
                       'Axiom >= 0.5.20',
-                      'Nevow >= 0.9.8',
+                      'Nevow >= 0.12.0',
                       'Mantissa >= 0.6.1'])
