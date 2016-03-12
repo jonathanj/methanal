@@ -14,7 +14,7 @@ def ListEnumeration(theList):
     """
     An L{IEnumeration} adapter for the C{list} type.
 
-    This is deprecated, use L{Enum.fromPairs} instead.
+    This is deprecated, use L{Enum.from_pairs} instead.
     """
     # If this isn't a grouped input, turn it into one with one unnamed group.
     if (theList and

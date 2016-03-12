@@ -21,7 +21,7 @@ class EnumerationAdapterTests(unittest.TestCase):
             (u'foo', u'Foo'),
             (u'bar', u'Bar')]
         enum = IEnumeration(values)
-        self.assertEquals(enum.asPairs(), values)
+        self.assertEquals(enum.as_pairs(), values)
         for value, desc in values:
             item = enum.get(value)
             self.assertEquals(item.value, value)
@@ -33,7 +33,7 @@ class EnumerationAdapterTests(unittest.TestCase):
         Adapting a C{list} of nested C{list}s, as used by
         L{methanal.view.GroupedSelectInput}, results in an L{Enum} with
         L{EnumItems} with a C{'group'} extra value the same as the first
-        element in each C{tuple}. L{IEnumeration.asPairs} returns a flat
+        element in each C{tuple}. L{IEnumeration.as_pairs} returns a flat
         C{list} for nested C{list}s adapted to L{IEnumeration}.
         """
         values = [
@@ -53,7 +53,7 @@ class EnumerationAdapterTests(unittest.TestCase):
                 self.assertEquals(item.get('group'), groupName)
 
         pairs = sum(zip(*values)[1], [])
-        self.assertEquals(enum.asPairs(), pairs)
+        self.assertEquals(enum.as_pairs(), pairs)
 
 
     def test_notAdapted(self):
