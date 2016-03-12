@@ -1,6 +1,7 @@
 from twisted.trial import unittest
 
 from methanal.imethanal import IEnumeration
+from methanal import enums
 # Adapter registration side-effect.
 from methanal import view
 # To quell Pyflakes' fears.
@@ -64,3 +65,60 @@ class EnumerationAdapterTests(unittest.TestCase):
         self.assertRaises(TypeError, IEnumeration, tuple(values))
         self.assertRaises(TypeError, IEnumeration, iter(values))
         self.assertRaises(TypeError, IEnumeration, values)
+
+
+
+class DeprecationWarningsTests(unittest.TestCase):
+    """
+    Tests for L{methanal.enums} module deprecation warnings.
+    """
+    def test_enum(self):
+        """
+        L{methanal.enums.Enum} is deprecated.
+        """
+        enums.Enum
+        warnings = self.flushWarnings([self.test_enum])
+        self.assertEqual(len(warnings), 1)
+        self.assertEqual(warnings[0]['category'], DeprecationWarning)
+        self.assertIn(
+            'methanal.enums.Enum was deprecated in Methanal 0.4.0',
+            warnings[0]['message'])
+
+
+    def test_objectEnum(self):
+        """
+        L{methanal.enums.ObjectEnum} is deprecated.
+        """
+        enums.ObjectEnum
+        warnings = self.flushWarnings([self.test_objectEnum])
+        self.assertEqual(len(warnings), 1)
+        self.assertEqual(warnings[0]['category'], DeprecationWarning)
+        self.assertIn(
+            'methanal.enums.ObjectEnum was deprecated in Methanal 0.4.0',
+            warnings[0]['message'])
+
+
+    def test_enumItem(self):
+        """
+        L{methanal.enums.EnumItem} is deprecated.
+        """
+        enums.EnumItem
+        warnings = self.flushWarnings([self.test_enumItem])
+        self.assertEqual(len(warnings), 1)
+        self.assertEqual(warnings[0]['category'], DeprecationWarning)
+        self.assertIn(
+            'methanal.enums.EnumItem was deprecated in Methanal 0.4.0',
+            warnings[0]['message'])
+
+
+    def test_invalidEnumItem(self):
+        """
+        L{methanal.enums.InvalidEnumItem} is deprecated.
+        """
+        enums.InvalidEnumItem
+        warnings = self.flushWarnings([self.test_invalidEnumItem])
+        self.assertEqual(len(warnings), 1)
+        self.assertEqual(warnings[0]['category'], DeprecationWarning)
+        self.assertIn(
+            'methanal.enums.InvalidEnumItem was deprecated in Methanal 0.4.0',
+            warnings[0]['message'])

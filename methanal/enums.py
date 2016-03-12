@@ -2,14 +2,14 @@ from fusion_util.enums import Enum, EnumItem, ObjectEnum
 # Unfortunately existing external code imports this from this module.
 from fusion_util.errors import InvalidEnumItem
 from twisted.python.versions import Version
-from twisted.python.deprecate import deprecated
+from twisted.python.deprecate import deprecated, deprecatedModuleAttribute
 
 from zope.interface import classImplements
 from methanal.imethanal import IEnumeration
 
 
 
-@deprecated(Version('methanal', 0, 2, 1))
+@deprecated(Version('Methanal', 0, 2, 1))
 def ListEnumeration(theList):
     """
     An L{IEnumeration} adapter for the C{list} type.
@@ -33,6 +33,32 @@ def ListEnumeration(theList):
 
 classImplements(Enum, IEnumeration)
 classImplements(ObjectEnum, IEnumeration)
+
+
+
+deprecatedModuleAttribute(
+    Version('Methanal', 0, 4, 0),
+    'Use fusion_util.enums.Enum instead.',
+    'methanal.enums',
+    'Enum')
+
+deprecatedModuleAttribute(
+    Version('Methanal', 0, 4, 0),
+    'Use fusion_util.enums.ObjectEnum instead.',
+    'methanal.enums',
+    'ObjectEnum')
+
+deprecatedModuleAttribute(
+    Version('Methanal', 0, 4, 0),
+    'Use fusion_util.enums.EnumItem instead.',
+    'methanal.enums',
+    'EnumItem')
+
+deprecatedModuleAttribute(
+    Version('Methanal', 0, 4, 0),
+    'Use fusion_util.errors.InvalidEnumItem instead.',
+    'methanal.enums',
+    'InvalidEnumItem')
 
 
 
