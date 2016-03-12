@@ -26,4 +26,5 @@ setup(
                       'Epsilon >= 0.5.0',
                       'Axiom >= 0.5.20',
                       'Nevow >= 0.12.0',
-                      'Mantissa >= 0.6.1'])
+                      'Mantissa >= 0.6.1',
+                      'fusion_util >= 1.1.1'])

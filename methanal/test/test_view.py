@@ -479,7 +479,7 @@ class ObjectChoiceTestsMixin(ChoiceInputTestsMixin):
         """
         control = self.createControl(dict(values=self.values))
         expectedValues = [(id(obj), desc) for obj, desc in self.values]
-        self.assertEquals(control.values.asPairs(), expectedValues)
+        self.assertEquals(control.values.as_pairs(), expectedValues)
 
 
     def test_encodeDecodeValue(self):
@@ -518,7 +518,7 @@ class ObjectChoiceTestsMixin(ChoiceInputTestsMixin):
 
         pairs = [(obj, value)
                  for (obj, desc), (value, desc)
-                 in zip(self.values, control.values.asPairs())]
+                 in zip(self.values, control.values.as_pairs())]
         for obj, value in pairs:
             data = {param.name: value}
             control.invoke(data)
@@ -610,7 +610,7 @@ class ObjectMultiChoiceTestsMixin(ObjectChoiceTestsMixin):
 
         pairs = [(obj, value)
                  for (obj, desc), (value, desc)
-                 in zip(self.values, control.values.asPairs())]
+                 in zip(self.values, control.values.as_pairs())]
         for obj, value in pairs:
             data = {param.name: [value]}
             control.invoke(data)
@@ -660,11 +660,12 @@ class ChoiceInputTests(ChoiceInputTestsMixin, FormInputTests):
         """
         Create a L{methanal.view.ChoiceInput} from C{values}, assert that
         L{methanal.view.ChoiceInput.value} provides L{IEnumeration} and
-        calling C{asPairs} results in the same values as C{values}.
+        calling C{as_pairs} results in the same values as C{values}.
         """
         control = super(ChoiceInputTests, self).createControl(args)
         if checkExpectedValues:
-            self.assertEquals(control.values.asPairs(), list(args.get('values')))
+            self.assertEquals(control.values.as_pairs(),
+                              list(args.get('values')))
         return control
 
 
