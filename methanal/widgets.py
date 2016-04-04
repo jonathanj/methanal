@@ -4,33 +4,26 @@ Utility widgets designed to operate outside of forms.
 import time
 from warnings import warn
 
-from zope.interface import implements
-
-from epsilon.structlike import record
-from epsilon.extime import FixedOffset, Time
-
-from twisted.internet.defer import maybeDeferred
-from twisted.python.components import registerAdapter
-from twisted.python.versions import Version
-from twisted.python.deprecate import deprecated
-
 from axiom.item import SQLAttribute
-
-from nevow.inevow import IAthenaTransportable
-from nevow.athena import expose
-from nevow.page import renderer
-
-from xmantissa.ixmantissa import IWebTranslator, IColumn as mantissaIColumn
-from xmantissa.webtheme import ThemedElement
-
-from methanal.imethanal import IColumn
-from methanal.util import getArgsDict
-from methanal.view import (
-    liveFormFromAttributes, SimpleForm, FormInput, LiveForm, ActionButton,
-    SelectInput)
-from methanal.model import Value
+from epsilon.extime import FixedOffset, Time
+from epsilon.structlike import record
 from methanal.errors import InvalidIdentifier
-
+from methanal.imethanal import IColumn
+from methanal.model import Value
+from methanal.util import getArgsDict
+from methanal.view import (ActionButton, FormInput, LiveForm, SelectInput,
+                           SimpleForm, liveFormFromAttributes)
+from nevow.athena import expose
+from nevow.inevow import IAthenaTransportable
+from nevow.page import renderer
+from twisted.internet.defer import Deferred, maybeDeferred
+from twisted.python.components import registerAdapter
+from twisted.python.deprecate import deprecated
+from twisted.python.versions import Version
+from xmantissa.ixmantissa import IColumn as mantissaIColumn
+from xmantissa.ixmantissa import IWebTranslator
+from xmantissa.webtheme import ThemedElement
+from zope.interface import implements
 
 
 class TimeTransportable(object):
