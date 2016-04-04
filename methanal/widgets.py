@@ -4,33 +4,26 @@ Utility widgets designed to operate outside of forms.
 import time
 from warnings import warn
 
-from zope.interface import implements
-
-from epsilon.structlike import record
-from epsilon.extime import FixedOffset, Time
-
-from twisted.internet.defer import maybeDeferred
-from twisted.python.components import registerAdapter
-from twisted.python.versions import Version
-from twisted.python.deprecate import deprecated
-
 from axiom.item import SQLAttribute
-
-from nevow.inevow import IAthenaTransportable
-from nevow.athena import expose
-from nevow.page import renderer
-
-from xmantissa.ixmantissa import IWebTranslator, IColumn as mantissaIColumn
-from xmantissa.webtheme import ThemedElement
-
-from methanal.imethanal import IColumn
-from methanal.util import getArgsDict
-from methanal.view import (
-    liveFormFromAttributes, SimpleForm, FormInput, LiveForm, ActionButton,
-    SelectInput)
-from methanal.model import Value
+from epsilon.extime import FixedOffset, Time
+from epsilon.structlike import record
 from methanal.errors import InvalidIdentifier
-
+from methanal.imethanal import IColumn
+from methanal.model import Value
+from methanal.util import getArgsDict
+from methanal.view import (ActionButton, FormInput, LiveForm, SelectInput,
+                           SimpleForm, liveFormFromAttributes)
+from nevow.athena import expose
+from nevow.inevow import IAthenaTransportable
+from nevow.page import renderer
+from twisted.internet.defer import Deferred, maybeDeferred
+from twisted.python.components import registerAdapter
+from twisted.python.deprecate import deprecated
+from twisted.python.versions import Version
+from xmantissa.ixmantissa import IColumn as mantissaIColumn
+from xmantissa.ixmantissa import IWebTranslator
+from xmantissa.webtheme import ThemedElement
+from zope.interface import implements
 
 
 class TimeTransportable(object):
@@ -639,6 +632,31 @@ class ModalDialog(ThemedElement):
         super(ModalDialog, self).__init__(**kw)
         self.title = title
         self.content = content
+        self._notifyDismissed = []
+
+
+    def connectionLost(self, reason):
+        listeners = list(self._notifyDismissed)
+        self._notifyDismissed = []
+        for d in listeners:
+            d.callback(reason)
+
+
+    def whenDismissed(self):
+        """
+        Return a `Deferred` that fires when the dialog has been dismissed in
+        any fashion on the client side.
+
+        It is worth noting that this deferred will not be triggered if the
+        widget's ``connectionMade`` method is never invoked, for example when
+        statically rendered.
+
+        :return: Deferred that fires with the reason for dismissal when the
+        dialog is dismissed.
+        """
+        d = Deferred()
+        self._notifyDismissed.append(d)
+        return d
 
 
     @renderer
