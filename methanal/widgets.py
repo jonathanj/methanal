@@ -632,6 +632,27 @@ class ModalDialog(ThemedElement):
         super(ModalDialog, self).__init__(**kw)
         self.title = title
         self.content = content
+        self._notifyDismissed = []
+
+
+    def connectionLost(self, reason):
+        listeners = list(self._notifyDismissed)
+        self._notifyDismissed = []
+        for d in listeners:
+            d.callback(reason)
+
+
+    def whenDismissed(self):
+        """
+        Return a `Deferred` that fires when the dialog has been dismissed in
+        any fashion on the client side.
+
+        :return: Deferred that fires with the reason for dismissal when the
+        dialog is dismissed.
+        """
+        d = Deferred()
+        self._notifyDismissed.append(d)
+        return d
 
 
     @renderer
