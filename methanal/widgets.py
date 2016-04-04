@@ -647,6 +647,10 @@ class ModalDialog(ThemedElement):
         Return a `Deferred` that fires when the dialog has been dismissed in
         any fashion on the client side.
 
+        It is worth noting that this deferred will not be triggered if the
+        widget's ``connectionMade`` method is never invoked, for example when
+        statically rendered.
+
         :return: Deferred that fires with the reason for dismissal when the
         dialog is dismissed.
         """
