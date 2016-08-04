@@ -754,3 +754,34 @@ textarea.methanal-input {
 .terminator {
     clear: both;
 }
+
+/**
+ * Control validity indicators.
+ */
+
+.methanal-control-valid,
+.methanal-control-invalid {
+    position: relative;
+}
+
+.methanal-control-valid:before,
+.methanal-control-invalid:before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    border-radius: 6px;
+    width: 6px;
+    height: 6px;
+    border: 1px solid #fff;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.methanal-control-valid:before {
+    background: #83ef6e;
+}
+
+.methanal-control-invalid:before {
+    background: #da2603;
+}

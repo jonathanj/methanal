@@ -133,6 +133,14 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
 
 
     /**
+     * Count the number of attached handlers for an input.
+     */
+    function inputHandlerCount(self, name) {
+        return Object.keys(self._inputToHandlers[name] || {}).length;
+    },
+
+
+    /**
      * Call L{self.update} for the specified output controls and handler values.
      *
      * @type  outputs: C{object} mapping C{String}
@@ -618,6 +626,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
     function getControlValue(self, controlName) {
         var control = self.getControl(controlName);
         return control.active ? control.getValue() : null;
+    },
+
+
+    /**
+     * Count attached validators for a control.
+     */
+    function validatorCount(self, controlName) {
+        return self._validatorCache.inputHandlerCount(controlName);
     },
 
 
@@ -1636,6 +1652,16 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
 
 
     /**
+     * Does this control have any validators attached?
+     *
+     * This excludes the base validator.
+     */
+    function hasValidators(self) {
+        return self.getForm().validatorCount(self.name) > 1;
+    },
+
+
+    /**
      * Reset the form input to its initial value.
      */
     function reset(self) {
@@ -1703,7 +1729,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      * @param error: Error message
      */
     function setError(self, error) {
-        Methanal.Util.addElementClass(self.node, 'methanal-control-error');
+        if (self.hasValidators()) {
+            Methanal.Util.removeElementClass(self.node, 'methanal-control-valid');
+            Methanal.Util.addElementClass(self.node, 'methanal-control-invalid');
+        }
         self.error = error;
         self.widgetParent.checkForErrors();
         if (self.error && self.error.length) {
@@ -1717,7 +1746,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      * Reset the error state.
      */
     function clearError(self) {
-        Methanal.Util.removeElementClass(self.node, 'methanal-control-error');
+        if (self.hasValidators()) {
+            Methanal.Util.addElementClass(self.node, 'methanal-control-valid');
+            Methanal.Util.removeElementClass(self.node, 'methanal-control-invalid');
+        }
         self.error = null;
         self.widgetParent.checkForErrors();
         self._errorTooltip.hide();
