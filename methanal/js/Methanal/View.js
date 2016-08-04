@@ -1601,6 +1601,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         self.label = args.label;
         self.active = true;
         self.error = null;
+        self._changed = !!args.value;
     },
 
 
@@ -1727,7 +1728,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         }
         self.error = error;
         self.widgetParent.checkForErrors();
-        if (self.error && self.error.length) {
+        if (self._changed && self.error && self.error.length) {
             self._errorTooltip.setText(self.error);
             self._errorTooltip.show();
         }
@@ -1784,8 +1785,22 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      * Inform the containing form that our value has changed.
      */
     function onChange(self, node) {
+        self._changed = true;
         self.getForm().valueChanged(self);
         return true;
+    },
+
+
+    /**
+     * Handler for the "onblur" DOM event.
+     */
+    function onBlur(self, node) {
+        if (!self._changed) {
+            self._changed = true;
+            if (self.error) {
+                self.setError(self.error);
+            }
+        }
     },
 
 
@@ -1999,6 +2014,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * Handle "onblur" DOM event.
      */
     function onBlur(self, node) {
+        Methanal.View.TextInput.upcall(self, 'onBlur', node);
         if (self.embeddedLabel) {
             self._labelTooltip.hide();
             if (self._needsLabel(node.value)) {

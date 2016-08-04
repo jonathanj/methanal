@@ -7,6 +7,7 @@
             <div nevow:pattern="option">
                 <label><input type="radio"
                     ><athena:handler event="onchange" handler="onChange"></athena:handler
+                    ><athena:handler event="onblur" handler="onBlur"></athena:handler
                     ><nevow:attr name="name"><nevow:slot name="name" /></nevow:attr
                     ><nevow:attr name="value"><nevow:slot name="value" /></nevow:attr
                 ></input><nevow:slot name="description" /></label>

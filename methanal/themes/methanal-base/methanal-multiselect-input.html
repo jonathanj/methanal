@@ -2,6 +2,7 @@
     <select class="methanal-input methanal-multiselect" multiple="multiple">
         <nevow:attr name="name" nevow:render="renderName" />
         <athena:handler event="onchange" handler="onChange" />
+        <athena:handler event="onblur" handler="onBlur" />
         <nevow:invisible nevow:render="options">
             <optgroup nevow:pattern="optgroup">
                 <nevow:attr name="label"><nevow:slot name="label" /></nevow:attr>
