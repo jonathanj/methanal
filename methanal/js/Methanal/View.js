@@ -558,10 +558,6 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         }
         self.fullyLoaded = true;
 
-        for (var name in self._depCache._inputToHandlers) {
-            var node = self.getControl(name).widgetParent.node;
-            Methanal.Util.addElementClass(node, 'dependancy-parent');
-        }
         self.refresh();
         self._stripeControls();
         // Thaw freeze from formInit.
@@ -1435,11 +1431,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
 /**
  * Container for visually organising inputs into rows.
  */
-Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow').methods(
-    function setActive(self, active) {
-        Methanal.View.FormRow.upcall(self, 'setActive', active);
-        Methanal.Util.addElementClass(self.node, 'dependancy-child');
-    });
+Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow');
 
 
 

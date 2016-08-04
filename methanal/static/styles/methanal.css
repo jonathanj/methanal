@@ -166,16 +166,6 @@ optgroup option {
     margin: 0 0 0.25em 0;
 }
 
-.dependancy-parent {
-    border-left: 3px solid #777;
-    margin-left: -3px;
-}
-
-.dependancy-child {
-    border-left: 3px solid #bbb;
-    margin-left: -3px;
-}
-
 input.methanal-input,
 select.methanal-input,
 textarea.methanal-input {
