@@ -726,11 +726,14 @@ textarea.methanal-input {
 
 .throbber {
     vertical-align: middle;
+    width: 20px;
+    height: 20px;
 }
 
 .placeholder {
     height: 32px;
     background: url(/static/Methanal/images/long-throbber.gif) no-repeat center center;
+    background-size: 32px;
     padding: 1em 0;
 }
 
