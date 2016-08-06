@@ -579,7 +579,7 @@ textarea.methanal-input {
 
 .error-tooltip .hover-tooltip,
 .error-tooltip .hover-tooltip-arrow {
-    border-color: #da2603;
+    border-color: #ce283c;
 }
 
 /** Tooltip bottom orientation. */
@@ -642,8 +642,8 @@ textarea.methanal-input {
 }
 
 .error-tooltip .hover-tooltip {
-    background-color: #da2603;
-    border-color: #da2603;
+    background-color: #ce283c;
+    border-color: #ce283c;
     color: #fff;
 }
 
@@ -694,7 +694,7 @@ textarea.methanal-input {
 }
 
 .form-validation-error-tooltip a:hover {
-    color: #da2603;
+    color: #ce283c;
     background: #fee34d;
 }
 
@@ -755,5 +755,5 @@ textarea.methanal-input {
 }
 
 .methanal-control-invalid:before {
-    background: #da2603;
+    background: #ce283c;
 }
