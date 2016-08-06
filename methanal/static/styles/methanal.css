@@ -4,7 +4,7 @@
 
 button {
     color: #fff;
-    font-weight: bold;
+    font-weight: 700;
     text-transform: uppercase;
     border: 1px solid transparent;
     border-color: rgba(0, 0, 0, 0.15);
@@ -81,7 +81,7 @@ optgroup option {
 
 .methanal-liveform h1 {
     color: #000;
-    font-weight: bold;
+    font-weight: 700;
     margin: 0 0 0.5em 0;
     text-transform: uppercase;
     font-size: 130%;
@@ -90,25 +90,28 @@ optgroup option {
 }
 
 .methanal-liveform .modified-indicator {
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .methanal-form-group {
+    background: #f3f3f3;
     margin: 1em 0;
     border: none;
-    border-top: 1px solid #ccc;
-    padding: 1em;
-    padding-top: 0;
+    padding: 0.5em;
+    border: 1px solid #ddd;
 }
 
 .methanal-form-group legend {
-    color: #c9000c;
-    font-weight: bold;
-    font-size: 120%;
+    display: inline-block;
+    color: #333;
+    font-weight: 300;
+    font-size: 135%;
+    margin: 0;
+    padding: 0.5em;
 }
 
 .methanal-control {
-    padding: 0.333em 0;
+    padding: 0.4em 0;
 }
 
 .methanal-control-inputs,
@@ -216,7 +219,6 @@ textarea.methanal-input {
 .methanal-multiselect-selection {
     font-size: 80%;
     margin: 2px;
-    font-weight: bold;
 }
 
 .methanal-control-error input.methanal-input,
@@ -224,6 +226,7 @@ textarea.methanal-input {
 .methanal-control-error textarea.methanal-input {
     background-image: url(/static/Methanal/images/icons/invalid.png);
     border-color: #da2603;
+    font-weight: 700;
 }
 
 .methanal-multi-input input {
@@ -270,7 +273,7 @@ textarea.methanal-input {
     border-bottom: 2px solid #3580bf;
     color: #000;
     font-size: 90%;
-    font-weight: bold;
+    font-weight: 700;
     text-transform: uppercase;
     padding: 1em 0.35em;
 }
@@ -298,7 +301,7 @@ textarea.methanal-input {
 
 .methanal-table .methanal-table-empty-row td {
     font-size: 90%;
-    font-weight: bold;
+    font-weight: 700;
     text-align: center;
     text-transform: uppercase;
 }
@@ -389,7 +392,7 @@ textarea.methanal-input {
     margin: 0;
     margin-bottom: 0.5em;
     padding: 0;
-    font-weight: normal;
+    font-weight: 500;
 }
 
 .modal-dialog-close {
@@ -434,7 +437,7 @@ textarea.methanal-input {
 }
 
 .methanal-tab-view .methanal-tab-label a {
-    font-weight: bold;
+    font-weight: 700;
     color: #404040;
 }
 
@@ -685,7 +688,7 @@ textarea.methanal-input {
 
 .submission-error-tooltip h2 {
     margin: 0.25em 0;
-    font-weight: normal;
+    font-weight: 500;
     font-style: normal;
     cursor: pointer;
 }
