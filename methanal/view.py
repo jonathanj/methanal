@@ -42,10 +42,14 @@ class FormAction(ThemedElement):
 
     @type id: C{unicode}
     @ivar id: Action identifier.
+
+    @type primary: C{bool}
+    @ivar primary: Is this the primary action?
     """
     defaultName = None
     allowViewOnly = False
     identifier = None
+    primary = False
 
 
     def __init__(self, name=None, identifier=None, **kw):
@@ -67,7 +71,8 @@ class FormAction(ThemedElement):
     def getArgs(self):
         return {u'actionID': self.id,
                 u'allowViewOnly': self.allowViewOnly,
-                u'identifier': self.identifier}
+                u'identifier': self.identifier,
+                u'primary': self.primary}
 
 
 
@@ -97,6 +102,7 @@ class SubmitAction(ActionButton):
     defaultName = u'Submit'
     type = 'submit'
     identifier = u'submit'
+    primary = True
 
 
 
