@@ -723,6 +723,14 @@ textarea.methanal-input {
     padding: 1em 0;
 }
 
+.inline-throbber {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: url(/static/Methanal/images/main-throbber.gif) no-repeat center center;
+    background-size: 20px;
+}
+
 .terminator {
     clear: both;
 }
