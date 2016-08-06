@@ -522,6 +522,10 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      */
     function createRowElement(self, index, row) {
         var tr = self.getBody().insertRow(index);
+        self.eachColumn(function (column) {
+            self.createCellElement(tr, column, row);
+        });
+
         if (self._hasActions()) {
             var td = tr.insertCell(-1);
             for (var i = 0; i < self.actions.length; ++i) {
