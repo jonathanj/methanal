@@ -1135,7 +1135,11 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         self.freeze();
         self.actions.throbber.start();
 
-        var d = self.callRemote('invoke', data);
+
+        var d = self.valid ?
+                self.callRemote('invoke', data) :
+                Divmod.Defer.fail(
+                    new Error('Form is not valid, cannot submit it'));
         d.addCallback(function (value) {
             self.formModified(false);
             return self.submitSuccess(value);
@@ -1223,6 +1227,8 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function handleSubmit(self) {
         if (self.viewOnly) {
             return false;
+        } else if (!self.valid) {
+            throw new Error('Form is not valid, cannot submit it');
         }
         self.submit();
         return false;
