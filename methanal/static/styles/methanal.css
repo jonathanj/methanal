@@ -379,11 +379,9 @@ textarea.methanal-input {
     font-weight: 500;
 }
 
-.modal-dialog-close {
-    background: url(/static/Methanal/images/icons/close.png) no-repeat center center;
+.modal-dialog-close:link {
     float: right;
-    width: 16px;
-    height: 16px;
+    color: #333;
 }
 
 /**
@@ -438,7 +436,7 @@ textarea.methanal-input {
 
 .methanal-tab-view .selected-tab-label a {
     color: #000;
-}
+} 
 
 .methanal-tab-view .methanal-tab-content {
     background: #fff;

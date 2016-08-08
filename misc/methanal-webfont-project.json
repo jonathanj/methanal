@@ -1,0 +1,469 @@
+{
+  "metadata": {
+    "name": "Methanal",
+    "lastOpened": 1470665463945,
+    "created": 1470665437430
+  },
+  "iconSets": [
+    {
+      "selection": [
+        {
+          "order": 1,
+          "id": 1,
+          "prevSize": 24,
+          "code": 59650,
+          "name": "circle-cross",
+          "tempChar": ""
+        },
+        {
+          "order": 2,
+          "id": 0,
+          "prevSize": 24,
+          "code": 59651,
+          "name": "cross",
+          "tempChar": ""
+        }
+      ],
+      "id": 4,
+      "metadata": {
+        "name": "Feather (subset)",
+        "url": "http://colebemis.com/feather/",
+        "license": "MIT",
+        "licenseURL": "http://opensource.org/licenses/MIT",
+        "designerURL": "http://colebemis.com/",
+        "designer": "Cole Bemis",
+        "iconsHash": 708789056,
+        "importSize": {
+          "width": 24,
+          "height": 24
+        }
+      },
+      "height": 1024,
+      "prevSize": 24,
+      "icons": [
+        {
+          "id": 1,
+          "paths": [
+            "M512 42.667q95.667 0 182.5 37.167t149.667 100 100 149.667 37.167 182.5-37.167 182.5-100 149.667-149.667 100-182.5 37.167-182.5-37.167-149.667-100-100-149.667-37.167-182.5 37.167-182.5 100-149.667 149.667-100 182.5-37.167zM512 128q-78 0-149.167 30.5t-122.5 81.833-81.833 122.5-30.5 149.167 30.5 149.167 81.833 122.5 122.5 81.833 149.167 30.5 149.167-30.5 122.5-81.833 81.833-122.5 30.5-149.167-30.5-149.167-81.833-122.5-122.5-81.833-149.167-30.5zM632.667 348.333q17.667 0 30.333 12.5t12.667 30.167-12.667 30.333l-90.667 90.667 90.667 90.333q12.667 12.667 12.667 30 0 17.667-12.667 30.167t-30.333 12.5-30-12.333l-90.667-90.333-90.333 90.333q-12.333 12.333-30.333 12.333-17.667 0-30.167-12.333t-12.5-30q0-18 12.333-30.333l90.667-90.333-90.667-90.667q-12.333-12.333-12.333-30t12.5-30.333 30.167-12.667 30.333 12.667l90.333 90.667 90.667-90.667q12.667-12.667 30-12.667z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "circle-cross"
+          ],
+          "grid": 24
+        },
+        {
+          "id": 0,
+          "paths": [
+            "M810.667 170.667q18.333 0 30.5 12.167t12.167 30.5q0 18-12.333 30.333l-268.667 268.333 268.667 268.333q12.333 12.333 12.333 30.333 0 18.333-12.167 30.5t-30.5 12.167q-18 0-30.333-12.333l-268.333-268.667-268.333 268.667q-12.333 12.333-30.333 12.333-18.333 0-30.5-12.167t-12.167-30.5q0-18 12.333-30.333l268.667-268.333-268.667-268.333q-12.333-12.333-12.333-30.333 0-18.333 12.167-30.5t30.5-12.167q18 0 30.333 12.333l268.333 268.667 268.333-268.667q12.333-12.333 30.333-12.333z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "cross"
+          ],
+          "grid": 24
+        }
+      ],
+      "invisible": false,
+      "colorThemes": []
+    },
+    {
+      "selection": [
+        {
+          "order": 1,
+          "id": 0,
+          "prevSize": 32,
+          "code": 59648,
+          "name": "cancel",
+          "tempChar": ""
+        }
+      ],
+      "id": 3,
+      "metadata": {
+        "name": "Brankic 1979 (subset)",
+        "url": "http://brankic1979.com/icons/",
+        "designer": "Brankic1979",
+        "designerURL": "http://www.brankic1979.com/",
+        "license": "Custom",
+        "licenseURL": "http://brankic1979.com/icons/",
+        "iconsHash": 1724841611,
+        "importSize": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "height": 1024,
+      "prevSize": 32,
+      "icons": [
+        {
+          "id": 0,
+          "paths": [
+            "M626.784 512.032l195.072 195.072c12.672 12.672 12.672 33.248 0 45.92l-68.832 68.832c-12.672 12.672-33.216 12.672-45.92 0l-195.104-195.072-195.104 195.072c-12.672 12.672-33.216 12.672-45.888 0l-68.864-68.832c-12.672-12.672-12.672-33.216 0-45.92l195.104-195.072-195.104-195.104c-12.672-12.672-12.672-33.248 0-45.92l68.896-68.832c12.672-12.672 33.216-12.672 45.888 0l195.072 195.104 195.104-195.104c12.672-12.672 33.216-12.672 45.92 0l68.832 68.864c12.672 12.672 12.672 33.216 0 45.92l-195.072 195.072z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "cancel",
+            "close",
+            "remove",
+            "dismiss"
+          ],
+          "grid": 32
+        }
+      ],
+      "invisible": false,
+      "colorThemes": []
+    },
+    {
+      "selection": [
+        {
+          "order": 0,
+          "id": 0,
+          "prevSize": 32,
+          "code": 59650,
+          "name": "x",
+          "tempChar": ""
+        }
+      ],
+      "id": 2,
+      "metadata": {
+        "name": "Iconic (subset)",
+        "url": "https://github.com/somerandomdude/Iconic",
+        "designer": "P.J. Onori",
+        "designerURL": "http://somerandomdude.com/",
+        "license": "CC BY-SA 3.0",
+        "licenseURL": "http://creativecommons.org/licenses/by-sa/3.0/us/",
+        "iconsHash": 895603607,
+        "importSize": {
+          "width": 32,
+          "height": 32
+        }
+      },
+      "height": 1024,
+      "prevSize": 32,
+      "icons": [
+        {
+          "id": 0,
+          "paths": [
+            "M960 780.736l-268.992-268.736 268.992-268.736-179.264-179.264-268.736 268.864-268.864-268.864-179.136 179.264 268.736 268.736-268.736 268.736 179.136 179.264 268.864-268.864 268.736 268.864z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "x",
+            "cancel",
+            "close"
+          ],
+          "grid": 16
+        }
+      ],
+      "invisible": false,
+      "colorThemes": []
+    },
+    {
+      "selection": [
+        {
+          "order": 1,
+          "id": 0,
+          "prevSize": 24,
+          "code": 59649,
+          "name": "close",
+          "tempChar": ""
+        }
+      ],
+      "id": 1,
+      "metadata": {
+        "name": "Material Icons (subset)",
+        "url": "https://www.google.com/design/icons/",
+        "designerURL": "https://www.google.com/design",
+        "designer": "Google",
+        "licenseURL": "https://creativecommons.org/licenses/by/4.0/",
+        "license": "CC BY 4.0",
+        "iconsHash": 2132284954,
+        "importSize": {
+          "width": 24,
+          "height": 24
+        }
+      },
+      "height": 1024,
+      "prevSize": 24,
+      "icons": [
+        {
+          "id": 0,
+          "paths": [
+            "M810 274l-238 238 238 238-60 60-238-238-238 238-60-60 238-238-238-238 60-60 238 238 238-238z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "close"
+          ],
+          "grid": 24
+        }
+      ],
+      "invisible": false,
+      "colorThemes": []
+    },
+    {
+      "selection": [
+        {
+          "order": 1,
+          "id": 7,
+          "prevSize": 20,
+          "code": 59656,
+          "name": "chevron-with-circle-down",
+          "tempChar": ""
+        },
+        {
+          "order": 0,
+          "id": 6,
+          "prevSize": 20,
+          "code": 59657,
+          "name": "chevron-thin-down2",
+          "tempChar": ""
+        },
+        {
+          "order": 3,
+          "id": 5,
+          "prevSize": 20,
+          "code": 59658,
+          "name": "chevron-small-down",
+          "tempChar": ""
+        },
+        {
+          "order": 1,
+          "id": 4,
+          "name": "chevron-with-circle-up",
+          "prevSize": 20,
+          "code": 59652,
+          "tempChar": ""
+        },
+        {
+          "order": 2,
+          "id": 3,
+          "name": "chevron-thin-up",
+          "prevSize": 20,
+          "code": 59653,
+          "tempChar": ""
+        },
+        {
+          "order": 3,
+          "id": 2,
+          "name": "chevron-small-up",
+          "prevSize": 20,
+          "code": 59654,
+          "tempChar": ""
+        },
+        {
+          "order": 1,
+          "id": 1,
+          "name": "chevron-thin-down",
+          "prevSize": 20,
+          "code": 59655,
+          "tempChar": ""
+        },
+        {
+          "order": 0,
+          "id": 0,
+          "prevSize": 20,
+          "code": 59648,
+          "name": "cross",
+          "tempChar": ""
+        }
+      ],
+      "id": 0,
+      "metadata": {
+        "name": "Entypo+ (subset)",
+        "importSize": {
+          "width": 20,
+          "height": 20
+        },
+        "url": "http://www.entypo.com/",
+        "designerURL": "http://www.danielbruce.se/",
+        "designer": "Daniel Bruce",
+        "license": "CC BY-SA 4.0",
+        "licenseURL": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "iconsHash": -340016579
+      },
+      "height": 1024,
+      "prevSize": 20,
+      "icons": [
+        {
+          "id": 7,
+          "paths": [
+            "M640.256 445.338l-128.256 117.862-128.307-117.862c-10.138-10.035-26.522-10.035-36.762 0-10.086 10.035-10.086 26.368 0 36.352l146.637 143.718c10.189 10.035 26.624 10.035 36.71 0l146.637-143.718c10.189-9.984 10.138-26.317 0-36.352-10.086-10.035-26.47-10.035-36.659 0zM512 20.48c-271.462 0-491.52 220.058-491.52 491.52 0 271.514 220.058 491.52 491.52 491.52s491.52-220.006 491.52-491.52c0-271.462-220.058-491.52-491.52-491.52zM512 939.725c-236.288 0-427.725-191.488-427.725-427.725s191.437-427.725 427.725-427.725c236.186 0 427.725 191.488 427.725 427.725s-191.539 427.725-427.725 427.725z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "chevron-with-circle-down"
+          ],
+          "grid": 20
+        },
+        {
+          "id": 6,
+          "paths": [
+            "M891.802 312.781c13.926-13.722 36.301-13.722 50.125 0s13.875 35.891 0 49.613l-404.89 400.896c-13.824 13.722-36.198 13.722-50.125 0l-404.89-400.896c-13.824-13.722-13.824-35.891 0-49.613 13.875-13.722 36.301-13.722 50.125 0l379.853 365.619 379.802-365.619z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "chevron-thin-down"
+          ],
+          "grid": 20
+        },
+        {
+          "id": 5,
+          "paths": [
+            "M687.002 402.381c13.875-13.722 36.301-13.722 50.074 0 13.824 13.722 13.926 35.891 0 49.613l-200.090 196.096c-13.824 13.722-36.198 13.722-50.125 0l-200.090-196.096c-13.824-13.67-13.824-35.891 0-49.613 13.875-13.722 36.301-13.722 50.074 0l175.155 160.819 175.002-160.819z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "chevron-small-down"
+          ],
+          "grid": 20
+        },
+        {
+          "id": 4,
+          "paths": [
+            "M530.381 398.592c-10.189-10.035-26.624-10.035-36.71 0l-146.637 143.718c-10.189 9.984-10.138 26.317 0 36.352 10.086 10.035 26.522 10.035 36.71 0l128.256-117.862 128.307 117.862c10.138 10.035 26.522 10.035 36.762 0 10.086-10.035 10.086-26.368 0-36.352l-146.688-143.718zM512 20.48c-271.462 0-491.52 220.058-491.52 491.52 0 271.514 220.058 491.52 491.52 491.52s491.52-220.006 491.52-491.52c0-271.462-220.058-491.52-491.52-491.52zM512 939.725c-236.288 0-427.725-191.488-427.725-427.725s191.437-427.725 427.725-427.725c236.186 0 427.725 191.488 427.725 427.725s-191.539 427.725-427.725 427.725z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "chevron-with-circle-up"
+          ],
+          "grid": 20
+        },
+        {
+          "id": 3,
+          "paths": [
+            "M132.198 711.219c-13.926 13.722-36.301 13.722-50.125 0s-13.875-35.891 0-49.613l404.89-400.896c13.824-13.722 36.198-13.722 50.125 0l404.89 400.896c13.824 13.722 13.824 35.891 0 49.613-13.875 13.722-36.301 13.722-50.074 0l-379.904-365.619-379.802 365.619z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "chevron-thin-up"
+          ],
+          "grid": 20
+        },
+        {
+          "id": 2,
+          "paths": [
+            "M336.998 621.619c-13.875 13.722-36.301 13.722-50.074 0s-13.926-35.891 0-49.613l200.090-196.096c13.824-13.722 36.198-13.722 50.125 0l200.090 196.096c13.824 13.67 13.824 35.891 0 49.613-13.875 13.722-36.301 13.722-50.125 0l-175.104-160.819-175.002 160.819z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "chevron-small-up"
+          ],
+          "grid": 20
+        },
+        {
+          "id": 1,
+          "paths": [
+            "M891.802 312.781c13.926-13.722 36.301-13.722 50.125 0s13.875 35.891 0 49.613l-404.89 400.896c-13.824 13.722-36.198 13.722-50.125 0l-404.89-400.896c-13.824-13.722-13.824-35.891 0-49.613 13.875-13.722 36.301-13.722 50.125 0l379.853 365.619 379.802-365.619z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "chevron-thin-down"
+          ],
+          "grid": 20
+        },
+        {
+          "id": 0,
+          "paths": [
+            "M734.618 760.269c-24.013 24.013-62.925 24.013-86.886 0l-135.731-155.136-135.731 155.085c-24.013 24.013-62.925 24.013-86.886 0-24.013-24.013-24.013-62.925 0-86.886l141.21-161.28-141.261-161.382c-24.013-24.013-24.013-62.874 0-86.886s62.874-24.013 86.886 0l135.782 155.187 135.731-155.187c24.013-24.013 62.874-24.013 86.886 0s24.013 62.925 0 86.886l-141.21 161.382 141.21 161.28c24.013 24.013 24.013 62.925 0 86.938z"
+          ],
+          "attrs": [
+            {}
+          ],
+          "isMulticolor": false,
+          "isMulticolor2": false,
+          "tags": [
+            "cross"
+          ],
+          "grid": 20
+        }
+      ],
+      "invisible": false,
+      "colorThemes": []
+    }
+  ],
+  "uid": -1,
+  "preferences": {
+    "showGlyphs": true,
+    "showCodes": true,
+    "showQuickUse": true,
+    "showQuickUse2": true,
+    "showSVGs": true,
+    "fontPref": {
+      "prefix": "methanal-icon-",
+      "metadata": {
+        "fontFamily": "methanal-webfont",
+        "majorVersion": 1,
+        "minorVersion": 0
+      },
+      "metrics": {
+        "emSize": 1024,
+        "baseline": 6.25,
+        "whitespace": 50
+      },
+      "embed": false,
+      "ie7": false,
+      "noie8": false,
+      "showSelector": false,
+      "showMetrics": false,
+      "showMetadata": false,
+      "showVersion": false
+    },
+    "imagePref": {
+      "prefix": "icon-",
+      "png": true,
+      "useClassSelector": true,
+      "color": 0,
+      "bgColor": 16777215
+    },
+    "historySize": 100
+  }
+}

@@ -9,3 +9,4 @@ class Theme(webtheme.XHTMLDirectoryTheme):
         root = website.rootURL(request)
         styles = root.child('static').child('Methanal').child('styles')
         yield styleSheetLink(styles.child('methanal.css'))
+        yield styleSheetLink(styles.child('methanal-webfont.css'))

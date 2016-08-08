@@ -1,0 +1,73 @@
+@font-face {
+  font-family: 'methanal-webfont';
+  src:  url('../fonts/methanal-webfont.eot?ng24c5');
+  src:  url('../fonts/methanal-webfont.eot?ng24c5#iefix') format('embedded-opentype'),
+    url('../fonts/methanal-webfont.ttf?ng24c5') format('truetype'),
+    url('../fonts/methanal-webfont.woff?ng24c5') format('woff'),
+    url('../fonts/methanal-webfont.svg?ng24c5#methanal') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+[class^="methanal-icon-"], [class*=" methanal-icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'methanal-webfont' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+  display: inline-block;
+
+  /* We don't want icons to have underlines or be italic. */
+  text-decoration: none;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* More comfortably sized icons. */
+  font-size: 120%;
+}
+
+.strong[class^="methanal-icon-"]:before,
+.strong[class*=" methanal-icon-"]:before {
+    font-weight: 700;
+}
+
+.vcenter[class^="methanal-icon-"]:before,
+.vcenter[class*=" methanal-icon-"]:before {
+    vertical-align: middle;
+}
+
+.methanal-icon-circle-cross:before {
+  content: "\e902";
+}
+.methanal-icon-cross:before {
+  content: "\e903";
+}
+.methanal-icon-close:before {
+  content: "\e901";
+}
+.methanal-icon-cancel:before {
+  content: "\e900";
+}
+.methanal-icon-chevron-with-circle-down:before {
+  content: "\e908";
+}
+.methanal-icon-chevron-small-down:before {
+  content: "\e90a";
+}
+.methanal-icon-chevron-with-circle-up:before {
+  content: "\e904";
+}
+.methanal-icon-chevron-thin-up:before {
+  content: "\e905";
+}
+.methanal-icon-chevron-small-up:before {
+  content: "\e906";
+}
+.methanal-icon-chevron-thin-down:before {
+  content: "\e907";
+}
