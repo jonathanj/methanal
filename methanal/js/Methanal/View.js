@@ -133,6 +133,14 @@ Divmod.Class.subclass(Methanal.View, '_HandlerCache').methods(
 
 
     /**
+     * Count the number of attached handlers for an input.
+     */
+    function inputHandlerCount(self, name) {
+        return Object.keys(self._inputToHandlers[name] || {}).length;
+    },
+
+
+    /**
      * Call L{self.update} for the specified output controls and handler values.
      *
      * @type  outputs: C{object} mapping C{String}
@@ -550,10 +558,6 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
         }
         self.fullyLoaded = true;
 
-        for (var name in self._depCache._inputToHandlers) {
-            var node = self.getControl(name).widgetParent.node;
-            Methanal.Util.addElementClass(node, 'dependancy-parent');
-        }
         self.refresh();
         self._stripeControls();
         // Thaw freeze from formInit.
@@ -618,6 +622,14 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormBehaviour').methods(
     function getControlValue(self, controlName) {
         var control = self.getControl(controlName);
         return control.active ? control.getValue() : null;
+    },
+
+
+    /**
+     * Count attached validators for a control.
+     */
+    function validatorCount(self, controlName) {
+        return self._validatorCache.inputHandlerCount(controlName);
     },
 
 
@@ -746,6 +758,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormAction').methods(
         self.actionID = args.actionID;
         self.allowViewOnly = args.allowViewOnly;
         self.identifier = args.identifier;
+        self.primary = !!args.primary;
     },
 
 
@@ -803,6 +816,10 @@ Methanal.View.FormAction.subclass(Methanal.View, 'ActionButton').methods(
         if (self.identifier) {
             Methanal.Util.addElementClass(
                 self._buttonNode, 'methanal-action-button-' + self.identifier);
+        }
+        if (self.primary) {
+            Methanal.Util.addElementClass(
+                self._buttonNode, 'methanal-action-button--primary');
         }
     },
 
@@ -1123,7 +1140,11 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
         self.freeze();
         self.actions.throbber.start();
 
-        var d = self.callRemote('invoke', data);
+
+        var d = self.valid ?
+                self.callRemote('invoke', data) :
+                Divmod.Defer.fail(
+                    new Error('Form is not valid, cannot submit it'));
         d.addCallback(function (value) {
             self.formModified(false);
             return self.submitSuccess(value);
@@ -1211,6 +1232,8 @@ Methanal.View.FormBehaviour.subclass(Methanal.View, 'LiveForm').methods(
     function handleSubmit(self) {
         if (self.viewOnly) {
             return false;
+        } else if (!self.valid) {
+            throw new Error('Form is not valid, cannot submit it');
         }
         self.submit();
         return false;
@@ -1419,11 +1442,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'InputContainer').methods(
 /**
  * Container for visually organising inputs into rows.
  */
-Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow').methods(
-    function setActive(self, active) {
-        Methanal.View.FormRow.upcall(self, 'setActive', active);
-        Methanal.Util.addElementClass(self.node, 'dependancy-child');
-    });
+Methanal.View.InputContainer.subclass(Methanal.View, 'FormRow');
 
 
 
@@ -1593,6 +1612,7 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         self.label = args.label;
         self.active = true;
         self.error = null;
+        self._changed = !!args.value;
     },
 
 
@@ -1632,6 +1652,16 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
         form.controls[self.name] = self;
         form.addValidator([self.name], [_baseValidator]);
         form.loadedUp(self);
+    },
+
+
+    /**
+     * Does this control have any validators attached?
+     *
+     * This excludes the base validator.
+     */
+    function hasValidators(self) {
+        return self.getForm().validatorCount(self.name) > 1;
     },
 
 
@@ -1703,10 +1733,13 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      * @param error: Error message
      */
     function setError(self, error) {
-        Methanal.Util.addElementClass(self.node, 'methanal-control-error');
+        if (self.hasValidators()) {
+            Methanal.Util.removeElementClass(self.node, 'methanal-control-valid');
+            Methanal.Util.addElementClass(self.node, 'methanal-control-invalid');
+        }
         self.error = error;
         self.widgetParent.checkForErrors();
-        if (self.error && self.error.length) {
+        if (self._changed && self.error && self.error.length) {
             self._errorTooltip.setText(self.error);
             self._errorTooltip.show();
         }
@@ -1717,7 +1750,10 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      * Reset the error state.
      */
     function clearError(self) {
-        Methanal.Util.removeElementClass(self.node, 'methanal-control-error');
+        if (self.hasValidators()) {
+            Methanal.Util.addElementClass(self.node, 'methanal-control-valid');
+            Methanal.Util.removeElementClass(self.node, 'methanal-control-invalid');
+        }
         self.error = null;
         self.widgetParent.checkForErrors();
         self._errorTooltip.hide();
@@ -1760,8 +1796,22 @@ Nevow.Athena.Widget.subclass(Methanal.View, 'FormInput').methods(
      * Inform the containing form that our value has changed.
      */
     function onChange(self, node) {
+        self._changed = true;
         self.getForm().valueChanged(self);
         return true;
+    },
+
+
+    /**
+     * Handler for the "onblur" DOM event.
+     */
+    function onBlur(self, node) {
+        if (!self._changed) {
+            self._changed = true;
+            if (self.error) {
+                self.setError(self.error);
+            }
+        }
     },
 
 
@@ -1975,6 +2025,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
      * Handle "onblur" DOM event.
      */
     function onBlur(self, node) {
+        Methanal.View.TextInput.upcall(self, 'onBlur', node);
         if (self.embeddedLabel) {
             self._labelTooltip.hide();
             if (self._needsLabel(node.value)) {

@@ -2,7 +2,8 @@
     <label class="methanal-check-input-label" nevow:render="checkLabel">
         <input class="methanal-check-input" type="checkbox" nevow:render="value">
         	<nevow:attr name="name" nevow:render="renderName" />
-            <athena:handler event="onclick" handler="onChange" />
+          <athena:handler event="onclick" handler="onChange" />
+          <athena:handler event="onblur" handler="onBlur" />
         </input>
     </label>
 </div>

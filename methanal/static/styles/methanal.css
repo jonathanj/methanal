@@ -4,7 +4,7 @@
 
 button {
     color: #fff;
-    font-weight: bold;
+    font-weight: 700;
     text-transform: uppercase;
     border: 1px solid transparent;
     border-color: rgba(0, 0, 0, 0.15);
@@ -14,7 +14,6 @@ button {
     -webkit-box-shadow: 0px 1px rgba(0, 0, 0, 0.333);
     box-shadow: 0px 1px rgba(0, 0, 0, 0.333);
     background-color: #555;
-    padding: 0.5em 1em;
     padding: 0.6em 1em;
     cursor: pointer;
 }
@@ -81,7 +80,7 @@ optgroup option {
 
 .methanal-liveform h1 {
     color: #000;
-    font-weight: bold;
+    font-weight: 700;
     margin: 0 0 0.5em 0;
     text-transform: uppercase;
     font-size: 130%;
@@ -90,31 +89,34 @@ optgroup option {
 }
 
 .methanal-liveform .modified-indicator {
-    font-weight: bold;
+    font-weight: 700;
 }
 
 .methanal-form-group {
+    background: #f3f3f3;
     margin: 1em 0;
-    border: none;
-    border-top: 1px solid #ccc;
-    padding: 1em;
-    padding-top: 0;
+    padding: 0.5em;
+    border: 1px solid #ddd;
+    border-radius: 0.15em;
 }
 
 .methanal-form-group legend {
-    color: #c9000c;
-    font-weight: bold;
-    font-size: 120%;
+    display: inline-block;
+    color: #333;
+    font-weight: 300;
+    font-size: 135%;
+    margin: 0;
+    padding: 0.5em;
 }
 
 .methanal-control {
-    padding: 0.333em 0;
-    clear: left;
+    padding: 0.4em 0;
 }
 
 .methanal-control-inputs,
 .methanal-control-inputs > div {
-    float: left;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .methanal-control-even {
@@ -123,22 +125,24 @@ optgroup option {
 }
 
 .methanal-caption {
-    float: left;
+    display: inline-block;
     width: 20em;
-    line-height: 1.75em;
-    margin-right: 2em;
-    margin-top: 0.2em;
     vertical-align: middle;
     text-align: right;
-    font-weight: bold;
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 85%;
     color: #353535;
+    margin-right: 1.5em;
 }
 
 .methanal-multi-input,
 .methanal-lookup-form {
-    float: left;
-    padding-left: 1em;
-    border-left: 1px solid #b7b7b7;
+    display: inline-block;
+    border: 1px solid #b7b7b7;
+    border-radius: 0.15em;
+    padding: 0.5em;
+    background: #fff;
 }
 
 .methanal-lookup-form .lookup-result {
@@ -152,7 +156,6 @@ optgroup option {
 .methanal-lookup-form .methanal-caption,
 .methanal-multi-input .methanal-caption {
     width: 8em;
-    margin-right: 0.533em;
 }
 
 .methanal-choice-group {
@@ -166,46 +169,26 @@ optgroup option {
     margin: 0 0 0.25em 0;
 }
 
-.dependancy-parent {
-    border-left: 3px solid #777;
-    margin-left: -3px;
-}
-
-.dependancy-child {
-    border-left: 3px solid #bbb;
-    margin-left: -3px;
-}
-
 input.methanal-input,
 select.methanal-input,
 textarea.methanal-input {
-    float: left;
     background-color: #fff;
-    background-image: url(/static/Methanal/images/icons/valid.png);
-    background-repeat: no-repeat;
-    background-position: 4px center;
-    border: 1px solid #b7b7b7;
-    padding: 0.333em 5px;
-    padding-left: 22px;
+    border: 1px solid #999;
+    border-radius: 0.15em;
+    padding: 0.333em 6px;
     margin-right: 0.333em;
-    -o-box-shadow: 0 1px #fff;
-    -moz-box-shadow: 0 1px #fff;
-    -webkit-box-shadow: 0 1px #fff;
-    box-shadow: 0 1px #fff;
+    vertical-align: middle;
 }
 
 .methanal-check-input {
     border: none;
-    margin-left: 0;
-    float: left;
+    margin: 0;
     cursor: pointer;
 }
 
 .methanal-check-input-label {
-    float: left;
     margin-right: 0.5em;
     cursor: pointer;
-    line-height: 1.75em;
 }
 
 select.methanal-input {
@@ -229,17 +212,8 @@ textarea.methanal-input {
 
 .methanal-multiselect-selection {
     font-size: 80%;
-    clear: left;
-    float: left;
     margin: 2px;
-    font-weight: bold;
-}
-
-.methanal-control-error input.methanal-input,
-.methanal-control-error select.methanal-input,
-.methanal-control-error textarea.methanal-input {
-    background-image: url(/static/Methanal/images/icons/invalid.png);
-    border-color: #da2603;
+    font-weight: 700;
 }
 
 .methanal-multi-input input {
@@ -252,20 +226,11 @@ textarea.methanal-input {
 }
 
 .friendly-representation {
-    float: left;
-    font-style: italic;
     vertical-align: middle;
     padding: 0.333em 5px;
-    margin-left: -0.333em;
-    margin-right: 0.333em;
-    border: 1px solid #b7b7b7;
-    border-left: none;
-    background: #ddd;
     color: #333;
-    -o-box-shadow: 0 1px #fff;
-    -moz-box-shadow: 0 1px #fff;
-    -webkit-box-shadow: 0 1px #fff;
-    box-shadow: 0 1px #fff;
+    font-size: 85%;
+    font-weight: 700;
 }
 
 .embedded-label {
@@ -287,7 +252,7 @@ textarea.methanal-input {
     border-bottom: 2px solid #3580bf;
     color: #000;
     font-size: 90%;
-    font-weight: bold;
+    font-weight: 700;
     text-transform: uppercase;
     padding: 1em 0.35em;
 }
@@ -315,7 +280,7 @@ textarea.methanal-input {
 
 .methanal-table .methanal-table-empty-row td {
     font-size: 90%;
-    font-weight: bold;
+    font-weight: 700;
     text-align: center;
     text-transform: uppercase;
 }
@@ -354,6 +319,12 @@ textarea.methanal-input {
 .methanal-action-container .methanal-action-button {
     margin: 0;
     margin-right: 1em;
+}
+
+.methanal-action-button--primary {
+    color: #fff;
+    background-color: #3580bf;
+    padding: 0.9em 1.5em;
 }
 
 .methanal-action-button-submit {
@@ -406,14 +377,12 @@ textarea.methanal-input {
     margin: 0;
     margin-bottom: 0.5em;
     padding: 0;
-    font-weight: normal;
+    font-weight: 500;
 }
 
-.modal-dialog-close {
-    background: url(/static/Methanal/images/icons/close.png) no-repeat center center;
+.modal-dialog-close:link {
     float: right;
-    width: 16px;
-    height: 16px;
+    color: #333;
 }
 
 /**
@@ -451,7 +420,7 @@ textarea.methanal-input {
 }
 
 .methanal-tab-view .methanal-tab-label a {
-    font-weight: bold;
+    font-weight: 700;
     color: #404040;
 }
 
@@ -468,7 +437,7 @@ textarea.methanal-input {
 
 .methanal-tab-view .selected-tab-label a {
     color: #000;
-}
+} 
 
 .methanal-tab-view .methanal-tab-content {
     background: #fff;
@@ -513,7 +482,6 @@ textarea.methanal-input {
  */
 
 .expander {
-    background: #f3f3f3;
     border: 1px solid #ddd;
     border-color: #f5f5f5 #ddd #bbb;
     border-radius: 3px;
@@ -590,21 +558,19 @@ textarea.methanal-input {
     display: inline-block;
     position: relative;
     border: 1px solid;
-    -o-box-shadow: 1px 1px black;
-    -moz-box-shadow: 1px 1px black;
-    -webkit-box-shadow: 1px 1px black;
-    box-shadow: 1px 1px black;
+    border-radius: 0.125em;
     color: #fff;
     font-size: 90%;
-    padding: 0.25em;
+    font-weight: 700;
+    padding: 0.125em 0.5em;
     margin-right: 0.5em;
 }
 
 .hover-tooltip,
 .hover-tooltip-arrow {
     border-style: solid;
-    border-color: #6094a4;
-    background: #6094a4;
+    border-color: #333;
+    background: #333;
 }
 
 .hover-tooltip-arrow {
@@ -617,7 +583,7 @@ textarea.methanal-input {
 
 .error-tooltip .hover-tooltip,
 .error-tooltip .hover-tooltip-arrow {
-    border-color: #8d0e1b;
+    border-color: #ce283c;
 }
 
 /** Tooltip bottom orientation. */
@@ -628,14 +594,14 @@ textarea.methanal-input {
 }
 
 .hover-tooltip-bottom .hover-tooltip-arrow {
-    bottom: -0.7em;
+    bottom: -0.5em;
     right: auto;
     left: 1.5em;
-    border-left: 0.7em solid transparent;
-    border-right: 0.7em solid transparent;
-    border-top-width: 0.7em;
+    border-left: 0.6em solid transparent;
+    border-right: 0.6em solid transparent;
+    border-top-width: 0.5em;
     border-bottom-width: 0;
-    margin-left: -0.7em;
+    margin-left: -0.6em;
 }
 
 /** Tooltip left orientation. */
@@ -647,14 +613,14 @@ textarea.methanal-input {
 
 .hover-tooltip-left .hover-tooltip-arrow {
     left: 0;
-    top: 0.8em;
+    top: 0.5em;
     bottom: auto;
-    margin-top: -0.6em;
-    border-top: 0.6em solid transparent;
-    border-bottom: 0.6em solid transparent;
-    border-right-width: 1em;
+    margin-top: -0.2em;
+    border-top: 0.5em solid transparent;
+    border-bottom: 0.5em solid transparent;
+    border-right-width: 0.5em;
     border-left-width: 0;
-    margin-left: -0.9em;
+    margin-left: -0.5em;
 }
 
 /** Tooltip top orientation. */
@@ -680,18 +646,24 @@ textarea.methanal-input {
 }
 
 .error-tooltip .hover-tooltip {
-    background-color: #8d0e1b;
-    border-color: #8d0e1b;
+    background-color: #ce283c;
+    border-color: #ce283c;
     color: #fff;
 }
 
 /** TextInput hover tooltip. */
 
+.label-tooltip {
+    position: absolute;
+    left: 0;
+    top: -0.5em;
+    min-width: 10em;
+}
+
 .label-tooltip .hover-tooltip {
     position: absolute;
-    left: inherit;
-    margin-left: -3em;
-    margin-top: -2em;
+    left: 0;
+    bottom: 0;
 }
 
 /** LiveForm submission error tooltip. */
@@ -702,7 +674,7 @@ textarea.methanal-input {
 
 .submission-error-tooltip h2 {
     margin: 0.25em 0;
-    font-weight: normal;
+    font-weight: 500;
     font-style: normal;
     cursor: pointer;
 }
@@ -726,7 +698,8 @@ textarea.methanal-input {
 }
 
 .form-validation-error-tooltip a:hover {
-    background: #a94a54;
+    color: #ce283c;
+    background: #fee34d;
 }
 
 .form-validation-error-tooltip h2 {
@@ -743,14 +716,56 @@ textarea.methanal-input {
 
 .throbber {
     vertical-align: middle;
+    width: 20px;
+    height: 20px;
 }
 
 .placeholder {
     height: 32px;
     background: url(/static/Methanal/images/long-throbber.gif) no-repeat center center;
+    background-size: 32px;
     padding: 1em 0;
+}
+
+.inline-throbber {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    background: url(/static/Methanal/images/main-throbber.gif) no-repeat center center;
+    background-size: 20px;
 }
 
 .terminator {
     clear: both;
+}
+
+/**
+ * Control validity indicators.
+ */
+
+.methanal-control-valid,
+.methanal-control-invalid {
+    position: relative;
+}
+
+.methanal-control-valid:before,
+.methanal-control-invalid:before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    border-radius: 6px;
+    width: 6px;
+    height: 6px;
+    border: 1px solid #fff;
+    box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+.methanal-control-valid:before {
+    background: #2ce56d;
+}
+
+.methanal-control-invalid:before {
+    background: #ce283c;
 }

@@ -522,14 +522,8 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
      */
     function createRowElement(self, index, row) {
         var tr = self.getBody().insertRow(index);
-        var first = true;
         self.eachColumn(function (column) {
-            var cellNode = self.createCellElement(tr, column, row);
-            if (first) {
-                first = false;
-                // This is for IE6's benefit.
-                Methanal.Util.addElementClass(cellNode, 'first-child');
-            }
+            self.createCellElement(tr, column, row);
         });
 
         if (self._hasActions()) {
@@ -541,7 +535,6 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'Table').methods(
                 }
             }
         }
-
         return tr;
     },
 
@@ -921,10 +914,6 @@ Nevow.Athena.Widget.subclass(Methanal.Widgets, 'QueryList').methods(
         for (var i = 0; i < self._columnIDs.length; ++i) {
             var cid = self._columnIDs[i];
             var cell = self.createCellElement(cid, rowData);
-            if (i === 0) {
-                // Thank you IE6 for failing at life.
-                Methanal.Util.addElementClass(cell, 'first-child');
-            }
             tr.appendChild(cell);
         }
 

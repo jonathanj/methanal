@@ -9,6 +9,7 @@
                     <input type="checkbox">
                         <nevow:attr name="name" nevow:render="renderName" />
                         <athena:handler event="onchange" handler="onChange" />
+                        <athena:handler event="onblur" handler="onBlur" />
                         <nevow:attr name="value"><nevow:slot name="value" /></nevow:attr>
                     </input>
                     <nevow:slot name="description" />
