@@ -582,11 +582,17 @@ class TextInput(FormInput):
 
 
     def __init__(self, embeddedLabel=False, stripWhitespace=True,
-                 formatter=None, **kw):
+                 formatter=None, placeholder=None, **kw):
         super(TextInput, self).__init__(**kw)
         self.embeddedLabel = embeddedLabel
         self.stripWhitespace = stripWhitespace
+        self.placeholder = placeholder
         self.formatter = formatter
+
+
+    @renderer
+    def renderPlaceholder(self, req, tag):
+        return self.placeholder or u''
 
 
     def getArgs(self):
