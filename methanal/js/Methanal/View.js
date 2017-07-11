@@ -1990,7 +1990,7 @@ Methanal.View.FormInput.subclass(Methanal.View, 'TextInput').methods(
     function nodeInserted(self) {
         Methanal.View.TextInput.upcall(self, 'nodeInserted');
         self._displayValueNode = self.nodeById('displayValue');
-        if (self.embeddedLabel && self._labelTooltip) {
+        if (self.embeddedLabel) {
             self._labelTooltip = Methanal.Util.Tooltip(
                 self.node, self.label, 'bottom', 'label-tooltip');
             self._labelTooltip.hide();
